@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F727213E-BDEC-483A-B9C9-CFEFEF584463}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dirt.Network</RootNamespace>
+    <AssemblyName>Dirt.Network</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Events\PlayerEvents.cs" />
+    <Compile Include="MessageHeader.cs" />
+    <Compile Include="MessageStateHelper.cs" />
+    <Compile Include="Model\NetworkTypes.cs" />
+    <Compile Include="NetworkEvent.cs" />
+    <Compile Include="NetworkOperation.cs" />
+    <Compile Include="Managers\NetworkSerializer.cs" />
+    <Compile Include="Simulation\ComponentFieldInfo.cs" />
+    <Compile Include="Simulation\Components\NetInfo.cs" />
+    <Compile Include="Simulation\Events\ActorSynchronizeEvent.cs" />
+    <Compile Include="Simulation\Events\PlayerEvent.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Mud\NetSerializer\NetSerializer.csproj">
+      <Project>{edb160e4-1d9a-4478-85d7-97759123402f}</Project>
+      <Name>NetSerializer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Game\Dirt.Game.csproj">
+      <Project>{60343DB1-E6B8-44F9-B387-D4CBE088FE37}</Project>
+      <Name>Dirt.Game</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Simulation\Dirt.Simulation.csproj">
+      <Project>{E77CDCA4-FA31-4EDC-B875-77A7FA2A5FA3}</Project>
+      <Name>Dirt.Simulation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Internal\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

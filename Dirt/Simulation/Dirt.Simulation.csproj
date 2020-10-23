@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E77CDCA4-FA31-4EDC-B875-77A7FA2A5FA3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dirt.Simulation</RootNamespace>
+    <AssemblyName>Dirt.Simulation</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Actor\ActorFilter.cs" />
+    <Compile Include="Actor\Components\Destroy.cs" />
+    <Compile Include="Builder\ActorBuilder.cs" />
+    <Compile Include="Builder\ComponentInjector.cs" />
+    <Compile Include="Builder\SimulationBuilder.cs" />
+    <Compile Include="Context\IContextItem.cs" />
+    <Compile Include="Context\IContextReader.cs" />
+    <Compile Include="Events\ActorEvent.cs" />
+    <Compile Include="GameSimulation.cs" />
+    <Compile Include="GameWorld.cs" />
+    <Compile Include="GameActor.cs" />
+    <Compile Include="IComponent.cs" />
+    <Compile Include="Model\ActorArchetype.cs" />
+    <Compile Include="Model\AssemblyCollection.cs" />
+    <Compile Include="Model\ComponentParameters.cs" />
+    <Compile Include="Model\SimulationArchetype.cs" />
+    <Compile Include="Model\SystemMetric.cs" />
+    <Compile Include="Model\SystemPack.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Context\SimulationContext.cs" />
+    <Compile Include="SimulationEvent.cs" />
+    <Compile Include="SimulationListenerAttribute.cs" />
+    <Compile Include="SystemContainer.cs" />
+    <Compile Include="SystemHelper\IContentReader.cs" />
+    <Compile Include="SystemHelper\IEventReader.cs" />
+    <Compile Include="SystemHelper\IManagerAccess.cs" />
+    <Compile Include="SystemHelper\ISimulationSystem.cs" />
+    <Compile Include="SystemHelper\ISystemDispose.cs" />
+    <Compile Include="Utility\AssemblyReflection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Game\Dirt.Game.csproj">
+      <Project>{60343DB1-E6B8-44F9-B387-D4CBE088FE37}</Project>
+      <Name>Dirt.Game</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Log\Dirt.Log.csproj">
+      <Project>{2d2bb064-885c-45a5-aa6c-ffce1747477d}</Project>
+      <Name>Dirt.Log</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+</Project>

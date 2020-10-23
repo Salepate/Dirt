@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{458CC2F9-FC0E-4126-B30A-FAA8AAEDC926}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dirt.GameServer</RootNamespace>
+    <AssemblyName>Dirt.GameServer</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="GameInstance.cs" />
+    <Compile Include="Managers\PlayerManager.cs" />
+    <Compile Include="Managers\SimulationManager.cs" />
+    <Compile Include="Managers\WebService.cs" />
+    <Compile Include="PlayerProxy.cs" />
+    <Compile Include="SimulationProxy.cs" />
+    <Compile Include="SimulationSpan.cs" />
+    <Compile Include="Web\IRouteHandler.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Mud\MudServer\Mud.Server.csproj">
+      <Project>{00F2B1A4-F3BE-4B97-8D09-7BB615070A07}</Project>
+      <Name>Mud.Server</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Mud\Mud\Mud.csproj">
+      <Project>{36B3FDB3-9B80-4546-AC7A-6DBA68E7CFF3}</Project>
+      <Name>Mud</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Game\Dirt.Game.csproj">
+      <Project>{60343DB1-E6B8-44F9-B387-D4CBE088FE37}</Project>
+      <Name>Dirt.Game</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Log\Dirt.Log.csproj">
+      <Project>{2d2bb064-885c-45a5-aa6c-ffce1747477d}</Project>
+      <Name>Dirt.Log</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Network\Dirt.Network.csproj">
+      <Project>{F727213E-BDEC-483A-B9C9-CFEFEF584463}</Project>
+      <Name>Dirt.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Simulation\Dirt.Simulation.csproj">
+      <Project>{E77CDCA4-FA31-4EDC-B875-77A7FA2A5FA3}</Project>
+      <Name>Dirt.Simulation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

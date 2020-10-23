@@ -1,0 +1,7 @@
+# Visual Studio Files
+.vs/
+Dirt/*/bin
+Dirt/*/obj
+Mud/*/bin
+Mud/*/obj
+packages/
