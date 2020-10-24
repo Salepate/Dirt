@@ -38,13 +38,15 @@ namespace Dirt.GameServer.Managers
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
                 resp.AppendHeader("Access-Control-Allow-Origin", "*");
+                ResponseDelegate responseDelegate = DefaultResponseDelegate;
 
-
-                string mainRoute = req.Url.Segments[1].Replace("/", "");
-                if (!m_Routes.TryGetValue(mainRoute, out ResponseDelegate responseDelegate))
+                if ( req.Url.Segments.Length > 1)
                 {
-                    responseDelegate = DefaultResponseDelegate;
+                    string mainRoute = req.Url.Segments[1].Replace("/", "");
+                    if (!m_Routes.TryGetValue(mainRoute, out responseDelegate))
+                        responseDelegate = DefaultResponseDelegate;
                 }
+
                 string serverResponse = responseDelegate(req);
                 byte[] encoded = Encoding.UTF8.GetBytes(serverResponse);
                 resp.ContentLength64 = encoded.Length;
