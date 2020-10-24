@@ -1,0 +1,7 @@
+{
+    "Assemblies": [
+    ],
+    "Types": [
+        "Dirt.Simulation.Actor.GameActor"
+    ]
+}

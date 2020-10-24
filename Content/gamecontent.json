@@ -1,0 +1,6 @@
+{
+    "FileMap": {
+        "assemblies.server": "assemblies.server.json",
+        "settings.netserial": "settings.netserial.json"
+    }
+}
