@@ -43,10 +43,12 @@ namespace Dirt.GameServer
         public AssemblyCollection ValidAssemblies;
         private List<IContextItem> m_SharedContexts;
         private PlayerManager m_Players;
+        private PluginInstance m_Plugin;
         //@TODO Move in space
         //private PlayerSession m_Sessions;
-        public GameInstance(StreamGroupManager groupManager, string contentPath, string contentManifest)
+        public GameInstance(StreamGroupManager groupManager, string contentPath, string contentManifest, PluginInstance plugin)
         {
+            Console.Assert(plugin != null, "No plugin specified");
             // Dirt
             Simulations = new SimulationManager();
             m_Managers = new Dictionary<Type, IGameManager>();
@@ -60,6 +62,7 @@ namespace Dirt.GameServer
             NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             ValidAssemblies = Content.LoadContent<AssemblyCollection>(AssemblyCollection);
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
+            m_Plugin = plugin;
             //GameplayDB gameDB = new GameplayDB();
             //gameDB.PopulateFromContent(Content);
             //m_SharedContexts.Add(gameDB);
@@ -80,6 +83,8 @@ namespace Dirt.GameServer
             RegisterManager(netSerializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
+
+            Console.Message($"{m_Plugin.PluginName} Started");
         }
 
         public void UpdateInstance(float dt)
@@ -111,11 +116,12 @@ namespace Dirt.GameServer
 
                 if (sim == null)
                 {
-                    simID = Simulations.CreateSimulation(DefaultSimulationName, SimulationSpan.Persistent);
+                    simID = Simulations.CreateSimulation(m_Plugin.GetDefaultSimulation, SimulationSpan.Persistent);
                     sim = Simulations.GetSimulation(simID);
                     proxy.Simulation = -1;
                 }
 
+                m_Plugin.PlayerJoined(proxy.Player);
                 MovePlayerToSimulation(proxy, simID);
             }
             return null;
@@ -164,6 +170,7 @@ namespace Dirt.GameServer
 
             if (proxy != null)
             {
+                m_Plugin.PlayerLeft(proxy.Player);
                 GamePlayer player = proxy.Player;
 
                 m_Players.RemovePlayer(player);

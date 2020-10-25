@@ -6,6 +6,7 @@ using Dirt.ServerApplication.Clock;
 using Mud.Server;
 using System;
 using System.Configuration;
+using System.Linq;
 using Console = Dirt.Log.Console;
 
 namespace Dirt.ServerApplication
@@ -30,7 +31,33 @@ namespace Dirt.ServerApplication
             string contentPath = GetConfigString("ContentRoot");
             string contentVersion = GetConfigString("ContentVersion");
 
-            m_Game = new GameInstance(m_Server.StreamGroups, contentPath, contentVersion);
+            string pluginLib = GetConfigString("PluginFile");
+            string pluginClass = GetConfigString("PluginClass");
+
+            PluginInstance plugin = null;
+
+            try
+            {
+                var pluginAssembly = System.AppDomain.CurrentDomain.Load(pluginLib);
+                Type pluginType = pluginAssembly.GetTypes().Where(t => t.FullName == pluginClass).FirstOrDefault();
+                if ( pluginType != null )
+                {
+                    plugin = (PluginInstance) System.Activator.CreateInstance(pluginType);
+                }
+                else
+                {
+                    Console.Error($"Plugin Class {pluginClass} not found in {pluginAssembly.FullName}");
+                    plugin = new DummyPlugin();
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.Error($"Unable to load {pluginLib}");
+                Console.Error(e.Message);
+            }
+
+            m_Game = new GameInstance(m_Server.StreamGroups, contentPath, contentVersion, plugin);
 
             Web = new WebService("127.0.0.1", GetConfig("WebServerPort"));
             //Web.RegisterHandler(new PlayerMonitorRoute(m_Game));
