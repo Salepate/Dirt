@@ -1,6 +1,8 @@
 {
     "FileMap": {
+        "assemblies.client": "assemblies.client.json",
         "assemblies.server": "assemblies.server.json",
-        "settings.netserial": "settings.netserial.json"
+        "settings.netserial": "settings.netserial.json",
+        "sim.lobby": "sim.lobby.json"
     }
 }
