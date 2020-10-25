@@ -35,6 +35,14 @@ Server library. Half Monolith that acts as the connector between game and networ
 * Define custom player commands 
 * Runs a webservice and provide a Rest API (undocumented yet) 
 
+# Unity Collection
+
+## Dirt.Unity.Logger
+
+Unity implementation for the logger
+
+_Hard reference to UnityEngine.dll in .csproj (will be fixed someday)_
+
 # Mud Collection
 
 ## Mud (Common)

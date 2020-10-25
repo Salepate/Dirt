@@ -35,6 +35,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Application
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dirt.ServerApplication", "Dirt\ServerApplication\Dirt.ServerApplication.csproj", "{2B0F5AB7-2FA4-4E3E-9157-247C24830F00}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unity", "Unity", "{791FB142-B3F9-4E0F-B5EA-70633E0B8492}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dirt.Unity.Logger", "Unity\Logger\Dirt.Unity.Logger.csproj", "{E5F6E6FC-47CC-4BAC-932D-E1A13AEA606C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,10 @@ Global
 		{2B0F5AB7-2FA4-4E3E-9157-247C24830F00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B0F5AB7-2FA4-4E3E-9157-247C24830F00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B0F5AB7-2FA4-4E3E-9157-247C24830F00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5F6E6FC-47CC-4BAC-932D-E1A13AEA606C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5F6E6FC-47CC-4BAC-932D-E1A13AEA606C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5F6E6FC-47CC-4BAC-932D-E1A13AEA606C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5F6E6FC-47CC-4BAC-932D-E1A13AEA606C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +109,7 @@ Global
 		{F727213E-BDEC-483A-B9C9-CFEFEF584463} = {A312E4C4-7EDE-4B2B-BC93-F8864CF83289}
 		{EDB160E4-1D9A-4478-85D7-97759123402F} = {A29F5952-A507-47AC-A71D-8756098DA909}
 		{2B0F5AB7-2FA4-4E3E-9157-247C24830F00} = {9BFCAABC-4720-408A-A982-1B930E951594}
+		{E5F6E6FC-47CC-4BAC-932D-E1A13AEA606C} = {791FB142-B3F9-4E0F-B5EA-70633E0B8492}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C1205B1D-41B4-4060-84F6-BB9C3D374C0F}
