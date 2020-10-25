@@ -8,7 +8,7 @@ using System;
 using System.Configuration;
 using Console = Dirt.Log.Console;
 
-namespace Space
+namespace Dirt.ServerApplication
 {
     public class ServerApp
     {

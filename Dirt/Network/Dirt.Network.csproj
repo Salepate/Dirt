@@ -48,6 +48,7 @@
     <Compile Include="NetworkEvent.cs" />
     <Compile Include="NetworkOperation.cs" />
     <Compile Include="Managers\NetworkSerializer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Simulation\ComponentFieldInfo.cs" />
     <Compile Include="Simulation\Components\NetInfo.cs" />
     <Compile Include="Simulation\Events\ActorSynchronizeEvent.cs" />
