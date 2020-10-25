@@ -4,6 +4,7 @@ using Type = System.Type;
 using Console = Dirt.Log.Console;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.Utility;
+using Dirt.Game.Content;
 
 namespace Dirt.Simulation.Builder
 {
@@ -20,13 +21,33 @@ namespace Dirt.Simulation.Builder
 
         private Dictionary<string, Type> m_ValidComponents;
 
+        protected IContentProvider Content;
+
         public ActorBuilder(int actorPoolSize)
         {
             m_Injectors = new Dictionary<Type, ComponentInjector>();
-            m_Actors = new GameActor[actorPoolSize];
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
-            for (int i = 0; i < actorPoolSize; ++i)
+            InitializePool(actorPoolSize);
+        }
+
+        public ActorBuilder()
+        {
+            m_Injectors = new Dictionary<Type, ComponentInjector>();
+            m_Actors = new GameActor[0];
+            m_LastFreeIndex = 0;
+            m_ValidComponents = new Dictionary<string, Type>();
+        }
+
+        public void SetGameContent(IContentProvider content)
+        {
+            Content = content;
+        }
+
+        public void InitializePool(int poolSize)
+        {
+            m_Actors = new GameActor[poolSize];
+            for (int i = 0; i < poolSize; ++i)
                 m_Actors[i] = new GameActor(i);
         }
 
@@ -42,7 +63,7 @@ namespace Dirt.Simulation.Builder
             return actor;
         }
 
-        public void CreateActor(IComponent[] baseComponents)
+        public GameActor CreateActor(IComponent[] baseComponents)
         {
             GameActor actor = GetActor();
             for (int i = 0; i < baseComponents.Length; ++i)
@@ -51,14 +72,21 @@ namespace Dirt.Simulation.Builder
                     actor.AddComponent(baseComponents[i]);
             }
             ActorCreateAction?.Invoke(actor);
+            return actor;
         }
 
-        public GameActor BuildActor(ActorArchetype archetype)
+        public virtual GameActor BuildActor(ActorArchetype archetype)
         {
             GameActor actor = GetActor();
             InternalBuild(actor, archetype);
             ActorCreateAction?.Invoke(actor);
             return actor;
+        }
+
+        public virtual GameActor BuildActor(string archetype)
+        {
+            Console.Assert(Content != null, "Content Provider not set");
+            return BuildActor(Content.LoadContent<ActorArchetype>($"actor.{archetype}"));
         }
 
         public void DestroyActor(GameActor actor)

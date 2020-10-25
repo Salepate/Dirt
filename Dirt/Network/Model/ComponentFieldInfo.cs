@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dirt.Network.Simulation
+namespace Dirt.Network.Model
 {
     [Serializable]
     public struct ComponentFieldInfo

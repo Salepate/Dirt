@@ -1,4 +1,4 @@
-﻿using Dirt.Network;
+﻿using Dirt.Network.Model;
 using Dirt.Simulation;
 using System;
 using System.Collections.Generic;

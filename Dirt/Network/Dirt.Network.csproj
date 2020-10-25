@@ -42,17 +42,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Events\PlayerEvents.cs" />
+    <Compile Include="Internal\FastInvoke.cs" />
+    <Compile Include="Internal\ObjectFieldAccessor.cs" />
     <Compile Include="MessageHeader.cs" />
     <Compile Include="MessageStateHelper.cs" />
     <Compile Include="Model\NetworkTypes.cs" />
+    <Compile Include="Model\SyncInfo.cs" />
     <Compile Include="NetworkEvent.cs" />
     <Compile Include="NetworkOperation.cs" />
     <Compile Include="Managers\NetworkSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Simulation\ComponentFieldInfo.cs" />
+    <Compile Include="Model\ComponentFieldInfo.cs" />
     <Compile Include="Simulation\Components\NetInfo.cs" />
     <Compile Include="Simulation\Events\ActorSynchronizeEvent.cs" />
     <Compile Include="Simulation\Events\PlayerEvent.cs" />
+    <Compile Include="SyncHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Mud\NetSerializer\NetSerializer.csproj">
@@ -63,14 +67,16 @@
       <Project>{60343DB1-E6B8-44F9-B387-D4CBE088FE37}</Project>
       <Name>Dirt.Game</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Log\Dirt.Log.csproj">
+      <Project>{2D2BB064-885C-45A5-AA6C-FFCE1747477D}</Project>
+      <Name>Dirt.Log</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Simulation\Dirt.Simulation.csproj">
       <Project>{E77CDCA4-FA31-4EDC-B875-77A7FA2A5FA3}</Project>
       <Name>Dirt.Simulation</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Internal\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>nuget.exe pack "$(ProjectPath)" -IncludeReferencedProjects -OutputDirectory D:\dev\nuget\source</PostBuildEvent>

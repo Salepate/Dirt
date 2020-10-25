@@ -25,6 +25,17 @@ namespace Dirt.Simulation
             Builder.ActorDestroyAction += OnActorDestroyed;
         }
 
+        public GameSimulation(ActorBuilder builder, int id = 0)
+        {
+            ID = id;
+            Builder = builder;
+            World = new GameWorld();
+            Events = new Queue<SimulationEvent>();
+
+            Builder.ActorCreateAction += OnActorBuilt;
+            Builder.ActorDestroyAction += OnActorDestroyed;
+        }
+
         private void OnActorBuilt(GameActor actor)
         {
             World.Actors.Add(actor);

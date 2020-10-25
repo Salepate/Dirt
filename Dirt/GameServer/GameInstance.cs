@@ -50,19 +50,22 @@ namespace Dirt.GameServer
         {
             Console.Assert(plugin != null, "No plugin specified");
             // Dirt
-            Simulations = new SimulationManager();
+            string contentManifestPath = $"{contentPath}/{contentManifest}.json";
+            Content = new ContentProvider(contentPath);
+            Content.LoadGameContent(contentManifest);
+            Simulations = new SimulationManager(Content);
             m_Managers = new Dictionary<Type, IGameManager>();
             m_GroupManager = groupManager;
             m_Groups = new Dictionary<int, StreamGroup>();
             m_SimBuilder = new SimulationBuilder();
             m_SharedContexts = new List<IContextItem>();
-            string contentManifestPath = $"{contentPath}/{contentManifest}.json";
-            Content = new ContentProvider(contentPath);
-            Content.LoadGameContent(contentManifest);
             NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             ValidAssemblies = Content.LoadContent<AssemblyCollection>(AssemblyCollection);
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
             m_Plugin = plugin;
+            m_Plugin.SetManagers(this);
+            m_Players = new PlayerManager(netSerializer);
+
             //GameplayDB gameDB = new GameplayDB();
             //gameDB.PopulateFromContent(Content);
             //m_SharedContexts.Add(gameDB);
@@ -70,7 +73,6 @@ namespace Dirt.GameServer
             //@TODO Move in space
             //m_Sessions = new PlayerSession();
             //m_SharedContexts.Add(m_Sessions);
-            m_Players = new PlayerManager(netSerializer);
 
 
             //ActionContext playerActions = new ActionContext();
@@ -116,13 +118,13 @@ namespace Dirt.GameServer
 
                 if (sim == null)
                 {
-                    simID = Simulations.CreateSimulation(m_Plugin.GetDefaultSimulation, SimulationSpan.Persistent);
+                    simID = Simulations.CreateSimulation(m_Plugin.DefaultSimulation, SimulationSpan.Persistent);
                     sim = Simulations.GetSimulation(simID);
                     proxy.Simulation = -1;
                 }
 
-                m_Plugin.PlayerJoined(proxy.Player);
                 MovePlayerToSimulation(proxy, simID);
+                m_Plugin.PlayerJoined(proxy.Player);
             }
             return null;
         }

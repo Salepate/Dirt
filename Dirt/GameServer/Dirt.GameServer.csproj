@@ -51,6 +51,7 @@
     <Compile Include="PlayerProxy.cs" />
     <Compile Include="PluginInstance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerActorBuilder.cs" />
     <Compile Include="SimulationProxy.cs" />
     <Compile Include="SimulationSpan.cs" />
     <Compile Include="Web\IRouteHandler.cs" />

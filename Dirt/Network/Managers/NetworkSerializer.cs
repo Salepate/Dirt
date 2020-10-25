@@ -1,37 +1,77 @@
 using Dirt.Game;
+using Dirt.Log;
+using Dirt.Network.Internal;
 using Dirt.Network.Model;
-using System;
+using Dirt.Simulation;
 using System.Collections.Generic;
 using System.IO;
+using System;
 using System.Linq;
 using System.Reflection;
-using Type = System.Type;
 
 namespace Dirt.Network.Managers
 {
+    using Console = Dirt.Log.Console;
     public class NetworkSerializer : IGameManager
     {
         private NetSerializer.Serializer m_Serializer;
+        private static MethodInfo s_CreateComponentMethodInfo;
+        private static Dictionary<Type, ObjectFieldAccessor[]> s_ComponentSetters;
+
+        static NetworkSerializer()
+        {
+            s_CreateComponentMethodInfo = typeof(NetworkSerializer).GetMethod("CreateComponentMeta", BindingFlags.NonPublic | BindingFlags.Instance);
+            s_ComponentSetters = new Dictionary<Type, ObjectFieldAccessor[]>();
+        }
 
         public NetworkSerializer(NetworkTypes assemblies)
         {
-            Assembly[] loadedAsses = AppDomain.CurrentDomain.GetAssemblies();
+            List<Assembly> loadedAsses = AppDomain.CurrentDomain.GetAssemblies().ToList();
+
+
             IEnumerable<Assembly> gameAssemblies = loadedAsses.Where(ass => assemblies.Assemblies.Contains(ass.FullName));
+
+            for(int i = 0; i < assemblies.Assemblies.Length; ++i)
+            {
+                string assemblyName = assemblies.Assemblies[i];
+                Assembly matchingAssembly = loadedAsses.Where(ass => ass.FullName == assemblyName).FirstOrDefault();
+                if (matchingAssembly == null )
+                {
+                    // Try load manually
+                    Console.Message($"Loading Assembly {assemblyName}");
+                    try
+                    {
+                        loadedAsses.Add(Assembly.Load(assemblyName));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error($"Unable to load assembly");
+                        Console.Message(e.ToString());
+                    }
+                }
+            }
 
             IEnumerable<Type> serializableTypes = gameAssemblies.SelectMany(ass =>
             {
                 IEnumerable<Type> eventTypes = CollectAbstractTypes<NetworkEvent>(ass);
                 IEnumerable<Type> gameTypes = ass.GetTypes().Where(t => assemblies.Types.Contains(t.FullName));
-                return gameTypes.Concat(eventTypes);
+                IEnumerable<Type> compTypes = CollectInterfaceTypes<IComponent>(ass);
+
+                foreach (Type comp in compTypes)
+                {
+                    CreateComponentSetters(comp);
+                }
+
+                return gameTypes.Concat(eventTypes).Concat(compTypes);
             });
 
             serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader) });
             m_Serializer = new NetSerializer.Serializer(serializableTypes.Where(t => t != null));
         }
 
-        public void RegisterTypes(Type[] types)
+        internal static bool TryGetSetters(Type compType, out ObjectFieldAccessor[] setters)
         {
-            m_Serializer.AddTypes(types);
+            return s_ComponentSetters.TryGetValue(compType, out setters);
         }
 
         public void Serialize(MemoryStream st, object obj)
@@ -56,6 +96,49 @@ namespace Dirt.Network.Managers
         private IEnumerable<Type> CollectInterfaceTypes<C>(Assembly ass)
         {
             return ass.GetTypes().Where(t => typeof(C).IsAssignableFrom(t) && t.GetCustomAttribute<SerializableAttribute>() != null);
+        }
+
+        private void CreateComponentMeta<T>() where T : IComponent
+        {
+            Type compType = typeof(T);
+            FieldInfo[] pubFields = compType.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+            List<ObjectFieldAccessor> accessors = new List<ObjectFieldAccessor>();
+
+            for (int i = 0; i < pubFields.Length; ++i)
+            {
+                if (!pubFields[i].IsNotSerialized)
+                {
+                    Action<T, object> specializedSetter = FastInvoke.BuildUntypedSetter<T>(pubFields[i]);
+                    Func<T, object> specializedGetter = FastInvoke.BuildUntypedGetter<T>(pubFields[i]);
+
+                    Action<IComponent, object> genericSetter = (comp, value) =>
+                    {
+                        specializedSetter((T)comp, value);
+                    };
+
+                    Func<IComponent, object> genericGetter = (comp) =>
+                    {
+                        return specializedGetter((T)comp);
+                    };
+
+                    accessors.Add(new ObjectFieldAccessor()
+                    {
+                        Name = pubFields[i].Name,
+                        Getter = genericGetter,
+                        Setter = genericSetter
+                    });
+                }
+            }
+
+            if (accessors.Count > 0)
+            {
+                s_ComponentSetters.Add(compType, accessors.ToArray());
+            }
+        }
+
+        private void CreateComponentSetters(Type compType)
+        {
+            s_CreateComponentMethodInfo.MakeGenericMethod(compType).Invoke(this, null);
         }
     }
 }
