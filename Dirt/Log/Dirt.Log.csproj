@@ -41,4 +41,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>nuget.exe pack "$(ProjectPath)" -IncludeReferencedProjects -OutputDirectory D:\dev\nuget\source</PostBuildEvent>
+  </PropertyGroup>
 </Project>
