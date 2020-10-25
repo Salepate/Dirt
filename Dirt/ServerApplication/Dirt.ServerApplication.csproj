@@ -78,10 +78,6 @@
       <Project>{00F2B1A4-F3BE-4B97-8D09-7BB615070A07}</Project>
       <Name>Mud.Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Mud\Mud\Mud.csproj">
-      <Project>{36b3fdb3-9b80-4546-ac7a-6dba68e7cff3}</Project>
-      <Name>Mud</Name>
-    </ProjectReference>
     <ProjectReference Include="..\GameServer\Dirt.GameServer.csproj">
       <Project>{458CC2F9-FC0E-4126-B30A-FAA8AAEDC926}</Project>
       <Name>Dirt.GameServer</Name>

@@ -60,7 +60,7 @@
       <Name>Mud.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Mud\Mud\Mud.csproj">
-      <Project>{36B3FDB3-9B80-4546-AC7A-6DBA68E7CFF3}</Project>
+      <Project>{36b3fdb3-9b80-4546-ac7a-6dba68e7cff3}</Project>
       <Name>Mud</Name>
     </ProjectReference>
     <ProjectReference Include="..\Game\Dirt.Game.csproj">
@@ -84,4 +84,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>nuget.exe pack "$(ProjectPath)" -IncludeReferencedProjects -OutputDirectory D:\dev\nuget\source</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Dirt\Log\Dirt.Log.csproj" />
     <ProjectReference Include="..\MudServer\Mud.Server.csproj" />
-    <ProjectReference Include="..\Mud\Mud.csproj" />
   </ItemGroup>
 
   <ItemGroup>

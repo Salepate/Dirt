@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Mud.Server")]
+[assembly: AssemblyTitle("Mud")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Mud.Server")]
+[assembly: AssemblyProduct("Mud")]
 [assembly: AssemblyCopyright("Salepate © 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("00f2b1a4-f3be-4b97-8d09-7bb615070a07")]
+[assembly: Guid("5D9337CD-AEB8-4C0C-BA63-6A03DF22D936")]
 
 // Version information for an assembly consists of the following four values:
 //

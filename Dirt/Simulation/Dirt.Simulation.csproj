@@ -85,4 +85,7 @@
   <PropertyGroup>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>nuget.exe pack "$(ProjectPath)" -IncludeReferencedProjects -OutputDirectory D:\dev\nuget\source</PostBuildEvent>
+  </PropertyGroup>  
 </Project>
