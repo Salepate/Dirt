@@ -47,6 +47,7 @@ namespace Dirt.GameServer.Managers
         {
             if (m_SimulationMap.TryGetValue(id, out SimulationProxy proxy))
             {
+                systems.InitializeSystems(proxy.Simulation);
                 proxy.AttachSystems(systems);
             }
             else
