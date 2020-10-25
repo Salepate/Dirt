@@ -53,5 +53,11 @@
     <Compile Include="TypeSerializers\ObjectSerializer.cs" />
     <Compile Include="TypeSerializers\PrimitivesSerializer.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Dirt\Log\Dirt.Log.csproj">
+      <Project>{2d2bb064-885c-45a5-aa6c-ffce1747477d}</Project>
+      <Name>Dirt.Log</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -15,13 +15,14 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 
+using Console = Dirt.Log.Console;
 namespace NetSerializer
 {
 	static class Helpers
 	{
 		public static IEnumerable<FieldInfo> GetFieldInfos(Type type)
 		{
-			Debug.Assert(type.IsSerializable);
+			Console.Assert(type.IsSerializable, $"Type {type.FullName} is not serializable");
 
 			var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
 				.Where(fi => (fi.Attributes & FieldAttributes.NotSerialized) == 0)
