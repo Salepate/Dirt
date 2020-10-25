@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Content\GameContent.cs" />
     <Compile Include="Content\IContentProvider.cs" />
+    <Compile Include="EventListenerAttribute.cs" />
     <Compile Include="IGameManager.cs" />
     <Compile Include="IManagerProvider.cs" />
     <Compile Include="ContentProvider.cs" />

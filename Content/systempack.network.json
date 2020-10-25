@@ -1,0 +1,14 @@
+{
+    "Shared": [
+        "ActorReceiver"
+    ],
+    "Client": [
+        "ClientActorSynchronization",
+        "ClientActorStreaming"
+    ],
+    "Server": [
+        "ActorStreaming",
+        "NetworkCulling",
+        "GlobalActorSynchronization"
+    ]
+}

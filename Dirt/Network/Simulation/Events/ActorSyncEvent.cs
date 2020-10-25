@@ -11,6 +11,5 @@ namespace Dirt.Network.Simulation.Events
             NetID = netID;
             Buffer = syncBuffer;
         }
-
     }
 }

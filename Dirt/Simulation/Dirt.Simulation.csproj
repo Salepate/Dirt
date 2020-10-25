@@ -43,6 +43,7 @@
     <Compile Include="Builder\ActorBuilder.cs" />
     <Compile Include="Builder\ComponentInjector.cs" />
     <Compile Include="Builder\SimulationBuilder.cs" />
+    <Compile Include="Components\Position.cs" />
     <Compile Include="Context\IContextItem.cs" />
     <Compile Include="Context\IContextReader.cs" />
     <Compile Include="Events\ActorEvent.cs" />
@@ -87,5 +88,5 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>nuget.exe pack "$(ProjectPath)" -IncludeReferencedProjects -OutputDirectory D:\dev\nuget\source</PostBuildEvent>
-  </PropertyGroup>  
+  </PropertyGroup>
 </Project>

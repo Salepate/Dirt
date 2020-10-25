@@ -3,6 +3,7 @@
         "assemblies.client": "assemblies.client.json",
         "assemblies.server": "assemblies.server.json",
         "settings.netserial": "settings.netserial.json",
-        "sim.lobby": "sim.lobby.json"
+        "sim.lobby": "sim.lobby.json",
+        "systempack.network": "systempack.network.json"
     }
 }
