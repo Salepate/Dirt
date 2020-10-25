@@ -31,7 +31,7 @@ namespace Dirt.Simulation
         private IContentProvider m_Content;
         private IManagerProvider m_Managers;
         private Stopwatch m_SystemStopWatch;
-        private MetricManager m_Metrics;
+        private MetricsManager m_Metrics;
         private int m_Frame;
 
         public SimulationContext Context { get; private set; }
@@ -48,7 +48,7 @@ namespace Dirt.Simulation
             m_MetricsOverTime = new List<SystemMetric>();
             m_SystemStatus = new List<bool>();
             m_SystemStopWatch = new Stopwatch();
-            m_Metrics = manager.GetManager<MetricManager>();
+            m_Metrics = manager.GetManager<MetricsManager>();
         }
 
         public void LoadContext(string contextName)
@@ -236,7 +236,7 @@ namespace Dirt.Simulation
             }
         }
 
-        [Conditional(MetricManager.CONDITIONAL_METRICS)]
+        [Conditional(MetricsManager.CONDITIONAL_METRICS)]
         private void ProcessMetrics(int simID, int systemIndex, int microTime)
         {
             SystemMetric metric = m_MetricsOverTime[systemIndex];

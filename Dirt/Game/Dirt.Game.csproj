@@ -49,7 +49,7 @@
     <Compile Include="IGameManager.cs" />
     <Compile Include="IManagerProvider.cs" />
     <Compile Include="ContentProvider.cs" />
-    <Compile Include="Managers\MetricManager.cs" />
+    <Compile Include="Managers\MetricsManager.cs" />
     <Compile Include="Math\AreaOfEffect.cs" />
     <Compile Include="Math\Line.cs" />
     <Compile Include="Math\MersenneTwister.cs" />
@@ -57,7 +57,6 @@
     <Compile Include="Math\TrajectorySolver.cs" />
     <Compile Include="Math\Vector.cs" />
     <Compile Include="Metrics\MetricObject.cs" />
-    <Compile Include="Metrics\MetricsManager.cs" />
     <Compile Include="Model\GamePlayer.cs" />
     <Compile Include="Model\PlayerProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Dirt.Game.Metrics;
+using System.Collections.Generic;
+
 using Type = System.Type;
 
-namespace Dirt.Game.Metrics
+namespace Dirt.Game.Managers
 {
     public class MetricsManager : IGameManager
     {
@@ -22,8 +24,8 @@ namespace Dirt.Game.Metrics
             m_Listeners = new Dictionary<Type, MetricObjectEventDelegate>();
             m_LambdaMap = new Dictionary<object, MetricObjectEventDelegate>();
         }
-        
-        public void ListenMetricObjectEvent<T>(System.Action<string, T> listener) where T: MetricObject
+
+        public void ListenMetricObjectEvent<T>(System.Action<string, T> listener) where T : MetricObject
         {
             if (!m_Listeners.TryGetValue(typeof(T), out MetricObjectEventDelegate del))
             {
@@ -33,9 +35,9 @@ namespace Dirt.Game.Metrics
             }
         }
 
-        public void RemoveMetricObjectEventListener<T>(System.Action<string, T> listener) where T: MetricObject
+        public void RemoveMetricObjectEventListener<T>(System.Action<string, T> listener) where T : MetricObject
         {
-            if ( m_LambdaMap.TryGetValue(listener, out MetricObjectEventDelegate del))
+            if (m_LambdaMap.TryGetValue(listener, out MetricObjectEventDelegate del))
             {
                 Type t = typeof(T);
                 m_LambdaMap.Remove(listener);
@@ -54,10 +56,10 @@ namespace Dirt.Game.Metrics
             }
         }
 
-        public void Record<T>(string hash, T data) where T: MetricObject
+        public void Record<T>(string hash, T data) where T : MetricObject
         {
             m_Objects[hash] = data;
-            if ( m_Listeners.TryGetValue(typeof(T), out MetricObjectEventDelegate lambda) )
+            if (m_Listeners.TryGetValue(typeof(T), out MetricObjectEventDelegate lambda))
             {
                 lambda(hash, data);
             }
@@ -65,7 +67,7 @@ namespace Dirt.Game.Metrics
 
         public void Record(string hash, int value, bool deltaOnly = true)
         {
-            if ( !m_Metrics.TryGetValue(hash, out int oldValue) || oldValue != value || !deltaOnly)
+            if (!m_Metrics.TryGetValue(hash, out int oldValue) || oldValue != value || !deltaOnly)
             {
                 MetricEvent?.Invoke(hash, value);
             }
