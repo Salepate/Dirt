@@ -44,6 +44,7 @@
     <Compile Include="Builder\ComponentInjector.cs" />
     <Compile Include="Builder\SimulationBuilder.cs" />
     <Compile Include="Components\Position.cs" />
+    <Compile Include="Components\Tracker.cs" />
     <Compile Include="Context\IContextItem.cs" />
     <Compile Include="Context\IContextReader.cs" />
     <Compile Include="Events\ActorEvent.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="SystemHelper\IManagerAccess.cs" />
     <Compile Include="SystemHelper\ISimulationSystem.cs" />
     <Compile Include="SystemHelper\ISystemDispose.cs" />
+    <Compile Include="Systems\ActorTracker.cs" />
     <Compile Include="Utility\AssemblyReflection.cs" />
   </ItemGroup>
   <ItemGroup>

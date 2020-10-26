@@ -10,8 +10,8 @@ namespace Dirt.GameServer
         protected IManagerProvider Managers { get; private set; }
         public abstract string PluginName { get; }
         public virtual string DefaultSimulation => "lobby";
-        public virtual void PlayerJoined(GamePlayer player) {}
-        public virtual void PlayerLeft(GamePlayer player) {}
+        public virtual void PlayerJoined(PlayerProxy player) {}
+        public virtual void PlayerLeft(PlayerProxy player) {}
         public void SetManagers(IManagerProvider managers)
         {
             Managers = managers;

@@ -124,7 +124,7 @@ namespace Dirt.GameServer
                 }
 
                 MovePlayerToSimulation(proxy, simID);
-                m_Plugin.PlayerJoined(proxy.Player);
+                m_Plugin.PlayerJoined(proxy);
             }
             return null;
         }
@@ -172,7 +172,7 @@ namespace Dirt.GameServer
 
             if (proxy != null)
             {
-                m_Plugin.PlayerLeft(proxy.Player);
+                m_Plugin.PlayerLeft(proxy);
                 GamePlayer player = proxy.Player;
 
                 m_Players.RemovePlayer(player);

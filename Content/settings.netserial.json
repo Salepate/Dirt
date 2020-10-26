@@ -1,8 +1,10 @@
 {
     "Assemblies": [
-        "Dirt.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        "Dirt.Game, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Dirt.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Dirt.Simulation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
     ],
     "Types": [
-        "Dirt.Simulation.Actor.GameActor"
+        "Dirt.Simulation.GameActor"
     ]
 }

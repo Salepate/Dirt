@@ -76,8 +76,6 @@ namespace Dirt.Network.Simulations.Systems
                         }
                     });
 
-
-                    //
                     cull.ProximityActors.ForEach(old =>
                     {
                         if (!inRange.Contains(old))
