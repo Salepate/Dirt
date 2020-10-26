@@ -30,27 +30,6 @@ namespace Dirt.Network.Managers
 
 
             IEnumerable<Assembly> gameAssemblies = loadedAsses.Where(ass => assemblies.Assemblies.Contains(ass.FullName));
-
-            for(int i = 0; i < assemblies.Assemblies.Length; ++i)
-            {
-                string assemblyName = assemblies.Assemblies[i];
-                Assembly matchingAssembly = loadedAsses.Where(ass => ass.FullName == assemblyName).FirstOrDefault();
-                if (matchingAssembly == null )
-                {
-                    // Try load manually
-                    Console.Message($"Loading Assembly {assemblyName}");
-                    try
-                    {
-                        loadedAsses.Add(Assembly.Load(assemblyName));
-                    }
-                    catch (Exception e)
-                    {
-                        Console.Error($"Unable to load assembly");
-                        Console.Message(e.ToString());
-                    }
-                }
-            }
-
             IEnumerable<Type> serializableTypes = gameAssemblies.SelectMany(ass =>
             {
                 IEnumerable<Type> eventTypes = CollectAbstractTypes<NetworkEvent>(ass);
@@ -65,8 +44,14 @@ namespace Dirt.Network.Managers
                 return gameTypes.Concat(eventTypes).Concat(compTypes);
             });
 
-            serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader) });
-            m_Serializer = new NetSerializer.Serializer(serializableTypes.Where(t => t != null));
+            serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader) }.Where(t => t != null));
+            var validTypes = serializableTypes.OrderBy(t => t.FullName).ToList();
+
+            for(int i = 0; i < validTypes.Count; ++i)
+            {
+                Console.Message(validTypes[i].FullName);
+            }
+            m_Serializer = new NetSerializer.Serializer(validTypes);
         }
 
         internal static bool TryGetSetters(Type compType, out ObjectFieldAccessor[] setters)
