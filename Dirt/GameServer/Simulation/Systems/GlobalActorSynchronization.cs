@@ -37,7 +37,7 @@ namespace Dirt.Network.Simulations.Systems
         }
 
 
-        [EventListener(typeof(ActorEvent), ActorEvent.Removed)]
+        [SimulationListener(typeof(ActorEvent), ActorEvent.Removed)]
         private void OnActorRemoved(ActorEvent actorEvent)
         {
             int netIdx = actorEvent.Actor.GetComponentIndex<NetInfo>();

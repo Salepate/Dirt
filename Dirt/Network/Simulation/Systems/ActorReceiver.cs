@@ -21,7 +21,7 @@ namespace Dirt.Network.Simulation.Systems
             m_LastInState = new Dictionary<int, MessageHeader>();
         }
 
-        [EventListener(typeof(ActorSyncEvent), 0)]
+        [SimulationListener(typeof(ActorSyncEvent), 0)]
         private void OnActorSync(ActorSyncEvent syncEvent)
         {
             using (MemoryStream ms = new MemoryStream(syncEvent.Buffer))
@@ -39,7 +39,7 @@ namespace Dirt.Network.Simulation.Systems
             }
         }
 
-        [EventListener(typeof(ActorEvent), ActorEvent.Removed)]
+        [SimulationListener(typeof(ActorEvent), ActorEvent.Removed)]
         private void OnActorRemoved(ActorEvent removeEvent)
         {
             int syncIndex = removeEvent.Actor.GetComponentIndex<NetInfo>();

@@ -1,4 +1,6 @@
-﻿namespace Dirt.Simulation
+﻿using Dirt.Game;
+
+namespace Dirt.Simulation
 {
     [System.AttributeUsage(System.AttributeTargets.Method)]
     public class SimulationListenerAttribute : System.Attribute
