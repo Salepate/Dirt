@@ -1,4 +1,5 @@
 ﻿using Dirt.Game.Content;
+using Dirt.Log;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
 using Dirt.Simulation.Utility;
@@ -30,9 +31,16 @@ namespace Dirt.Simulation.Builder
             List<ISimulationSystem> systems = new List<ISimulationSystem>();
             for (int i = 0; i < systemNames.Length; ++i)
             {
-                System.Type sysType = m_ValidSystems[systemNames[i]];
-                ISimulationSystem sys = (ISimulationSystem)System.Activator.CreateInstance(sysType);
-                systems.Add(sys);
+                if ( m_ValidSystems.ContainsKey(systemNames[i]))
+                {
+                    System.Type sysType = m_ValidSystems[systemNames[i]];
+                    ISimulationSystem sys = (ISimulationSystem)System.Activator.CreateInstance(sysType);
+                    systems.Add(sys);
+                }
+                else
+                {
+                    Console.Error($"System {systemNames[i]} is not valid");
+                }
             }
             return systems.ToArray();
         }
