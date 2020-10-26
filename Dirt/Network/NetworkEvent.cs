@@ -1,5 +1,5 @@
 ﻿namespace Dirt.Network
-
-{   [System.Serializable]
+{   
+    [System.Serializable]
     public abstract class NetworkEvent {}
 }
