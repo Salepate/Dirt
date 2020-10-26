@@ -1,0 +1,14 @@
+{
+    "Components": [
+        "Position",
+        "Tracker",
+        "CullArea",
+        "GlobalSyncInfo"
+    ],
+    "Settings": {
+        "CullArea": {
+            "Radius": "40",
+            "Threshold": "5"
+        }
+    }
+}
