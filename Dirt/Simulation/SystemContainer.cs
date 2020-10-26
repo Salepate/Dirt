@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using Dirt.Game;
+using Dirt.Game.Content;
+using Dirt.Game.Managers;
+using Dirt.Simulation.Actor;
+using Dirt.Simulation.Actor.Components;
+using Dirt.Simulation.Context;
+using Dirt.Simulation.Model;
+using Dirt.Simulation.SystemHelper;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-
 using Stopwatch = System.Diagnostics.Stopwatch;
-using Console = Dirt.Log.Console;
 using Type = System.Type;
-
-using Dirt.Simulation.SystemHelper;
-using Dirt.Simulation.Actor;
-using Dirt.Game.Managers;
-using Dirt.Simulation.Model;
-using Dirt.Game.Content;
-using Dirt.Game;
-using Newtonsoft.Json.Linq;
-using Dirt.Simulation.Context;
-using Dirt.Simulation.Actor.Components;
 
 namespace Dirt.Simulation
 {
