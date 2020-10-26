@@ -46,11 +46,6 @@ namespace Dirt.Network.Managers
 
             serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader) }.Where(t => t != null));
             var validTypes = serializableTypes.OrderBy(t => t.FullName).ToList();
-
-            for(int i = 0; i < validTypes.Count; ++i)
-            {
-                Console.Message(validTypes[i].FullName);
-            }
             m_Serializer = new NetSerializer.Serializer(validTypes);
         }
 
