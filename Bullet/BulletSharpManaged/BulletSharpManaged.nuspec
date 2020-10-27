@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>1.0.0</version>
+    <title>$title$</title>
+    <authors>Andres Traks</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <description>Bullet CSharp</description>
+    <releaseNotes>First package version</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>Bullet</tags>
+  </metadata>
+</package>
