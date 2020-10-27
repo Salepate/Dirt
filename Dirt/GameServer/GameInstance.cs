@@ -15,6 +15,7 @@ using Dirt.Simulation.Builder;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
+using Dirt.Simulation.Utility;
 using Mud;
 using Mud.Server;
 using Mud.Server.Stream;
@@ -61,6 +62,8 @@ namespace Dirt.GameServer
             m_SharedContexts = new List<IContextItem>();
             NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             ValidAssemblies = Content.LoadContent<AssemblyCollection>(AssemblyCollection);
+            //@hack: Load missing assemblies before serializer 
+            AssemblyReflection.BuildTypeMap<ISimulationSystem>(ValidAssemblies.Assemblies);
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
             m_Plugin = plugin;
             m_Plugin.SetManagers(this);
