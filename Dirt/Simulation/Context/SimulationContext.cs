@@ -29,7 +29,7 @@ namespace Dirt.Simulation.Context
             }
             else
             {
-                throw new Exception($"Invalid Context Type {contextType.Name}");
+                throw new Exception($"Invalid Context Type {contextTypeName}");
             }
         }
 
