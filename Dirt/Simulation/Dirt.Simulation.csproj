@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actor\ActorFilter.cs" />
+    <Compile Include="Actor\ActorTuple.cs" />
     <Compile Include="Actor\Components\Destroy.cs" />
     <Compile Include="Builder\ActorBuilder.cs" />
     <Compile Include="Builder\ComponentInjector.cs" />

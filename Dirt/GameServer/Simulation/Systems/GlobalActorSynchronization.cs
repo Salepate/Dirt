@@ -22,7 +22,7 @@ namespace Dirt.Network.Simulations.Systems
         private bool m_StaticListChanged;
         private PlayerManager m_Players;
         private NetworkSerializer m_Serializer;
-        private List<System.Tuple<GameActor, NetInfo>> m_StaticActors;
+        private List<ActorTuple<NetInfo>> m_StaticActors;
         private List<int> m_Removed;
         public void Initialize(GameSimulation sim)
         {
