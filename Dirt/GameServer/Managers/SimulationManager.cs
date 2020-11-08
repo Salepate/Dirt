@@ -15,12 +15,15 @@ namespace Dirt.GameServer.Managers
         private int m_IDGenerator;
         private IContentProvider m_Content;
 
+        private List<SimulationProxy> m_ActiveSimulations;
+
         public IEnumerable<int> ActiveSimulations => m_SimulationMap.Keys;
         public SimulationManager(IContentProvider content)
         {
             m_SimulationMap = new Dictionary<int, SimulationProxy>();
             m_Content = content;
             m_IDGenerator = 0;
+            m_ActiveSimulations = new List<SimulationProxy>();
         }
 
         public GameSimulation GetSimulation(int id)
@@ -61,6 +64,12 @@ namespace Dirt.GameServer.Managers
             if (m_SimulationMap.ContainsKey(id))
             {
                 m_SimulationMap.Remove(id);
+
+                int activeIdx = m_ActiveSimulations.FindIndex(s => s.Simulation.ID == id);
+                if ( activeIdx != -1 )
+                {
+                    m_ActiveSimulations.RemoveAt(activeIdx);
+                }
             }
         }
 
@@ -87,6 +96,7 @@ namespace Dirt.GameServer.Managers
             SimulationProxy proxy = new SimulationProxy(gameSim, span);
 
             m_SimulationMap.Add(m_IDGenerator, proxy);
+            m_ActiveSimulations.Add(proxy);
             return m_IDGenerator++;
         }
 
@@ -102,13 +112,10 @@ namespace Dirt.GameServer.Managers
 
         public void Update(float deltaTime)
         {
-            foreach(KeyValuePair<int, SimulationProxy> kvp in m_SimulationMap)
+            int simCount = m_ActiveSimulations.Count;
+            for (int i = 0; i < simCount; ++i)
             {
-                SimulationProxy proxy = kvp.Value;
-                if ( proxy.Systems != null )
-                {
-                    proxy.Systems.UpdateSystems(proxy.Simulation, deltaTime);
-                }
+                m_ActiveSimulations[i].Systems.UpdateSystems(m_ActiveSimulations[i].Simulation, deltaTime);
             }
         }
     }
