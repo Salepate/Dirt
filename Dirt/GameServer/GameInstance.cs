@@ -42,7 +42,7 @@ namespace Dirt.GameServer
         private SimulationBuilder m_SimBuilder;
 
         public AssemblyCollection ValidAssemblies;
-        private List<IContextItem> m_SharedContexts;
+        public List<IContextItem> m_SharedContexts;
         private PlayerManager m_Players;
         private PluginInstance m_Plugin;
         //@TODO Move in space
@@ -65,8 +65,6 @@ namespace Dirt.GameServer
             //@hack: Load missing assemblies before serializer 
             AssemblyReflection.BuildTypeMap<ISimulationSystem>(ValidAssemblies.Assemblies);
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
-            m_Plugin = plugin;
-            m_Plugin.SetManagers(this);
             m_Players = new PlayerManager(netSerializer);
 
             //GameplayDB gameDB = new GameplayDB();
@@ -83,7 +81,8 @@ namespace Dirt.GameServer
             //m_SharedContexts.Add(playerActions);
 
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
-
+            m_Plugin = plugin;
+            m_Plugin.Initialize(m_SharedContexts, this);
             RegisterManager(new MetricsManager());
             RegisterManager(netSerializer);
             RegisterManager(m_Players);
@@ -123,7 +122,6 @@ namespace Dirt.GameServer
                 {
                     simID = Simulations.CreateSimulation(m_Plugin.DefaultSimulation, SimulationSpan.Persistent);
                     sim = Simulations.GetSimulation(simID);
-                    proxy.Simulation = -1;
                 }
 
                 MovePlayerToSimulation(proxy, simID);
@@ -145,6 +143,13 @@ namespace Dirt.GameServer
             }
 
             int oldSimIndex = proxy.Simulation;
+
+            if ( oldSimIndex == simID )
+            {
+                Console.Warning($"Player already in simulation {simID}, skipping request.");
+                return;
+
+            }
             proxy.Simulation = simID;
 
             // Notify previous simulation
@@ -269,6 +274,8 @@ namespace Dirt.GameServer
                 ISimulationSystem[] sys = m_SimBuilder.CreateSystems(simulation.Archetype, Content, true, out string contextName);
                 SystemContainer container = new SystemContainer(Content, this);
                 string contextContentFile = $"context.{contextName}";
+
+                Console.Message($"[Simulation {simID}] Context: {contextContentFile}");
 
                 if (Content.HasContent(contextContentFile))
                 {
