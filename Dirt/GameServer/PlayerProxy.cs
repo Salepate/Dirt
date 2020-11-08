@@ -14,6 +14,7 @@ namespace Dirt.GameServer
         {
             Player = player;
             Client = client;
+            Simulation = -1;
         }
     }
 }
