@@ -2,6 +2,7 @@
 using Dirt.Game.Content;
 using Dirt.Simulation;
 using Dirt.Simulation.Builder;
+using Dirt.Simulation.Context;
 using System;
 using System.Collections.Generic;
 
@@ -28,9 +29,19 @@ namespace Dirt.GameServer.Managers
 
         public GameSimulation GetSimulation(int id)
         {
-            if ( m_SimulationMap.TryGetValue(id, out SimulationProxy sim) )
+            if (m_SimulationMap.TryGetValue(id, out SimulationProxy sim))
             {
                 return sim.Simulation;
+            }
+
+            return null;
+        }
+
+        internal SimulationProxy GetSimulationProxy(int id)
+        {
+            if (m_SimulationMap.TryGetValue(id, out SimulationProxy sim))
+            {
+                return sim;
             }
 
             return null;
@@ -82,7 +93,7 @@ namespace Dirt.GameServer.Managers
             return proxy.Span;
         }
 
-        public int CreateSimulation(string archetypeName, SimulationSpan span)
+        public int CreateSimulation(string archetypeName, SimulationSpan span, IContextItem[] initialContext = null)
         {
             ActorBuilder builder = new ServerActorBuilder();
             builder.SetGameContent(m_Content);
@@ -93,7 +104,7 @@ namespace Dirt.GameServer.Managers
                 Archetype = archetypeName
             };
 
-            SimulationProxy proxy = new SimulationProxy(gameSim, span);
+            SimulationProxy proxy = new SimulationProxy(gameSim, span, initialContext);
 
             m_SimulationMap.Add(m_IDGenerator, proxy);
             m_ActiveSimulations.Add(proxy);

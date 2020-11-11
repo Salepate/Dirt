@@ -259,7 +259,8 @@ namespace Dirt.GameServer
         }
         private void WarmSimulation(int simID)
         {
-            GameSimulation simulation = Simulations.GetSimulation(simID);
+            SimulationProxy simProxy = Simulations.GetSimulationProxy(simID);
+            GameSimulation simulation = simProxy.Simulation;
 
             // Warm Up sim if not loaded
             if (!m_Groups.TryGetValue(simID, out StreamGroup simGroup))
@@ -283,6 +284,11 @@ namespace Dirt.GameServer
                 }
 
                 m_SharedContexts.ForEach(ctx => container.Context.SetContext(ctx));
+
+                for(int i = 0; i < simProxy.BaseContext.Length; ++i)
+                {
+                    container.Context.SetContext(simProxy.BaseContext[i]);
+                }
 
                 for (int i = 0; i < sys.Length; ++i)
                     container.AddSystem(sys[i]);

@@ -1,4 +1,5 @@
 ﻿using Dirt.Simulation;
+using Dirt.Simulation.Context;
 
 namespace Dirt.GameServer
 {
@@ -8,11 +9,18 @@ namespace Dirt.GameServer
         public SimulationSpan Span { get; private set; }
         public SystemContainer Systems { get; private set; }
 
+        public IContextItem[] BaseContext { get; private set; }
 
-        public SimulationProxy(GameSimulation simulation, SimulationSpan span)
+
+        public SimulationProxy(GameSimulation simulation, SimulationSpan span, IContextItem[] contextItems)
         {
             Simulation = simulation;
             Span = span;
+
+            if (contextItems == null)
+                BaseContext = new IContextItem[0];
+            else
+                BaseContext = contextItems;
         }
 
         public void AttachSystems(SystemContainer systems)
