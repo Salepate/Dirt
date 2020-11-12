@@ -82,13 +82,17 @@ namespace Dirt.GameServer
 
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             m_Plugin = plugin;
-            m_Plugin.Initialize(m_SharedContexts, this);
             RegisterManager(new MetricsManager());
             RegisterManager(netSerializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
 
             Console.Message($"{m_Plugin.PluginName} Started");
+        }
+
+        public void InitializePlugin()
+        {
+            m_Plugin.Initialize(m_SharedContexts, this);
         }
 
         public void UpdateInstance(float dt)

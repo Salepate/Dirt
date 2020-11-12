@@ -14,7 +14,7 @@ namespace Dirt.ServerApplication
     public class ServerApp
     {
         public MetricsManager Metrics { get; private set; }
-        public WebService Web { get; private set; }
+        public WebService WebService { get; private set; }
 
         private GameClock m_Clock;
         private RealTimeServer m_Server;
@@ -58,14 +58,12 @@ namespace Dirt.ServerApplication
             }
 
             m_Game = new GameInstance(m_Server.StreamGroups, contentPath, contentVersion, plugin);
-
-            Web = new WebService("127.0.0.1", GetConfig("WebServerPort"));
+            WebService = new WebService("127.0.0.1", GetConfig("WebServerPort"));
+            m_Game.RegisterManager(WebService);
+            m_Game.InitializePlugin();
             //Web.RegisterHandler(new PlayerMonitorRoute(m_Game));
             //Web.RegisterHandler(new SimulationRoute(m_Game));
-
-            Web.Start();
             Metrics = m_Game.GetManager<MetricsManager>();
-
             m_Clock = new GameClock();
         }
 
@@ -77,6 +75,7 @@ namespace Dirt.ServerApplication
             m_Clock.Reset();
             int lastTick = m_Clock.GetTick();
 
+            WebService.Start();
             m_Server.SetClientConsumer(m_Game);
             m_Server.Run();
 
