@@ -56,6 +56,11 @@ namespace Dirt.Game.Math
             return new float3() { x = l * r.x, y = l * r.y, z = l * r.z };
         }
 
+        public static float3 operator *(float3 l, float3 r)
+        {
+            return new float3() { x = l.x * r.x, y = l.y * r.y, z = l.z * r.z };
+        }
+
         public static float3 operator+(float3 l, float3 r)
         {
             return new float3() { x = l.x + r.x, y = l.y + r.y, z = l.z + r.z };
@@ -66,6 +71,11 @@ namespace Dirt.Game.Math
             return new float3() { x = l.x < r.x ? l.x : r.x, y = l.y < r.y ? l.y : r.y, z = l.z < r.z ? l.z : r.z };
         }
 
+        public static float dot(float3 l, float3 r)
+        {
+            float3 prod = l * r;
+            return prod.x + prod.y + prod.z;
+        }
         public static float3 max(float3 l, float3 r)
         {
             return new float3() { x = l.x > r.x ? l.x : r.x, y = l.y > r.y ? l.y : r.y, z = l.z > r.z ? l.z : r.z };
