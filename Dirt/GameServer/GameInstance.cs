@@ -177,15 +177,9 @@ namespace Dirt.GameServer
                 m_Players.RemovePlayer(player);
                 m_Groups[proxy.Simulation].UnregisterClient(client);
 
-                //@TODO Move in space
-                //m_Sessions.DestroySession(player.Number);
-
-                if ( m_Groups[proxy.Simulation].Clients.Count == 0 )
+                if ( m_Groups[proxy.Simulation].Clients.Count == 0 && Simulations.GetSpan(proxy.Simulation) == SimulationSpan.Temporary)
                 {
-                    if (Simulations.GetSpan(proxy.Simulation) == SimulationSpan.Temporary)
-                    {
-                        DestroySimulation(proxy.Simulation);
-                    }
+                    DestroySimulation(proxy.Simulation);
                 }
                 else
                 {
@@ -193,7 +187,6 @@ namespace Dirt.GameServer
                     var playerEvent = new PlayerEvent(client.Number, PlayerEvent.LeftSimulation);
                     playerSim.Events.Enqueue(playerEvent);
                 }
-
             }
         }
 
