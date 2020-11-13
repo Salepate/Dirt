@@ -8,6 +8,8 @@ namespace Dirt.Game.Content
         object LoadContent(string contentName, System.Type contentType);
         JObject LoadContent(string contentName);
         bool HasContent(string contentName);
+
+        void LoadGameContent(string manifestName);
         GameContent GetContentMap();
     }
 }

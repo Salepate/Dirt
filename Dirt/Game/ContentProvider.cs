@@ -12,6 +12,7 @@ namespace Dirt.Game
 {
     public class ContentProvider : IContentProvider
     {
+        public string LoadedManifestName { get; private set; }
         private GameContent m_RawMap;
         private Dictionary<string, object> m_ContentBufferMap;
         private Dictionary<string, string> m_ContentMap;
@@ -19,6 +20,8 @@ namespace Dirt.Game
         private DirectoryInfo m_ContentDirectory;
         public ContentProvider(string contentPath)
         {
+            LoadedManifestName = string.Empty;
+
             m_ContentDirectory = new DirectoryInfo(contentPath);
             m_ContentMap = new Dictionary<string, string>();
             m_ContentBufferMap = new Dictionary<string, object>();
@@ -64,6 +67,7 @@ namespace Dirt.Game
 
         public void LoadGameContent(string contentManifest)
         {
+            LoadedManifestName = contentManifest;
             string manifestPath = Path.Combine(m_ContentDirectory.FullName, $"{contentManifest}.json");
             SetContent(DeserializeContent<GameContent>(manifestPath));
         }

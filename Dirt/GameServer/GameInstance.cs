@@ -281,6 +281,8 @@ namespace Dirt.GameServer
                     container.Context.SetContext(simProxy.BaseContext[i]);
                 }
 
+                m_Plugin.OnSimulationCreated(simulation, container);
+
                 for (int i = 0; i < sys.Length; ++i)
                     container.AddSystem(sys[i]);
 
