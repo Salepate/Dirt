@@ -16,10 +16,12 @@ namespace Dirt.Simulation.Utility
 
 
             loadedAsses = loadedAsses.Concat(missingAssemblies.Select(assName => AppDomain.CurrentDomain.Load(assName)));
+
             for(int i = 0; i < missingAssemblies.Count(); ++i)
             {
-                Dirt.Log.Console.Message($"Loadding Assembly {missingAssemblies.ElementAt(i)}");
+                Log.Console.Message($"Loading Assembly {missingAssemblies.ElementAt(i)}");
             }
+
             IEnumerable<Assembly> gameAssemblies = loadedAsses.Where(ass => assemblies.Contains(ass.FullName));
             List<Type> systemTypes = gameAssemblies.SelectMany(ass =>
             {
