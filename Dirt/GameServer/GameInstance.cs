@@ -67,19 +67,6 @@ namespace Dirt.GameServer
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
             m_Players = new PlayerManager(netSerializer);
 
-            //GameplayDB gameDB = new GameplayDB();
-            //gameDB.PopulateFromContent(Content);
-            //m_SharedContexts.Add(gameDB);
-
-            //@TODO Move in space
-            //m_Sessions = new PlayerSession();
-            //m_SharedContexts.Add(m_Sessions);
-
-
-            //ActionContext playerActions = new ActionContext();
-            //RegisterPlayerActions(playerActions);
-            //m_SharedContexts.Add(playerActions);
-
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             m_Plugin = plugin;
             RegisterManager(new MetricsManager());
