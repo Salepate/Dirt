@@ -1,6 +1,8 @@
 {
     "Assemblies": [
+        "Dirt.Game, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
         "Dirt.Simulation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-        "Dirt.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        "Dirt.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Mud.Framework, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"
     ]
 }

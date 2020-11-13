@@ -1,5 +1,7 @@
 {
     "Packs": [
+        "common",
+        "network"
     ],
     "Context": "default"
 }
