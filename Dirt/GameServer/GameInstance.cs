@@ -47,6 +47,8 @@ namespace Dirt.GameServer
         private PluginInstance m_Plugin;
         //@TODO Move in space
         //private PlayerSession m_Sessions;
+
+        public Action<GameClient, MudMessage> CustomMessage;
         public GameInstance(StreamGroupManager groupManager, string contentPath, string contentManifest, PluginInstance plugin)
         {
             Console.Assert(plugin != null, "No plugin specified");
@@ -212,6 +214,7 @@ namespace Dirt.GameServer
                     }
                     break;
                 default:
+                    CustomMessage?.Invoke(client, message);
                     break;
             }
         }
