@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Dirt.Game.Math
 {
@@ -24,9 +25,36 @@ namespace Dirt.Game.Math
 		{
 			init_genrand((uint)DateTime.Now.Millisecond);
 		}
-		public MersenneTwister(int seed)
+		public MersenneTwister(uint seed)
 		{
-			init_genrand((uint)seed);
+			init_genrand(seed);
+		}
+
+		public void CopyState(out byte[] state)
+        {
+			state = new byte[4 + 4 + N * 4];
+			int n = N;
+
+			state[0] = (byte)mti;
+			state[1] = (byte)(mti >> 8);
+			state[2] = (byte)(mti >> 0x10);
+			state[3] = (byte)(mti >> 0x18);
+
+			state[4] = (byte)n;
+			state[5] = (byte)(n >> 8);
+			state[6] = (byte)(n >> 0x10);
+			state[7] = (byte)(n >> 0x18);
+
+			Buffer.BlockCopy(mt, 0, state, 8, N * 4);
+        }
+
+		public void SetState(byte[] state)
+		{
+			mti = BitConverter.ToInt32(state, 0);
+			int n = BitConverter.ToInt32(state, 4);
+			if (n != N)
+				throw new Exception($"Invalid RNG State size: {N} expected, input was {n}");
+			Buffer.BlockCopy(state, 8, mt, 0, N * 4);
 		}
 
 		public MersenneTwister(int[] init)
