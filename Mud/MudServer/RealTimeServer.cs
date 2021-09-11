@@ -25,6 +25,7 @@ namespace Mud.Server
         private Thread m_ReceiveThread;
         private IClientConsumer m_ClientConsumer;
 
+        public const int SIO_UDP_CONNRESET = -1744830452;
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
             m_ClientConsumer = clientConsumer;
@@ -46,6 +47,7 @@ namespace Mud.Server
         {
             Console.Message($"Mud Server starting on port {m_ServerPort}");
             m_Socket = new UdpClient(m_ServerPort);
+            m_Socket.Client.IOControl(SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null); // handle icmp
             // Start Receive Thread
             m_ReceiveThread = new Thread(new ThreadStart(ReceiveThread));
             m_ReceiveThread.IsBackground = true;
