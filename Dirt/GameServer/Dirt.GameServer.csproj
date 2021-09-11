@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameInstance.cs" />
+    <Compile Include="Managers\GameDataManager.cs" />
     <Compile Include="Managers\PlayerManager.cs" />
     <Compile Include="Managers\SimulationManager.cs" />
     <Compile Include="Managers\WebService.cs" />
