@@ -37,7 +37,7 @@ namespace Dirt.GameServer.Managers
             return null;
         }
 
-        internal SimulationProxy GetSimulationProxy(int id)
+        public SimulationProxy GetSimulationProxy(int id)
         {
             if (m_SimulationMap.TryGetValue(id, out SimulationProxy sim))
             {
