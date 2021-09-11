@@ -12,15 +12,16 @@ namespace Dirt.Game.Managers
         public System.Action<string, int> MetricEvent;
         public delegate void MetricObjectEventDelegate(string hash, MetricObject obj);
 
-        private Dictionary<string, int> m_Metrics;
-        private Dictionary<string, MetricObject> m_Objects;
+        public Dictionary<string, int> IntegerMetrics { get; private set; }
+        public Dictionary<string, MetricObject> ObjectMetrics { get; private set; }
+
         private Dictionary<Type, MetricObjectEventDelegate> m_Listeners;
         private Dictionary<object, MetricObjectEventDelegate> m_LambdaMap;
 
         public MetricsManager()
         {
-            m_Metrics = new Dictionary<string, int>();
-            m_Objects = new Dictionary<string, MetricObject>();
+            IntegerMetrics = new Dictionary<string, int>();
+            ObjectMetrics = new Dictionary<string, MetricObject>();
             m_Listeners = new Dictionary<Type, MetricObjectEventDelegate>();
             m_LambdaMap = new Dictionary<object, MetricObjectEventDelegate>();
         }
@@ -49,7 +50,7 @@ namespace Dirt.Game.Managers
 
         public void Record(string hash, MetricObject data)
         {
-            m_Objects[hash] = data;
+            ObjectMetrics[hash] = data;
             if (m_Listeners.TryGetValue(data.GetType(), out MetricObjectEventDelegate lambda))
             {
                 lambda(hash, data);
@@ -58,7 +59,7 @@ namespace Dirt.Game.Managers
 
         public void Record<T>(string hash, T data) where T : MetricObject
         {
-            m_Objects[hash] = data;
+            ObjectMetrics[hash] = data;
             if (m_Listeners.TryGetValue(typeof(T), out MetricObjectEventDelegate lambda))
             {
                 lambda(hash, data);
@@ -67,11 +68,11 @@ namespace Dirt.Game.Managers
 
         public void Record(string hash, int value, bool deltaOnly = true)
         {
-            if (!m_Metrics.TryGetValue(hash, out int oldValue) || oldValue != value || !deltaOnly)
+            if (!IntegerMetrics.TryGetValue(hash, out int oldValue) || oldValue != value || !deltaOnly)
             {
                 MetricEvent?.Invoke(hash, value);
             }
-            m_Metrics[hash] = value;
+            IntegerMetrics[hash] = value;
         }
 
         public void Update(float deltaTime)
