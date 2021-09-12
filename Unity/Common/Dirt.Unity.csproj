@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AC587D14-41C5-4E8B-B720-08053E1DC57C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dirt</RootNamespace>
+    <AssemblyName>Dirt.Unity</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dirt.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirt.Game.0.0.9\lib\net461\Dirt.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="Dirt.Log, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirt.Log.1.0.0\lib\net461\Dirt.Log.dll</HintPath>
+    </Reference>
+    <Reference Include="Dirt.Simulation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirt.Simulation.1.0.0\lib\net461\Dirt.Simulation.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\2019.4.13f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Dirt\DirtDebug.cs" />
+    <Compile Include="Dirt\DirtMode.cs" />
+    <Compile Include="Dirt\DirtStarter.cs" />
+    <Compile Include="Dirt\DirtSystem.cs" />
+    <Compile Include="Dirt\DirtSystemContent.cs" />
+    <Compile Include="Dirt\EnumFlagAttribute.cs" />
+    <Compile Include="Dirt\FSM\FSM.cs" />
+    <Compile Include="Dirt\FSM\State.cs" />
+    <Compile Include="Dirt\GameBuild.cs" />
+    <Compile Include="Dirt\Imgui\QuickVariable.cs" />
+    <Compile Include="Dirt\Model\PrefabDatabase.cs" />
+    <Compile Include="Dirt\Model\ViewDatabase.cs" />
+    <Compile Include="Dirt\Model\ViewDefinition.cs" />
+    <Compile Include="Dirt\ModeStates\BootState.cs" />
+    <Compile Include="Dirt\ModeStates\LoadState.cs" />
+    <Compile Include="Dirt\ModeStates\RunState.cs" />
+    <Compile Include="Dirt\PoolManager.cs" />
+    <Compile Include="Dirt\PrefabPoolManager.cs" />
+    <Compile Include="Dirt\Simulation\UnityExtension.cs" />
+    <Compile Include="Dirt\Simulation\View\GenericView.cs" />
+    <Compile Include="Dirt\Simulation\View\ISimulationView.cs" />
+    <Compile Include="Dirt\SystemAttributes\BaseContentAttribute.cs" />
+    <Compile Include="Dirt\SystemReflection\ContentMeta.cs" />
+    <Compile Include="Dirt\SystemReflection\DirtSystemMeta.cs" />
+    <Compile Include="Dirt\Systems\ContentSystem.cs" />
+    <Compile Include="Dirt\Systems\GameObjectService.cs" />
+    <Compile Include="Dirt\Systems\PrefabService.cs" />
+    <Compile Include="Dirt\Systems\SimulationSystem.cs" />
+    <Compile Include="Dirt\Systems\SimulationViewDispatcher.cs" />
+    <Compile Include="Dirt\SytemInterfaces\IContentSystem.cs" />
+    <Compile Include="Dirt\Utility\AssemblyUtility.cs" />
+    <Compile Include="Dirt\Utility\IEnumerableExtensions.cs" />
+    <Compile Include="Dirt\Utility\SimpleHash.cs" />
+    <Compile Include="Dirt\Utility\SmallClock.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Logger\Dirt.Unity.Logger.csproj">
+      <Project>{e5f6e6fc-47cc-4bac-932d-e1a13aea606c}</Project>
+      <Name>Dirt.Unity.Logger</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
