@@ -74,7 +74,6 @@ namespace Mud.DirtSystems
                             {
                                 ComponentFieldInfo field = netBhv.Fields[i];
                                 field.Owner = field.Owner && isOwner;
-                                ;
                                 netBhv.Fields[i] = field;
                             }
                         }

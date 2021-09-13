@@ -85,8 +85,6 @@ namespace Dirt.Systems
 
         public void AddActor(GameActor actor)
         {
-            //@TODO: Remove this and deserialize into existing actor
-            //@HACK: builderActor is only created to get an unique id
             Simulation.Builder.CreateActor(actor.Components);
         }
 
