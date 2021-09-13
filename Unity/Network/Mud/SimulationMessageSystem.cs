@@ -15,6 +15,8 @@ namespace Mud.DirtSystems
 {
     public class SimulationMessageSystem : DirtSystem, IMessageConsumer
     {
+        private const string SettingsContentName = "settings.netserial";
+
         private SimulationSystem m_Simulation;
         private NetworkSerializer m_Serializer;
         private ServerProxy m_Proxy;
@@ -24,7 +26,9 @@ namespace Mud.DirtSystems
         {
             mode.FindSystem<MudConnector>().SetConsumer(this);
             m_Simulation = mode.FindSystem<SimulationSystem>();
-            m_Serializer = m_Simulation.GetManager<NetworkSerializer>();
+            NetworkTypes serializableAss = mode.FindSystem<ContentSystem>().Content.LoadContent<NetworkTypes>(SettingsContentName);
+            m_Serializer = new NetworkSerializer(serializableAss);
+            m_Simulation.RegisterManager(m_Serializer);
             m_EventDispatcher = mode.FindSystem<NetworkEventDispatcher>();
             m_Proxy = m_Simulation.GetManager<ServerProxy>();
         }

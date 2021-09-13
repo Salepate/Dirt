@@ -37,6 +37,11 @@ namespace Mud.DirtSystems
         public override void Initialize(DirtMode mode)
         {
             m_Messages = new Queue<MudMessage>();
+
+            if ( mode.HasSystem<SimulationSystem>())
+            {
+                mode.FindSystem<SimulationSystem>().RegisterManager(new ServerProxy(this));
+            }
             Connected = false;
         }
 
