@@ -16,7 +16,7 @@ namespace Dirt.Systems
     {
         private const string AssemblyCollection = "assemblies.client";
         private const string ClientSimulationName = "clientsim.default";
-        private const string SettingsContentName = "settings.netserial";
+
         public GameSimulation Simulation { get; private set; }
         private SystemContainer m_Systems;
 
