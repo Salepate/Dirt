@@ -9,3 +9,7 @@ Unity/*/obj
 Bullet/*/bin
 Bullet/*/obj
 packages/
+
+# CLI
+CLI/*/bin
+CLI/*/obj
