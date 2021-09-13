@@ -244,7 +244,7 @@ namespace Dirt.GameServer
             m_Groups.Remove(simID);
             m_GroupManager.DestroyGroup(group);
         }
-        private void WarmSimulation(int simID)
+        public void WarmSimulation(int simID)
         {
             SimulationProxy simProxy = Simulations.GetSimulationProxy(simID);
             GameSimulation simulation = simProxy.Simulation;
