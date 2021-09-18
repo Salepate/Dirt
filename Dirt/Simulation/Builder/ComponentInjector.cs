@@ -37,12 +37,53 @@ namespace Dirt.Simulation.Builder
 
         public void Inject(object obj, Dictionary<string, string> compParams)
         {
-            foreach(KeyValuePair<string, string> param in compParams)
+            foreach (KeyValuePair<string, string> param in compParams)
             {
-                if ( m_InjectableFields.TryGetValue(param.Key, out FieldInfo field))
+                if (m_InjectableFields.TryGetValue(param.Key, out FieldInfo field))
                 {
                     InjectField(obj, field, param.Value);
                 }
+            }
+        }
+
+        public void Inject<C>(ref C obj, Dictionary<string, string> compParams)
+        {
+            foreach (KeyValuePair<string, string> param in compParams)
+            {
+                if (m_InjectableFields.TryGetValue(param.Key, out FieldInfo field))
+                {
+                    InjectField<C>(ref obj, field, param.Value);
+                }
+            }
+        }
+
+        private void InjectField<C>(ref C obj, FieldInfo field, string valueStr)
+        {
+            Type fieldType = field.FieldType;
+
+            if (fieldType == typeof(string))
+            {
+                field.SetValue(obj, valueStr);
+            }
+            else if (fieldType == typeof(int))
+            {
+                field.SetValue(obj, int.Parse(valueStr, m_ParseCultureInfo));
+            }
+            else if (fieldType == typeof(float))
+            {
+                field.SetValue(obj, float.Parse(valueStr, m_ParseCultureInfo));
+            }
+            else if (fieldType == typeof(bool))
+            {
+                field.SetValue(obj, bool.Parse(valueStr));
+            }
+            else if (fieldType.IsEnum)
+            {
+                field.SetValue(obj, Enum.Parse(fieldType, valueStr));
+            }
+            else
+            {
+                Console.Message($"Unsupported Injection ({field.FieldType.Name})");
             }
         }
 

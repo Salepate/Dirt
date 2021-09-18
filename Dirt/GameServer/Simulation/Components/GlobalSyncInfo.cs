@@ -4,9 +4,14 @@ using System.Collections.Generic;
 namespace Dirt.GameServer.Simulation.Components
 {
     [System.Serializable]
-    public class GlobalSyncInfo : IComponent
+    public struct GlobalSyncInfo : IComponentAssign
     {
         public int Client;
-        public List<int> SynchronizedActors = new List<int>();
+        public List<int> SynchronizedActors;
+
+        public void Assign()
+        {
+            SynchronizedActors = new List<int>();
+        }
     }
 }

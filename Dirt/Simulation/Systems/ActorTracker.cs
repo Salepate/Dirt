@@ -11,26 +11,27 @@ namespace Dirt.Simulation.Systems
         {
         }
 
-        public void UpdateActors(List<GameActor> actors, float deltaTime)
+        public void UpdateActors(ActorFilter filter, float deltaTime)
         {
-            var trackers = actors.GetActors<Position, Tracker>();
-            var targets = actors.GetActors<Position>();
+            var trackers = filter.GetAll<Position, Tracker>();
 
-            trackers.ForEach(tracker =>
+            foreach(ActorTuple<Position, Tracker> tracker in trackers)
             {
-                if (tracker.Item3.TargetActor != -1)
+                ref Tracker trackerData = ref tracker.GetC2();
+                ref Position trackerPos = ref tracker.GetC1();
+                if (trackerData.TargetActor != -1)
                 {
-                    var target = targets.Find(t => t.Item1.ID == tracker.Item3.TargetActor);
-                    if (target == null)
+                    if ( filter.TryGetActor(trackerData.TargetActor, out GameActor targetActor))
                     {
-                        tracker.Item3.TargetActor = -1;
+                        Position pos = filter.Get<Position>(targetActor);
+                        trackerPos.Origin = pos.Origin;
                     }
                     else
                     {
-                        tracker.Item2.Origin = target.Item2.Origin;
+                        trackerData.TargetActor = -1;
                     }
                 }
-            });
+            }
         }
     }
 }

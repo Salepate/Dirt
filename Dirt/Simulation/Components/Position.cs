@@ -4,7 +4,7 @@ using Dirt.Simulation;
 namespace Dirt.Simulation.Components
 {
     [System.Serializable]
-    public class Position : IComponent
+    public struct Position : IComponent
     {
         public float3 Origin;
     }

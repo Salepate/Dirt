@@ -38,9 +38,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actor\ActorFilterExtension.cs" />
     <Compile Include="Actor\ActorFilter.cs" />
     <Compile Include="Actor\ActorTuple.cs" />
+    <Compile Include="Actor\ComponentArray.cs" />
     <Compile Include="Actor\Components\Destroy.cs" />
+    <Compile Include="Actor\SimulationPool.cs" />
     <Compile Include="Builder\ActorBuilder.cs" />
     <Compile Include="Builder\ComponentInjector.cs" />
     <Compile Include="Builder\SimulationBuilder.cs" />
@@ -49,6 +52,7 @@
     <Compile Include="Context\IContextItem.cs" />
     <Compile Include="Context\IContextReader.cs" />
     <Compile Include="Events\ActorEvent.cs" />
+    <Compile Include="Exceptions\ComponentExceptions.cs" />
     <Compile Include="GameSimulation.cs" />
     <Compile Include="GameWorld.cs" />
     <Compile Include="GameActor.cs" />

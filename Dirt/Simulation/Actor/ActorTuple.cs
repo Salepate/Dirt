@@ -1,38 +1,109 @@
 ﻿namespace Dirt.Simulation.Actor
 {
-    public class ActorTuple<C1> : System.Tuple<GameActor, C1> 
-        where C1 : IComponent
-    {
-        public GameActor Actor => Item1;
-        public int ActorID => Item1.ID;
-        public C1 Comp1 => Item2;
 
-        public ActorTuple(GameActor actor, C1 comp1) : base(actor, comp1) { }
+    public struct ActorTuple<C1> 
+        where C1 : new()
+    {
+        public GameActor Actor { get; private set; }
+
+        private ComponentArray<C1> m_C1Array;
+        private int m_C1Index;
+        public ref C1 Get() => ref m_C1Array.Components[m_C1Index];
+        public ActorTuple(GameActor actor)
+        {
+            Actor = actor;
+            m_C1Array = null;
+            m_C1Index = -1;
+        }
+
+        public void SetC1(ComponentArray<C1> comps, int idx)
+        {
+            m_C1Array = comps;
+            m_C1Index = idx;
+        }
     }
 
-    public class ActorTuple<C1, C2> : System.Tuple<GameActor, C1, C2>
-        where C1 : IComponent
-        where C2 : IComponent
+    public struct ActorTuple<C1, C2>
+    where C1 : new()
+    where C2 : new()
     {
-        public GameActor Actor => Item1;
-        public int ActorID => Item1.ID;
-        public C1 Comp1 => Item2;
-        public C2 Comp2 => Item3;
+        public GameActor Actor { get; private set; }
 
-        public ActorTuple(GameActor actor, C1 comp1, C2 comp2) : base(actor, comp1, comp2) { }
+        private ComponentArray<C1> m_C1Array;
+        private int m_C1Index;
+
+        private ComponentArray<C2> m_C2Array;
+        private int m_C2Index;
+        public ref C1 GetC1() => ref m_C1Array.Components[m_C1Index];
+        public ref C2 GetC2() => ref m_C2Array.Components[m_C2Index];
+        public ActorTuple(GameActor actor)
+        {
+            Actor = actor;
+            m_C1Array = null;
+            m_C1Index = -1;
+            m_C2Array = null;
+            m_C2Index = -1;
+        }
+
+        public void SetC1(ComponentArray<C1> comps, int idx)
+        {
+            m_C1Array = comps;
+            m_C1Index = idx;
+        }
+
+        public void SetC2(ComponentArray<C2> comps, int idx)
+        {
+            m_C2Array = comps;
+            m_C2Index = idx;
+        }
     }
 
-    public class ActorTuple<C1, C2, C3> : System.Tuple<GameActor, C1, C2, C3>
-        where C1 : IComponent
-        where C2 : IComponent
-        where C3 : IComponent
+    public struct ActorTuple<C1, C2, C3>
+      where C1 : new()
+      where C2 : new()
+      where C3 : new()
     {
-        public GameActor Actor => Item1;
-        public int ActorID => Item1.ID;
-        public C1 Comp1 => Item2;
-        public C2 Comp2 => Item3;
-        public C3 Comp3 => Item4;
+        public GameActor Actor { get; private set; }
 
-        public ActorTuple(GameActor actor, C1 comp1, C2 comp2, C3 comp3) : base(actor, comp1, comp2, comp3) { }
+        private ComponentArray<C1> m_C1Array;
+        private int m_C1Index;
+
+        private ComponentArray<C2> m_C2Array;
+        private int m_C2Index;
+
+        private ComponentArray<C3> m_C3Array;
+        private int m_C3Index;
+        public ref C1 GetC1() => ref m_C1Array.Components[m_C1Index];
+        public ref C2 GetC2() => ref m_C2Array.Components[m_C2Index];
+        public ref C3 GetC3() => ref m_C3Array.Components[m_C3Index];
+        public ActorTuple(GameActor actor)
+        {
+            Actor = actor;
+            m_C1Array = null;
+            m_C1Index = -1;
+            m_C2Array = null;
+            m_C2Index = -1;
+            m_C3Array = null;
+            m_C3Index = -1;
+        }
+
+        public void SetC1(ComponentArray<C1> comps, int idx)
+        {
+            m_C1Array = comps;
+            m_C1Index = idx;
+        }
+
+        public void SetC2(ComponentArray<C2> comps, int idx)
+        {
+            m_C2Array = comps;
+            m_C2Index = idx;
+        }
+
+        public void SetC3(ComponentArray<C3> comps, int idx)
+        {
+            m_C3Array = comps;
+            m_C3Index = idx;
+        }
     }
+
 }

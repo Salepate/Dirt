@@ -12,9 +12,11 @@ namespace Dirt.Simulation
         [NonSerialized]
         public int Version = 0;
 
+        // New ECS
+        public int[] Components;
+        // Old ECS
         public System.Type[] ComponentTypes { get { return m_Types; } }
-        public IComponent[] Components;
-
+        //public IComponent[] Components;
         public int ComponentCount { get; private set; }
 
         [NonSerialized]
@@ -24,8 +26,10 @@ namespace Dirt.Simulation
         {
             InternalID = id;
             ComponentCount = 0;
-            Components = new IComponent[MaxComponents];
             m_Types = new Type[MaxComponents];
+            Components = new int[MaxComponents];
+            for (int i = 0; i < MaxComponents; ++i)
+                Components[i] = -1;
         }
 
         internal void SetVersion(int version)
@@ -33,53 +37,49 @@ namespace Dirt.Simulation
             Version = version;
         }
 
-        public void AddComponent<T>(T comp) where T: IComponent
+        public void AssignComponent<C>(int index)
         {
             if (ComponentCount >= MaxComponents)
                 throw new Exception($"Component limit exceeded {MaxComponents}");
 
             int idx = GetFreeSlot();
-            Components[idx] = comp;
-            ComponentTypes[idx] = typeof(T);
+            Components[idx] = index;
+            ComponentTypes[idx] = typeof(C);
             ComponentCount++;
         }
 
-        public void AddComponent(IComponent comp)
+        public void AssignComponent(Type compType, int index)
         {
             if (ComponentCount >= MaxComponents)
-                throw new System.Exception($"Component limit exceeded {MaxComponents}");
+                throw new Exception($"Component limit exceeded {MaxComponents}");
 
             int idx = GetFreeSlot();
-            Components[idx] = comp;
-            ComponentTypes[idx] = comp.GetType();
+            Components[idx] = index;
+            ComponentTypes[idx] = compType;
             ComponentCount++;
         }
 
-        public int GetComponentIndex<T>() where T:IComponent
+        public void UnassignComponent<C>()
+        {
+            int compIndex = GetComponentIndex<C>();
+            if (compIndex != -1)
+            {
+                ComponentTypes[compIndex] = null;
+                Components[compIndex] = -1;
+                ComponentCount--;
+            }
+        }
+        
+        public int GetComponentIndex<C>()
         {
             for (int i = 0; i < ComponentCount; ++i)
             {
-                if (ComponentTypes[i] == typeof(T))
+                if (ComponentTypes[i] == typeof(C))
                     return i;
             }
             return -1;
         }
-        public T GetComponent<T>() where T: IComponent
-        {
-            for(int i = 0; i < ComponentCount; ++i)
-            {
-                if (ComponentTypes[i] == typeof(T))
-                    return (T)Components[i];
-            }
-            throw new System.Exception($"Component is missing {typeof(T).Name}");
-        }
-
-        public void SetComponent(IComponent component, int idx)
-        {
-            Components[idx] = component;
-            m_Types[idx] = component.GetType();
-        }
-
+    
         public void CacheActor()
         {
             int compCount = 0;
@@ -89,7 +89,7 @@ namespace Dirt.Simulation
 
             for(int i = 0; i < MaxComponents; ++i)
             {
-                if ( Components[i] != null )
+                if ( Components[i] != -1 )
                 {
                     ++compCount;
                     m_Types[i] = Components[i].GetType();
@@ -98,20 +98,11 @@ namespace Dirt.Simulation
             ComponentCount = compCount;
         }
 
-        public void RemoveComponent<T>() where T: IComponent
-        {
-            int idx = GetComponentIndex<T>();
-            if ( idx != -1 )
-            {
-                Components[idx] = null;
-                m_Types[idx] = null;
-            }
-        }
         public void ResetActor()
         {
             for(int i = 0; i < ComponentCount; ++i)
             {
-                Components[i] = null;
+                Components[i] = -1;
                 m_Types[i] = null;
             }
             ComponentCount = 0;
@@ -120,9 +111,9 @@ namespace Dirt.Simulation
         // helpers
         private int GetFreeSlot()
         {
-            for(int i = 0; i < ComponentCount; ++i)
+            for (int i = 0; i < ComponentCount; ++i)
             {
-                if (Components[i] == null)
+                if (Components[i] == -1)
                     return i;
             }
             return ComponentCount;

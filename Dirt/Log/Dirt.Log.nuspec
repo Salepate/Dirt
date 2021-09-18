@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package >
   <metadata>
-    <id>$id$</id>
+    <id>Dirt.Log</id>
     <version>1.0.0</version>
-    <title>$title$</title>
+    <title>Dirt Logger</title>
     <authors>Salepate</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>

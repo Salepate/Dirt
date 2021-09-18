@@ -1,87 +1,92 @@
-﻿using System;
+﻿using Dirt.Simulation.Builder;
+using Dirt.Simulation.Exceptions;
+using System;
 using System.Collections.Generic;
 
 namespace Dirt.Simulation.Actor
 {
-    public static class ActorFilter
+    public class ActorFilter
     {
+        public GameSimulation Simulation { get; private set; }
+        public List<GameActor> Actors { get;  private set; }
+        private SimulationPool m_Components;
+        public ActorFilter(GameSimulation sim)
+        {
+            Simulation = sim;
+            m_Components = sim.Builder.Components;
+            Actors = sim.World.Actors;
+        }
+
         public delegate bool ActorMatch<T>(T data) where T : IComponent;
-        public static List<ActorTuple<C1>> GetActors<C1>(this List<GameActor> gameActors) where C1 : IComponent
-        {
-            var results = new List<ActorTuple<C1>>();
-            gameActors.ForEach(actor =>
-            {
-                var compIdx = actor.GetComponentIndex<C1>();
-                if (compIdx != -1)
-                    results.Add(new ActorTuple<C1>(actor, (C1)actor.Components[compIdx]));
 
-            });
-            return results;
+        public ref C Get<C>(GameActor actor) where C: new()
+        {
+            int compIdx = actor.GetComponentIndex<C>();
+            if (compIdx != -1)
+            {
+                ComponentArray<C> pool = m_Components.GetPool<C>();
+                return ref pool.Components[compIdx];
+            }
+
+            throw new ComponentNotFoundException(typeof(C));
         }
 
-        public static List<ActorTuple<C1, C2>> GetActors<C1, C2>(this List<GameActor> gameActors) 
-            where C1 : IComponent 
-            where C2 : IComponent
+
+        public bool TryGetActor(int actorID, out GameActor actor)
         {
-            var results = new List<ActorTuple<C1, C2>>();
-            gameActors.ForEach(actor =>
+            actor = null;
+            for (int i = 0; i < Actors.Count; ++i)
             {
-                var compIdx = actor.GetComponentIndex<C1>();
-                var compIdx2 = actor.GetComponentIndex<C2>();
-                if (compIdx != -1 && compIdx2 != -1)
-                    results.Add(new ActorTuple<C1, C2>(actor, (C1)actor.Components[compIdx], (C2) actor.Components[compIdx2]));
-
-            });
-            return results;
-        }
-
-        public static List<ActorTuple<C1, C2, C3>> GetActors<C1, C2, C3>(this List<GameActor> gameActors)
-            where C1 : IComponent
-            where C2 : IComponent
-            where C3 : IComponent
-        {
-            var results = new List<ActorTuple<C1, C2, C3>>();
-            gameActors.ForEach(actor =>
-            {
-                var compIdx = actor.GetComponentIndex<C1>();
-                var compIdx2 = actor.GetComponentIndex<C2>();
-                var compIdx3 = actor.GetComponentIndex<C3>();
-                if (compIdx != -1 && compIdx2 != -1 && compIdx3 != -1)
-                    results.Add(new ActorTuple<C1, C2, C3>(actor, (C1)actor.Components[compIdx], (C2)actor.Components[compIdx2], (C3)actor.Components[compIdx3]));
-
-            });
-            return results;
-        }
-
-        public static List<ActorTuple<C1>> GetActorsMatching<C1>(this List<GameActor> gameActors, ActorMatch<C1> matchCondition) where C1 : IComponent
-        {
-            var results = new List<ActorTuple<C1>>();
-            gameActors.ForEach(actor =>
-            {
-                var compIdx = actor.GetComponentIndex<C1>();
-                if (compIdx != -1)
+                if (Actors[i].ID == actorID)
                 {
-                    C1 comp = (C1)actor.Components[compIdx];
-                    if (matchCondition(comp))
-                        results.Add(new ActorTuple<C1>(actor, comp));
+                    actor = Actors[i];
+                    return true;
                 }
-
-            });
-            return results;
+            }
+            return false;
         }
 
-        public static HashSet<GameActor> ExcludeActors<C1>(this List<GameActor> gameActors) where C1 : IComponent
+        public List<ActorTuple<C1>> GetAll<C1>() where C1 : new()
         {
-            var results = new HashSet<GameActor>();
-
-            gameActors.ForEach(actor =>
+            List<ActorTuple<C1>> res = new List<ActorTuple<C1>>();
+            ComponentArray<C1> pool = m_Components.GetPool<C1>();
+            for (int i = 0; i < pool.Actors.Length; ++i)
             {
-                var compIdx = actor.GetComponentIndex<C1>();
-                if (compIdx == -1)
-                    results.Add(actor);
+                int actorIndex = pool.Actors[i];
+                if (actorIndex != -1)
+                {
+                    ActorTuple<C1> actorTuple = new ActorTuple<C1>(Actors[actorIndex]);
+                    actorTuple.SetC1(pool, i);
+                    res.Add(actorTuple);
+                }
+            }
 
-            });
-            return results;
+            return res;
+        }
+
+        public List<ActorTuple<C1, C2>> GetAll<C1, C2>() 
+            where C1 : new()
+            where C2 : new()
+        {
+            List<ActorTuple<C1, C2>> res = new List<ActorTuple<C1, C2>>();
+            ComponentArray<C1> pool = m_Components.GetPool<C1>();
+            for (int i = 0; i < pool.Actors.Length; ++i)
+            {
+                int actorIndex = pool.Actors[i];
+                if (actorIndex != -1)
+                {
+                    GameActor actor = Actors[actorIndex];
+                    int c2Idx = actor.GetComponentIndex<C2>();
+                    if (c2Idx != -1)
+                    {
+                        var actorTuple = new ActorTuple<C1, C2>(actor);
+                        actorTuple.SetC1(pool, i);
+                        actorTuple.SetC2(m_Components.GetPool<C2>(), c2Idx);
+                        res.Add(actorTuple);
+                    }
+                }
+            }
+            return res;
         }
 
     }

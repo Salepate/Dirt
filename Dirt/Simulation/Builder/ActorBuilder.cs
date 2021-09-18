@@ -5,6 +5,8 @@ using Console = Dirt.Log.Console;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.Utility;
 using Dirt.Game.Content;
+using Dirt.Simulation.Actor;
+using Dirt.Simulation.Exceptions;
 
 namespace Dirt.Simulation.Builder
 {
@@ -23,12 +25,15 @@ namespace Dirt.Simulation.Builder
 
         protected IContentProvider Content;
 
+        public SimulationPool Components { get; private set; }
+
         public ActorBuilder(int actorPoolSize)
         {
             m_Injectors = new Dictionary<Type, ComponentInjector>();
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
             InitializePool(actorPoolSize);
+            Components = new SimulationPool(actorPoolSize);
         }
 
         public ActorBuilder()
@@ -54,6 +59,11 @@ namespace Dirt.Simulation.Builder
         public void LoadAssemblies(AssemblyCollection collection)
         {
             m_ValidComponents = AssemblyReflection.BuildTypeMap<IComponent>(collection.Assemblies);
+            foreach(KeyValuePair<string, Type> kvp in m_ValidComponents)
+            {
+                Console.Message($"Register Comp Pool {kvp.Key}");
+                Components.RegisterComponentArray(kvp.Value);
+            }
         }
 
         public GameActor CreateActor()
@@ -63,16 +73,21 @@ namespace Dirt.Simulation.Builder
             return actor;
         }
 
-        public GameActor CreateActor(IComponent[] baseComponents)
+        public ref C AddComponent<C>(GameActor actor) where C: new()
         {
-            GameActor actor = GetActor();
-            for (int i = 0; i < baseComponents.Length; ++i)
-            {
-                if ( baseComponents[i] != null )
-                    actor.AddComponent(baseComponents[i]);
-            }
-            ActorCreateAction?.Invoke(actor);
-            return actor;
+            ComponentArray<C> pool = Components.GetPool<C>();
+            int idx = pool.Allocate(actor.InternalID);
+            actor.AssignComponent<C>(idx);
+            return ref pool.Components[idx];
+        }
+
+        public void RemoveComponent<C>(GameActor actor) where C: new()
+        {
+            int compIdx = actor.GetComponentIndex<C>();
+            if (compIdx == -1)
+                throw new ComponentNotFoundException(typeof(C));
+            actor.UnassignComponent<C>();
+            Components.GetPool<C>().Free(compIdx);
         }
 
         public virtual GameActor BuildActor(ActorArchetype archetype)
@@ -95,6 +110,13 @@ namespace Dirt.Simulation.Builder
             if (freeSlot != -1)
             {
                 ActorDestroyAction?.Invoke(actor);
+                for(int i = 0; i < actor.Components.Length; ++i)
+                {
+                    if (actor.Components[i] != -1)
+                    {
+                        Components.GetPool(actor.ComponentTypes[i]).Free(actor.InternalID);
+                    }
+                }
                 actor.ResetActor();
                 m_Actors[freeSlot] = actor;
                 m_LastFreeIndex = freeSlot;
@@ -153,14 +175,14 @@ namespace Dirt.Simulation.Builder
                 m_ValidComponents.TryGetValue(compName, out Type compType);
                 if ( compType != null )
                 {
-                    IComponent comp = (IComponent) System.Activator.CreateInstance(compType);
+                    var pool = Components.GetPool(compType);
+                    int idx = pool.Allocate(actor.InternalID);
+                    actor.AssignComponent(compType, idx);
 
                     if ( archetype.Settings != null && archetype.Settings.TryGetValue(compType.Name, out ComponentParameters parameters))
                     {
-                        InjectParameters(comp, parameters);
+                        InjectParameters(pool, idx, parameters);
                     }
-
-                    actor.AddComponent(comp);
                 }
                 else
                 {
@@ -169,17 +191,18 @@ namespace Dirt.Simulation.Builder
             }
         }
 
-        private void InjectParameters(IComponent component, ComponentParameters parameters)
+        private void InjectParameters(GenericArray comp, int compIndex, ComponentParameters parameters)
         {
-            Type compType = component.GetType();
-
-            if ( !m_Injectors.TryGetValue(compType, out ComponentInjector injector))
+            if ( !m_Injectors.TryGetValue(comp.ComponentType, out ComponentInjector injector))
             {
-                RegisterComponent(compType);
-                injector = m_Injectors[compType];
-                Console.Warning($"Lazy Component Registration {compType.Name}");
+                RegisterComponent(comp.ComponentType);
+                injector = m_Injectors[comp.ComponentType];
+                Console.Warning($"Lazy Component Registration {comp.ComponentType.Name}");
             }
-            injector.Inject(component, parameters);
+
+            object genObj = comp.Get(compIndex);
+            injector.Inject(genObj, parameters);
+            comp.Set(compIndex, genObj);
         }
     }
 }

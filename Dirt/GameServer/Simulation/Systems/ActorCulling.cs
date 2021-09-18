@@ -15,10 +15,12 @@ using System.IO;
 
 namespace Dirt.Network.Simulations.Systems
 {
+    using Array = System.Array;
     public class NetworkCulling : ISimulationSystem, IManagerAccess
     {
         private NetworkSerializer m_Serializer;
         private PlayerManager m_Players;
+        
         public void Initialize(GameSimulation sim)
         {
         }
@@ -53,7 +55,7 @@ namespace Dirt.Network.Simulations.Systems
                         float sqrRad = cull.Radius * cull.Radius;
                         float sqrRadOut = (cull.Radius + cull.Threshold) * (cull.Radius + cull.Threshold);
                         float sqrMag = (t.Item3.Origin - t2.Item3.Origin).sqrMagnitude;
-                        bool isOld = cull.ProximityActors.Contains(targetSync.ID);
+                        bool isOld =  cull.ProximityActors.Contains(targetSync.ID);
 
                         if (sqrMag <= sqrRad || isOld && sqrMag < sqrRadOut)
                         {

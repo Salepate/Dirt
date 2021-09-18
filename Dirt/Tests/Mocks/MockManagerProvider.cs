@@ -1,6 +1,6 @@
 ﻿using Dirt.Game;
 
-namespace Dirt.Tests.Simulation.Mocks
+namespace Dirt.Tests.Mocks
 {
     public class MockManagerProvider : IManagerProvider
     {

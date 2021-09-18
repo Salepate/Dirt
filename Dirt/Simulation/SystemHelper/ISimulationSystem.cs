@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Dirt.Simulation.Actor;
+using System.Collections.Generic;
 
 namespace Dirt.Simulation.SystemHelper
 {
     public interface ISimulationSystem
     {
         void Initialize(GameSimulation sim);
-        void UpdateActors(List<GameActor> actors, float deltaTime);
+        void UpdateActors(ActorFilter filter, float deltaTime);
     }
 }

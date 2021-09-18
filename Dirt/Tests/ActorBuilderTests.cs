@@ -1,16 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dirt.Simulation;
+using Dirt.Simulation.Actor;
 using Dirt.Simulation.Builder;
+using Dirt.Simulation.Model;
+using Dirt.Tests.Framework;
+using Dirt.Tests.Samples;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Dirt.Tests.Simulation
 {
     [TestClass]
-    public class ActorBuilderTests
+    public class ActorBuilderTests : DirtTest
     {
+        [TestInitialize]
+        public override void Initialize()
+        {
+            base.Initialize();
+        }
+
         [TestMethod]
-        public void TestActorLimit()
+        public void Test_Builder_Limit()
         {
             const int actorLimit = 10;
 
@@ -28,7 +38,7 @@ namespace Dirt.Tests.Simulation
         }
 
         [TestMethod]
-        public void TestActorPool()
+        public void Test_Builder_Recycle()
         {
             const int actorLimit = 10;
 
@@ -51,19 +61,39 @@ namespace Dirt.Tests.Simulation
         }
 
         [TestMethod]
-        public void TestUniqueID()
+        public void Test_Builder_IDS()
         {
             const int actorLimit = 100;
             ActorBuilder builder = new ActorBuilder(actorLimit);
 
             HashSet<int> ids = new HashSet<int>();
 
-            for(int i = 0; i < actorLimit; ++i)
+            for (int i = 0; i < actorLimit; ++i)
             {
                 var actor = builder.CreateActor();
                 Assert.IsFalse(ids.Contains(actor.ID));
                 ids.Add(actor.ID);
             }
+        }
+
+        [TestMethod]
+        public void Test_Builder_AddComponent()
+        {
+            ActorBuilder builder = new ActorBuilder(100);
+            builder.Components.AllowLazy = true;
+            GameActor actor = builder.CreateActor();
+            ref SampleComponent comp = ref builder.AddComponent<SampleComponent>(actor);
+            Assert.AreNotEqual(-1, actor.GetComponentIndex<SampleComponent>());
+        }
+
+        [TestMethod]
+        public void Test_Builder_RemoveComponent()
+        {
+            ActorBuilder builder = new ActorBuilder(100);
+            GameActor actor = builder.CreateActor();
+            ref SampleComponent comp = ref builder.AddComponent<SampleComponent>(actor);
+            builder.RemoveComponent<SampleComponent>(actor);
+            Assert.AreEqual(-1, actor.GetComponentIndex<SampleComponent>());
         }
     }
 }
