@@ -1,8 +1,8 @@
-# Dirt 1.0
+# Dirt 0.9
 
 # Description
 
-Dirt is a collection of game-oriented libraries. Compatible with Unity 2018+
+Dirt is a collection of game-oriented libraries. Compatible with Unity 2019.3
 
 # Application
 
@@ -13,13 +13,14 @@ Standalone implementation of Dirt.GameServer, handle platform-level logic (such 
 # Dirt Collection
 
 ## Game
+_Client/Server library_
 
-Shared library. contains content logic and some mathematics tools.
+Contains content logic and some mathematics tools.
 
 ## Simulation
+_Client/Server library_
 
-Shared library. Naive ECS approach, can run most of the game logic with decent cost but cannot be used for massive
-amount of entities. Although multiple simulations can be run independently. Might be changed someday.
+ECS Framework (use structure components array)
 
 ## Network
 
@@ -37,6 +38,14 @@ Server library. Half Monolith that acts as the connector between game and networ
 
 # Unity Collection
 
+## Dirt.Unity
+
+Main framework for game prototyping. Also provide Unity oriented helpers to integrate custom ecs.
+
+## Dirt.Unity.Network
+
+Network layer for Unity. Provides a Mud connection utility and ECS systems for actor synchronization.
+
 ## Dirt.Unity.Logger
 
 Unity implementation for the logger
@@ -46,12 +55,14 @@ _Hard reference to UnityEngine.dll in .csproj (will be fixed someday)_
 # Mud Collection
 
 ## Mud (Common)
+_Client/Server Library_
 
-Shared Library. Main UDP Protocol and serialization logic.
+Main UDP Protocol and serialization logic.
 
 ## Mud.Server
+_Server Library_
 
-Server Library. Network Socket Thread handler.
+Network Socket Thread handler.
 
 # External Libraries
 
