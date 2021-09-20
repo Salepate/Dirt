@@ -10,6 +10,10 @@ Bullet/*/bin
 Bullet/*/obj
 packages/
 
+# Tests
+Dirt/Tests/*/bin
+Dirt/Tests/*/obj
+
 # CLI
 CLI/*/bin
 CLI/*/obj

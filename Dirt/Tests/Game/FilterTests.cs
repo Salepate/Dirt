@@ -9,13 +9,12 @@ namespace Dirt.Tests.Simulation
     [TestClass]
     public class FilterTests : Framework.BaseSimulation
     {
-        private ActorFilter m_Filter;
+        private ActorFilter m_Filter => Simulation.Filter;
 
         [TestInitialize]
         public override void Initialize()
         {
             base.Initialize();
-            m_Filter = new ActorFilter(Simulation);
             Builder.Components.AllowLazy = true;
         }
 
