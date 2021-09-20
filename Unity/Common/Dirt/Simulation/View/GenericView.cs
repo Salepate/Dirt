@@ -1,4 +1,5 @@
-﻿using Dirt.Simulation.Components;
+﻿using Dirt.Simulation.Actor;
+using Dirt.Simulation.Components;
 using UnityEngine;
 
 namespace Dirt.Simulation.View
@@ -15,7 +16,8 @@ namespace Dirt.Simulation.View
 
         public int ActorID => m_Actor.ID;
 
-        protected Position ActorPosition;
+        protected ref Position ActorPosition => ref m_Filter.Get<Position>(m_Actor);
+        private ActorFilter m_Filter;
         private GameActor m_Actor;
         public bool NotifyActorDestroyed()
         {
@@ -24,11 +26,11 @@ namespace Dirt.Simulation.View
             return DestroyClock <= 0f;
         }
 
-        public virtual void SetActor(GameActor actor)
+        public virtual void SetActor(GameActor actor, ActorFilter filter)
         {
             m_Actor = actor;
+            m_Filter = filter;
             Destroyed = false;
-            ActorPosition = actor.GetComponent<Position>();
             transform.position = ActorPosition.Origin.toVector();
         }
 

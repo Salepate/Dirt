@@ -24,10 +24,14 @@ namespace Dirt.Network.Simulations.Systems
         private NetworkSerializer m_Serializer;
         private List<ActorTuple<NetInfo>> m_StaticActors;
         private List<int> m_Removed;
+        private ActorFilter m_Filter;
+        private GameSimulation m_Simulation;
         public void Initialize(GameSimulation sim)
         {
             m_StaticListChanged = true;
             m_Removed = new List<int>();
+            m_Filter = sim.Filter;
+            m_Simulation = sim;
         }
 
         public void SetManagers(IManagerProvider provider)
@@ -44,71 +48,75 @@ namespace Dirt.Network.Simulations.Systems
 
             if (netIdx != -1)
             {
-                m_Removed.Add(((NetInfo)actorEvent.Actor.Components[netIdx]).ID);
+                ref NetInfo netInfo = ref m_Filter.Get<NetInfo>(actorEvent.Actor);
+                m_Removed.Add(netInfo.ID);
             }
         }
 
-        public void UpdateActors(List<GameActor> actors, float deltaTime)
+        public void UpdateActors(GameSimulation sim, float deltaTime)
         {
             if (m_StaticListChanged)
             {
-                HashSet<GameActor> staticActors = actors.ExcludeActors<Position>();
-                var netActors = actors.GetActors<NetInfo>();
-                m_StaticActors = netActors.Where(actor => staticActors.Contains(actor.Item1)).ToList();
+                HashSet<GameActor> staticActors = m_Filter.ExcludeActors<Position>();
+                var netActors = m_Filter.GetAll<NetInfo>();
+                m_StaticActors = netActors.Where(actor => staticActors.Contains(actor.Actor)).ToList();
                 m_StaticListChanged = false;
             }
 
-            var receivers = actors.GetActors<GlobalSyncInfo>();
+            var receivers = m_Filter.GetAll<GlobalSyncInfo>();
 
             List<int> inRange = new List<int>();
 
 
-            receivers.ForEach(t =>
+            foreach(ActorTuple<GlobalSyncInfo> receiveActor in receivers)
             {
-                int clientIndex = t.Item2.Client;
+                ref GlobalSyncInfo receiverNet = ref receiveActor.Get();
 
                 inRange.Clear();
 
-                PlayerProxy player = m_Players.FindPlayer(clientIndex);
+                PlayerProxy player = m_Players.FindPlayer(receiverNet.Client);
                 if (player != null)
                 {
                     GameClient client = player.Client;
-                    m_StaticActors.ForEach(t2 =>
+                    foreach(ActorTuple<NetInfo> staticActor in m_StaticActors)
                     {
-                        if (t2.Item2.ID == -1)
+                        ref NetInfo staticNet = ref staticActor.Get();
+                        if (staticNet.ID == -1)
                             return;
 
-                        NetInfo targetSync = t2.Item2;
-
-                        bool isOld = t.Item2.SynchronizedActors.Contains(targetSync.ID);
+                        bool isOld = receiveActor.Get().SynchronizedActors.Contains(staticNet.ID);
 
                         if (isOld)
                         {
-                            if (t2.Item2.LastOutBuffer != null)
+                            if (staticNet.LastOutBuffer != null)
                             {
-                                List<byte> message = new List<byte>(t2.Item2.LastOutBuffer.Length + 1);
-                                message.Add((byte)targetSync.ID);
-                                message.AddRange(t2.Item2.LastOutBuffer);
+                                List<byte> message = new List<byte>(staticNet.LastOutBuffer.Length + 1);
+                                message.Add((byte)staticNet.ID);
+                                message.AddRange(staticNet.LastOutBuffer);
                                 client.Send(MudMessage.Create((int)NetworkOperation.ActorSync, message.ToArray()));
                             }
                         }
                         else
                         {
-                            SendActorState(client, t2.Item1);
-                            t.Item2.SynchronizedActors.Add(targetSync.ID);
+                            SendActorState(client, staticActor.Actor);
+                            receiverNet.SynchronizedActors.Add(staticNet.ID);
                         }
-                    });
+                    }
 
-                    m_Removed.ForEach(removedId =>
+                    foreach(int removedId in m_Removed)
                     {
-                        int idx = t.Item2.SynchronizedActors.IndexOf(removedId);
+                        int idx = receiverNet.SynchronizedActors.IndexOf(removedId);
                         if (idx != -1)
-                            t.Item2.SynchronizedActors.RemoveAt(removedId);
-                    });
+                            receiverNet.SynchronizedActors.RemoveAt(removedId);
+                    }
                 }
-            });
+            }
 
-            m_StaticActors.ForEach(sync => sync.Item2.LastOutBuffer = null);
+            foreach(var sync in m_StaticActors)
+            {
+                ref NetInfo syncNet = ref sync.Get();
+                syncNet.LastOutBuffer = null;
+            }
             m_Removed.Clear();
         }
 
@@ -116,9 +124,19 @@ namespace Dirt.Network.Simulations.Systems
         {
             //BinaryFormatter bf = new BinaryFormatter();
             byte[] serializedData;
+            SimulationPool compPool = m_Simulation.Builder.Components;
+
             using (MemoryStream ms = new MemoryStream())
             {
                 m_Serializer.Serialize(ms, actor);
+                for (int i = 0; i < actor.Components.Length; ++i)
+                {
+                    if (actor.Components[i] != -1)
+                    {
+                        GenericArray compArray = compPool.GetPool(actor.ComponentTypes[i]);
+                        m_Serializer.Serialize(ms, compArray.Get(actor.Components[i]));
+                    }
+                }
                 serializedData = ms.ToArray();
             }
 

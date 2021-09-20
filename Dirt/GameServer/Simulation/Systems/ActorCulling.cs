@@ -2,7 +2,9 @@
 using Dirt.GameServer;
 using Dirt.GameServer.Managers;
 using Dirt.GameServer.Simulation.Components;
+using Dirt.Log;
 using Dirt.Network.Managers;
+using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
@@ -20,9 +22,11 @@ namespace Dirt.Network.Simulations.Systems
     {
         private NetworkSerializer m_Serializer;
         private PlayerManager m_Players;
-        
+
+        private GameSimulation m_Simulation;
         public void Initialize(GameSimulation sim)
         {
+            m_Simulation = sim;
         }
 
         public void SetManagers(IManagerProvider provider)
@@ -31,75 +35,99 @@ namespace Dirt.Network.Simulations.Systems
             m_Serializer = provider.GetManager<NetworkSerializer>();
         }
 
-        public void UpdateActors(List<GameActor> actors, float deltaTime)
+        public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            var syncable = actors.GetActors<NetInfo, Position>();
-
+            ActorFilter filter = sim.Filter;
+            var syncable = filter.GetAll<NetInfo, Position>();
+            var cullAreas = filter.GetAll<CullArea, Position>();
             List<int> inRange = new List<int>();
 
-            actors.GetActors<CullArea, Position>().ForEach(t =>
+            foreach (ActorTuple<CullArea, Position> cullActor in cullAreas)
             {
-                CullArea cull = t.Item2;
+                ref CullArea cull = ref cullActor.GetC1();
+                ref Position cullPos = ref cullActor.GetC2();
                 inRange.Clear();
 
                 PlayerProxy player = m_Players.FindPlayer(cull.Client);
                 if (player != null)
                 {
-                    syncable.ForEach(t2 =>
+                    foreach(ActorTuple<NetInfo, Position> syncActor in syncable)
                     {
-                        if (t2.Item2.ID == -1)
+                        ref Position syncPos = ref syncActor.GetC2();
+                        ref NetInfo syncInfo = ref syncActor.GetC1();
+                        if (syncInfo.ID == -1)
                             return;
-
-                        NetInfo targetSync = t2.Item2;
 
                         float sqrRad = cull.Radius * cull.Radius;
                         float sqrRadOut = (cull.Radius + cull.Threshold) * (cull.Radius + cull.Threshold);
-                        float sqrMag = (t.Item3.Origin - t2.Item3.Origin).sqrMagnitude;
-                        bool isOld =  cull.ProximityActors.Contains(targetSync.ID);
+                        float sqrMag = (cullPos.Origin - syncPos.Origin).sqrMagnitude;
+                        bool isOld =  cull.ProximityActors.Contains(syncInfo.ID);
 
                         if (sqrMag <= sqrRad || isOld && sqrMag < sqrRadOut)
                         {
-                            inRange.Add(targetSync.ID);
+                            inRange.Add(syncInfo.ID);
 
                             if (isOld)
                             {
-                                if (t2.Item2.LastOutBuffer != null)
+                                if (syncInfo.LastOutBuffer != null)
                                 {
-                                    List<byte> message = new List<byte>(t2.Item2.LastOutBuffer.Length + 1);
-                                    message.Add((byte)targetSync.ID);
-                                    message.AddRange(t2.Item2.LastOutBuffer);
+                                    List<byte> message = new List<byte>(syncInfo.LastOutBuffer.Length + 1);
+                                    message.Add((byte)syncInfo.ID);
+                                    message.AddRange(syncInfo.LastOutBuffer);
                                     player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorSync, message.ToArray()));
                                 }
                             }
                             else
                             {
-                                SendActorState(player.Client, t2.Item1);
+                                SendActorState(player.Client, syncActor.Actor);
                             }
                         }
-                    });
+                    }
 
-                    cull.ProximityActors.ForEach(old =>
+                    foreach(int old in cull.ProximityActors)
                     {
                         if (!inRange.Contains(old))
                         {
                             player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorRemove, new byte[] { (byte)old }));
                         }
-                    });
+                    }
 
                     cull.ProximityActors.Clear();
                     cull.ProximityActors.AddRange(inRange);
                 }
-            });
-            syncable.ForEach(sync => sync.Item2.LastOutBuffer = null);
+            }
+            foreach(var syncActor in syncable)
+            {
+                ref NetInfo netinfo = ref syncActor.GetC1();
+                netinfo.LastOutBuffer = null;
+            }
         }
 
         private void SendActorState(GameClient client, GameActor actor)
         {
             //BinaryFormatter bf = new BinaryFormatter();
             byte[] serializedData;
+            SimulationPool compPool = m_Simulation.Builder.Components;
+
             using (MemoryStream ms = new MemoryStream())
             {
-                m_Serializer.Serialize(ms, actor);
+                //m_Serializer.Serialize(ms, actor);
+                ActorState actorState = new ActorState()
+                {
+                    Components = new IComponent[actor.ComponentCount]
+                };
+
+                int compId = 0;
+
+                for(int i = 0; i < actor.Components.Length; ++i)
+                {
+                    if ( actor.Components[i] != -1 )
+                    {
+                        GenericArray compArray = compPool.GetPool(actor.ComponentTypes[i]);
+                        actorState.Components[compId++] = (IComponent) compArray.Get(actor.Components[i]);
+                    }
+                }
+                m_Serializer.Serialize(ms, actorState);
                 serializedData = ms.ToArray();
             }
 

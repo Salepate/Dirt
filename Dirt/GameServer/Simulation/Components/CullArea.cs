@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Dirt.GameServer.Simulation.Components
 {
     [System.Serializable]
-    public struct CullArea : IComponentAssign
+    public struct CullArea : IComponent, IComponentAssign
     {
         public int Client;
         public float Radius;

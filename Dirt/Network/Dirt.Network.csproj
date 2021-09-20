@@ -15,7 +15,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -53,6 +53,7 @@
     <Compile Include="Managers\NetworkSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\ComponentFieldInfo.cs" />
+    <Compile Include="Simulation\ActorState.cs" />
     <Compile Include="Simulation\Components\NetInfo.cs" />
     <Compile Include="Simulation\Events\ActorNetCullEvent.cs" />
     <Compile Include="Simulation\Events\ActorSyncEvent.cs" />

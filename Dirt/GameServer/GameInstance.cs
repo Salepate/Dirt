@@ -205,7 +205,7 @@ namespace Dirt.GameServer
                     GameSimulation sim = Simulations.GetSimulation(proxy.Simulation);
 
                     int syncID = message.buffer[0];
-                    bool isOwner = ActorFilter.GetActorsMatching<NetInfo>(sim.World.Actors, a => a.ID == syncID && proxy.Player.Number == a.Owner).Count == 1;
+                    bool isOwner = sim.Filter.GetActorsMatching<NetInfo>(a => a.ID == syncID && proxy.Player.Number == a.Owner).Count == 1;
                     if (isOwner)
                     {
                         byte[] syncBuffer = new byte[message.buffer.Length - 1];

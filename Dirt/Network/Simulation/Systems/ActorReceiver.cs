@@ -16,6 +16,8 @@ namespace Dirt.Network.Simulation.Systems
         private Dictionary<int, MessageHeader> m_LastInState;
 
         private NetworkSerializer m_Serializer;
+        private ActorFilter m_Filter;
+
         public ActorReceiver()
         {
             m_LastInState = new Dictionary<int, MessageHeader>();
@@ -45,28 +47,28 @@ namespace Dirt.Network.Simulation.Systems
             int syncIndex = removeEvent.Actor.GetComponentIndex<NetInfo>();
             if (syncIndex != -1)
             {
-                int netId = removeEvent.Actor.GetComponent<NetInfo>().ID;
-                if (m_LastInState.ContainsKey(netId))
-                    m_LastInState.Remove(netId);
+                ref NetInfo net = ref m_Filter.Get<NetInfo>(removeEvent.Actor);
+                if (m_LastInState.ContainsKey(net.ID))
+                    m_LastInState.Remove(net.ID);
             }
         }
 
         public void Initialize(GameSimulation sim)
         {
+            m_Filter = sim.Filter;
         }
 
-        public void UpdateActors(List<GameActor> actors, float deltaTime)
+        public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            actors.GetActors<NetInfo>().ForEach(t =>
+            foreach(ActorTuple<NetInfo> netActor in m_Filter.GetAll<NetInfo>())
             {
-                NetInfo netBhv = t.Item2;
-
+                ref NetInfo netBhv = ref netActor.Get();
                 if (m_LastInState.ContainsKey(netBhv.ID))
                 {
                     netBhv.LastInBuffer = m_LastInState[netBhv.ID];
                     m_LastInState.Remove(netBhv.ID);
                 }
-            });
+            }
         }
 
         public void SetManagers(IManagerProvider provider)

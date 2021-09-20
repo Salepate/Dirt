@@ -5,38 +5,37 @@ using System.Reflection;
 /// <summary>
 /// Getter/Setter generator
 /// </summary>
-/// <remarks>taken from https://stackoverflow.com/questions/18084836/memory-optimization-of-a-small-class-in-c-sharp</remarks>
+/// <remarks> taken from ~link lost~
 
 namespace Dirt.Network.Internal
 {
+    /// <summary>
+    /// Per field setter/getter generator
+    /// </summary>
     internal static class FastInvoke
     {
         internal static Func<T, object> BuildUntypedGetter<T>(MemberInfo memberInfo)
         {
             var targetType = memberInfo.DeclaringType;
             var exInstance = Expression.Parameter(targetType, "t");
-
             var exMemberAccess = Expression.MakeMemberAccess(exInstance, memberInfo);       // t.PropertyName
             var exConvertToObject = Expression.Convert(exMemberAccess, typeof(object));     // Convert(t.PropertyName, typeof(object))
             var lambda = Expression.Lambda<Func<T, object>>(exConvertToObject, exInstance);
-
             var action = lambda.Compile();
             return action;
         }
 
-        internal static Action<T, object> BuildUntypedSetter<T>(MemberInfo memberInfo)
+        public delegate void SetterAction<T>(ref T component, object value);
+
+        internal static SetterAction<T> BuildUntypedSetter<T>(MemberInfo memberInfo)
         {
             var targetType = memberInfo.DeclaringType;
-            var exInstance = Expression.Parameter(targetType, "t");
-
+            var exInstance = Expression.Parameter(targetType.MakeByRefType(), "t");
             var exMemberAccess = Expression.MakeMemberAccess(exInstance, memberInfo);
-
-            // t.PropertValue(Convert(p))
             var exValue = Expression.Parameter(typeof(object), "p");
             var exConvertedValue = Expression.Convert(exValue, GetUnderlyingType(memberInfo));
             var exBody = Expression.Assign(exMemberAccess, exConvertedValue);
-
-            var lambda = Expression.Lambda<Action<T, object>>(exBody, exInstance, exValue);
+            var lambda = Expression.Lambda<SetterAction<T>>(exBody, exInstance, exValue);
             var action = lambda.Compile();
             return action;
         }

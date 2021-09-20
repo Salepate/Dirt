@@ -7,17 +7,15 @@ namespace Dirt.Simulation.Actor
 {
     public class ActorFilter
     {
-        public GameSimulation Simulation { get; private set; }
         public List<GameActor> Actors { get;  private set; }
         private SimulationPool m_Components;
-        public ActorFilter(GameSimulation sim)
+        public ActorFilter(SimulationPool componentPool, List<GameActor> activeActors)
         {
-            Simulation = sim;
-            m_Components = sim.Builder.Components;
-            Actors = sim.World.Actors;
+            m_Components = componentPool;
+            Actors = activeActors;
         }
 
-        public delegate bool ActorMatch<T>(T data) where T : IComponent;
+        public delegate bool ActorMatch<T>(T data) where T : new();
 
         public ref C Get<C>(GameActor actor) where C: new()
         {
@@ -30,7 +28,6 @@ namespace Dirt.Simulation.Actor
 
             throw new ComponentNotFoundException(typeof(C));
         }
-
 
         public bool TryGetActor(int actorID, out GameActor actor)
         {
@@ -50,18 +47,53 @@ namespace Dirt.Simulation.Actor
         {
             List<ActorTuple<C1>> res = new List<ActorTuple<C1>>();
             ComponentArray<C1> pool = m_Components.GetPool<C1>();
-            for (int i = 0; i < pool.Actors.Length; ++i)
+            for(int i = 0; i < Actors.Count; ++i)
             {
-                int actorIndex = pool.Actors[i];
-                if (actorIndex != -1)
+                int compIndex = Actors[i].GetComponentIndex<C1>();
+                if ( compIndex != -1 )
                 {
-                    ActorTuple<C1> actorTuple = new ActorTuple<C1>(Actors[actorIndex]);
-                    actorTuple.SetC1(pool, i);
+                    ActorTuple<C1> actorTuple = new ActorTuple<C1>(Actors[i]);
+                    actorTuple.SetC1(pool, compIndex);
                     res.Add(actorTuple);
                 }
             }
 
             return res;
+        }
+
+        public List<ActorTuple<C1>> GetActorsMatching<C1>(ActorMatch<C1> matchCondition) where C1 : new()
+        {
+            List<ActorTuple<C1>> results = new List<ActorTuple<C1>>();
+
+            for(int i = 0; i < Actors.Count; ++i)
+            {
+                GameActor actor = Actors[i];
+                int compIdx = actor.GetComponentIndex<C1>();
+                if (compIdx != -1)
+                {
+                    ref C1 comp = ref Get<C1>(actor);
+                    if (matchCondition(comp))
+                    {
+                        ActorTuple<C1> tuple = new ActorTuple<C1>(actor);
+                        tuple.SetC1(m_Components.GetPool<C1>(), compIdx);
+                        results.Add(tuple);
+
+                    }
+                }
+
+            }
+            return results;
+        }
+
+        public HashSet<GameActor> ExcludeActors<T>()
+        {
+            HashSet<GameActor> excludedActors = new HashSet<GameActor>();
+            for(int i = 0; i < Actors.Count; ++i)
+            {
+                if (Actors[i].GetComponentIndex<T>() == -1)
+                    excludedActors.Add(Actors[i]);
+            }
+            return excludedActors;
         }
 
         public List<ActorTuple<C1, C2>> GetAll<C1, C2>() 
@@ -70,17 +102,17 @@ namespace Dirt.Simulation.Actor
         {
             List<ActorTuple<C1, C2>> res = new List<ActorTuple<C1, C2>>();
             ComponentArray<C1> pool = m_Components.GetPool<C1>();
-            for (int i = 0; i < pool.Actors.Length; ++i)
+            for (int i = 0; i < Actors.Count; ++i)
             {
-                int actorIndex = pool.Actors[i];
-                if (actorIndex != -1)
+                GameActor actor = Actors[i];
+                int c1Idx = actor.GetComponentIndex<C1>();
+                if (c1Idx != -1)
                 {
-                    GameActor actor = Actors[actorIndex];
                     int c2Idx = actor.GetComponentIndex<C2>();
                     if (c2Idx != -1)
                     {
                         var actorTuple = new ActorTuple<C1, C2>(actor);
-                        actorTuple.SetC1(pool, i);
+                        actorTuple.SetC1(pool, c1Idx);
                         actorTuple.SetC2(m_Components.GetPool<C2>(), c2Idx);
                         res.Add(actorTuple);
                     }

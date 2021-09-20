@@ -11,9 +11,9 @@ namespace Dirt.Simulation.Systems
         {
         }
 
-        public void UpdateActors(ActorFilter filter, float deltaTime)
+        public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            var trackers = filter.GetAll<Position, Tracker>();
+            var trackers = sim.Filter.GetAll<Position, Tracker>();
 
             foreach(ActorTuple<Position, Tracker> tracker in trackers)
             {
@@ -21,9 +21,9 @@ namespace Dirt.Simulation.Systems
                 ref Position trackerPos = ref tracker.GetC1();
                 if (trackerData.TargetActor != -1)
                 {
-                    if ( filter.TryGetActor(trackerData.TargetActor, out GameActor targetActor))
+                    if ( sim.Filter.TryGetActor(trackerData.TargetActor, out GameActor targetActor))
                     {
-                        Position pos = filter.Get<Position>(targetActor);
+                        Position pos = sim.Filter.Get<Position>(targetActor);
                         trackerPos.Origin = pos.Origin;
                     }
                     else

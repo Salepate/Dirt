@@ -8,6 +8,8 @@ using System.IO;
 using System;
 using System.Linq;
 using System.Reflection;
+using Dirt.Network.Simulation;
+using Dirt.Simulation.Actor;
 
 namespace Dirt.Network.Managers
 {
@@ -44,7 +46,7 @@ namespace Dirt.Network.Managers
                 return gameTypes.Concat(eventTypes).Concat(compTypes);
             });
 
-            serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader) }.Where(t => t != null));
+            serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader), typeof(ActorState) }.Where(t => t != null));
             var validTypes = serializableTypes.OrderBy(t => t.FullName).ToList();
             m_Serializer = new NetSerializer.Serializer(validTypes);
         }
@@ -78,7 +80,7 @@ namespace Dirt.Network.Managers
             return ass.GetTypes().Where(t => typeof(C).IsAssignableFrom(t) && t.GetCustomAttribute<SerializableAttribute>() != null);
         }
 
-        private void CreateComponentMeta<T>() where T : IComponent
+        private void CreateComponentMeta<T>() where T : IComponent, new()
         {
             Type compType = typeof(T);
             FieldInfo[] pubFields = compType.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
@@ -88,13 +90,22 @@ namespace Dirt.Network.Managers
             {
                 if (!pubFields[i].IsNotSerialized)
                 {
-                    Action<T, object> specializedSetter = FastInvoke.BuildUntypedSetter<T>(pubFields[i]);
+                    FastInvoke.SetterAction<T> specializedSetter = FastInvoke.BuildUntypedSetter<T>(pubFields[i]);
                     Func<T, object> specializedGetter = FastInvoke.BuildUntypedGetter<T>(pubFields[i]);
 
-                    Action<IComponent, object> genericSetter = (comp, value) =>
+                    Action<GenericArray, int, object> setterAction = (arr, idx, newValue) =>
                     {
-                        specializedSetter((T)comp, value);
+                        ComponentArray<T> compArr = (ComponentArray<T>)arr;
+                        specializedSetter(ref compArr.Components[idx], newValue);
                     };
+                    //ObjectFieldAccessor.SetterAction setterAction = (ref IComponent comp, object value) =>
+                    //{
+                    //    specializedSetter(ref comp, value);
+                    //};
+                    //Action<IComponent, object> genericSetter = (comp, value) =>
+                    //{
+                    //    specializedSetter((T)comp, value);
+                    //};
 
                     Func<IComponent, object> genericGetter = (comp) =>
                     {
@@ -105,7 +116,7 @@ namespace Dirt.Network.Managers
                     {
                         Name = pubFields[i].Name,
                         Getter = genericGetter,
-                        Setter = genericSetter
+                        Setter = setterAction
                     });
                 }
             }

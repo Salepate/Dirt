@@ -2,6 +2,7 @@
 using Dirt.Model;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
+using Dirt.Simulation.Actor;
 using Mud.Managers;
 
 namespace Dirt.Systems
@@ -9,6 +10,8 @@ namespace Dirt.Systems
     public abstract class MultiplayerViewDispatcher : SimulationViewDispatcher
     {
         private ServerProxy m_ServerProxy;
+
+        private ActorFilter m_Filter;
 
         public override void Initialize(DirtMode mode)
         {
@@ -19,6 +22,8 @@ namespace Dirt.Systems
                 m_ServerProxy = simSys.GetManager<ServerProxy>();
             else
                 Console.Error($"Server Proxy not found, unable to dispatch network views properly");
+
+            m_Filter = simSys.Simulation.Filter;
         }
 
         protected override bool SpawnView(ViewDefinition viewDef, GameActor targetActor)
@@ -27,7 +32,7 @@ namespace Dirt.Systems
 
             if ( netInfoIdx != -1 && m_ServerProxy != null )
             {
-                NetInfo netInfo = (NetInfo) targetActor.Components[netInfoIdx];
+                ref NetInfo netInfo = ref m_Filter.Get<NetInfo>(targetActor);
                 bool isActorOwned = netInfo.Owner == m_ServerProxy.LocalPlayer;
                 bool showActor = true;
                 switch (viewDef.Display)

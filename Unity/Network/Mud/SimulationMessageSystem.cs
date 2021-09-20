@@ -3,9 +3,12 @@ using Dirt.Log;
 using Dirt.Network;
 using Dirt.Network.Managers;
 using Dirt.Network.Model;
+using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Network.Simulation.Events;
 using Dirt.Simulation;
+using Dirt.Simulation.Builder;
+using Dirt.Simulation.Events;
 using Dirt.Systems;
 using Mud.Framework;
 using Mud.Managers;
@@ -61,23 +64,30 @@ namespace Mud.DirtSystems
                     m_EventDispatcher.Dispatch(netEvent);
                     break;
                 case NetworkOperation.ActorState:
+                    ActorState state;
+                    //Console.Message("Received Actor");
                     using (MemoryStream st = new MemoryStream(message))
                     {
-                        //Console.Message("Received Actor");
-                        GameActor actor = (GameActor)m_Serializer.Deserialize(st);
-                        actor.CacheActor();
-                        if (actor.GetComponentIndex<NetInfo>() != -1)
+                        state = (ActorState)m_Serializer.Deserialize(st);
+                    }
+                    ActorBuilder builder = m_Simulation.Simulation.Builder;
+                    GameActor copyActor = builder.CreateActor();
+                    for(int i = 0; i < state.Components.Length; ++i)
+                    {
+                        System.Type compType = state.Components[i].GetType();
+                        int compIdx = builder.AddComponent(copyActor, compType);
+                        builder.Components.GetPool(compType).Set(compIdx, state.Components[i]);
+                    }
+                    if ( copyActor.GetComponentIndex<NetInfo>() != -1 )
+                    {
+                        ref NetInfo netBhv = ref m_Simulation.Simulation.Filter.Get<NetInfo>(copyActor);
+                        bool isOwner = netBhv.Owner == m_Proxy.LocalPlayer;
+                        for (int i = 0; i < netBhv.Fields.Count; ++i)
                         {
-                            NetInfo netBhv = actor.GetComponent<NetInfo>();
-                            bool isOwner = netBhv.Owner == m_Proxy.LocalPlayer;
-                            for (int i = 0; i < netBhv.Fields.Count; ++i)
-                            {
-                                ComponentFieldInfo field = netBhv.Fields[i];
-                                field.Owner = field.Owner && isOwner;
-                                netBhv.Fields[i] = field;
-                            }
+                            ComponentFieldInfo field = netBhv.Fields[i];
+                            field.Owner = field.Owner && isOwner;
+                            netBhv.Fields[i] = field;
                         }
-                        m_Simulation.AddActor(actor);
                     }
                     break;
                 case NetworkOperation.ActorSync:

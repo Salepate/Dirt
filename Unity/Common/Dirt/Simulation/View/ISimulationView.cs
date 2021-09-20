@@ -1,4 +1,6 @@
-﻿namespace Dirt.Simulation.View
+﻿using Dirt.Simulation.Actor;
+
+namespace Dirt.Simulation.View
 {
     public interface ISimulationView
     {
@@ -7,7 +9,7 @@
         /// </summary>
         bool Destroy { get; }
         int ActorID { get; }
-        void SetActor(GameActor actor);
+        void SetActor(GameActor actor, ActorFilter filter);
         /// <summary>
         /// Main routine to adjust view
         /// </summary>

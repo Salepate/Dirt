@@ -4,6 +4,7 @@ using Dirt.Network.Managers;
 using Dirt.Network.Model;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
+using Dirt.Simulation.Exceptions;
 using System.Collections.Generic;
 
 
@@ -18,20 +19,23 @@ namespace Dirt.Network
         /// <param name="actor"></param>
         /// <param name="syncDesc"></param>
         /// <param name="owner">-1 is server, client id otherwise</param>
-        public static void SyncActor(GameActor actor, SyncInfo syncDesc, int owner)
+        public static void SyncActor(GameActor actor, ref NetInfo netInfo, SyncInfo syncDesc, int owner)
         {
             if (actor.GetComponentIndex<NetInfo>() == -1)
-                actor.AddComponent(new NetInfo());
+            {
+                throw new ComponentNotFoundException(typeof(NetInfo));
+            }
 
-            NetInfo sync = actor.GetComponent<NetInfo>();
             List<ComponentFieldInfo> fields = new List<ComponentFieldInfo>();
-            sync.Owner = owner;
+            netInfo.Owner = owner;
+
+            Console.Message($"Sync actor {actor.ID}");
 
             for (int i = 0; i < syncDesc.SyncedComponents.Length; ++i)
             {
                 string syncComp = syncDesc.SyncedComponents[i];
                 System.Type compType = System.Type.GetType(syncComp);
-                int compIndex = GetComponentIndex(actor, compType);
+                int compIndex = actor.GetComponentLocalIndex(compType);
 
                 if (NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessors))
                 {
@@ -43,7 +47,7 @@ namespace Dirt.Network
                             Accessor = j,
                             Owner = CanWrite(compType.Name, accessors[j].Name, syncDesc)
                         };
-
+                        Console.Message($"Component Sync {compType.Name}: [Owner:{fieldSync.Owner}] [Accessor:{accessors[j].Name}]");
                         fields.Add(fieldSync);
                     }
                 }
@@ -52,7 +56,7 @@ namespace Dirt.Network
                     Console.Message($"Unable to sync component {compType.Name}: Component not registered");
                 }
             }
-            sync.Fields = fields;
+            netInfo.Fields = fields;
         }
 
         private static bool CanWrite(string comp, string fieldName, SyncInfo sync)
@@ -65,21 +69,6 @@ namespace Dirt.Network
                 }
             }
             return false;
-        }
-
-        private static int GetComponentIndex(GameActor actor, System.Type compType)
-        {
-            if (compType != null)
-            {
-                for (int i = 0; i < actor.ComponentCount; ++i)
-                {
-                    if (actor.ComponentTypes[i] == compType)
-                    {
-                        return i;
-                    }
-                }
-            }
-            return -1;
         }
     }
 }

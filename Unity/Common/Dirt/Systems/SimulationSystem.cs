@@ -83,11 +83,6 @@ namespace Dirt.Systems
             Simulation.Events.Enqueue(simEvent);
         }
 
-        public void AddActor(GameActor actor)
-        {
-            Simulation.Builder.CreateActor(actor.Components);
-        }
-
         public void ChangeSimulation(string archetypeName)
         {
             ISimulationSystem[] systems = m_SimBuilder.CreateSystems(archetypeName, m_Content, false, out string context);

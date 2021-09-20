@@ -32,15 +32,15 @@ namespace Dirt.Network.Simulation.Systems
         {
         }
 
-        public void UpdateActors(List<GameActor> actors, float deltaTime)
+        public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            actors.GetActors<NetInfo>().ForEach(t =>
+            foreach(var t in sim.Filter.GetAll<NetInfo>())
             {
-                NetInfo netBhv = t.Item2;
+                ref NetInfo netBhv = ref t.Get();
 
                 if (m_ToDestroy.Contains(netBhv.ID))
                 {
-                    t.Item1.AddComponent(new Destroy() { });
+                    sim.Builder.AddComponent<Destroy>(t.Actor);
                     m_ToDestroy.Remove(netBhv.ID);
                 }
                 else
@@ -59,7 +59,7 @@ namespace Dirt.Network.Simulation.Systems
                         }
                     }
                 }
-            });
+            }
         }
 
         public void SetManagers(IManagerProvider provider)

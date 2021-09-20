@@ -6,10 +6,11 @@ using System.Collections.Generic;
 namespace Dirt.Network.Simulation.Components
 {
     [Serializable]
-    public class NetInfo : IComponent
+    public struct NetInfo : IComponent, IComponentAssign
     {
-        public int ID = -1;
+        public int ID;
         public int Owner;
+        public List<ComponentFieldInfo> Fields;
         [NonSerialized]
         public MessageHeader LastInBuffer;
         [NonSerialized]
@@ -17,12 +18,9 @@ namespace Dirt.Network.Simulation.Components
         [NonSerialized]
         public MessageHeader LastState;
 
-        public bool IsClient;
-
-        public List<ComponentFieldInfo> Fields;
-
-        public NetInfo()
+        public void Assign()
         {
+            ID = -1;
             Fields = new List<ComponentFieldInfo>();
         }
     }

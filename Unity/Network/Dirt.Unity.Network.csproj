@@ -33,17 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dirt.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dirt.Game.0.0.9\lib\net461\Dirt.Game.dll</HintPath>
-    </Reference>
     <Reference Include="Dirt.Log, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Dirt.Log.1.0.0\lib\net461\Dirt.Log.dll</HintPath>
-    </Reference>
-    <Reference Include="Dirt.Network, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dirt.Network.0.0.9\lib\net461\Dirt.Network.dll</HintPath>
-    </Reference>
-    <Reference Include="Dirt.Simulation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dirt.Network.0.0.9\lib\net461\Dirt.Simulation.dll</HintPath>
     </Reference>
     <Reference Include="NetSerializer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Dirt.Network.0.0.9\lib\net461\NetSerializer.dll</HintPath>
@@ -80,6 +71,18 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Dirt\Game\Dirt.Game.csproj">
+      <Project>{60343db1-e6b8-44f9-b387-d4cbe088fe37}</Project>
+      <Name>Dirt.Game</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Dirt\Network\Dirt.Network.csproj">
+      <Project>{f727213e-bdec-483a-b9c9-cfefef584463}</Project>
+      <Name>Dirt.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Dirt\Simulation\Dirt.Simulation.csproj">
+      <Project>{e77cdca4-fa31-4edc-b875-77a7fa2a5fa3}</Project>
+      <Name>Dirt.Simulation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Mud\Mud\Mud.csproj">
       <Project>{36b3fdb3-9b80-4546-ac7a-6dba68e7cff3}</Project>
       <Name>Mud</Name>

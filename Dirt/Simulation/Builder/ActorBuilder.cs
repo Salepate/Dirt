@@ -33,7 +33,6 @@ namespace Dirt.Simulation.Builder
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
             InitializePool(actorPoolSize);
-            Components = new SimulationPool(actorPoolSize);
         }
 
         public ActorBuilder()
@@ -54,6 +53,8 @@ namespace Dirt.Simulation.Builder
             m_Actors = new GameActor[poolSize];
             for (int i = 0; i < poolSize; ++i)
                 m_Actors[i] = new GameActor(i);
+
+            Components = new SimulationPool(poolSize);
         }
 
         public void LoadAssemblies(AssemblyCollection collection)
@@ -62,7 +63,7 @@ namespace Dirt.Simulation.Builder
             foreach(KeyValuePair<string, Type> kvp in m_ValidComponents)
             {
                 Console.Message($"Register Comp Pool {kvp.Key}");
-                Components.RegisterComponentArray(kvp.Value);
+                RegisterComponent(kvp.Value);
             }
         }
 
@@ -73,11 +74,40 @@ namespace Dirt.Simulation.Builder
             return actor;
         }
 
+        public int AddComponent(GameActor actor, Type compType)
+        {
+            if (compType != null)
+            {
+                int idx = actor.GetComponentIndex(compType);
+
+                if ( idx == -1 )
+                {
+                    GenericArray pool = Components.GetPool(compType);
+                    idx = pool.Allocate(actor.InternalID);
+                    actor.AssignComponent(compType, idx);
+                }
+                return idx;
+            }
+            return -1;
+        }
+
+        public void RemoveComponent(GameActor actor, Type compType)
+        {
+            int compIdx = actor.GetComponentIndex(compType);
+            if (compIdx == -1)
+                throw new ComponentNotFoundException(compType);
+            actor.UnassignComponent(compType);
+            Components.GetPool(compType).Free(compIdx);
+        }
         public ref C AddComponent<C>(GameActor actor) where C: new()
         {
             ComponentArray<C> pool = Components.GetPool<C>();
-            int idx = pool.Allocate(actor.InternalID);
-            actor.AssignComponent<C>(idx);
+            int idx = actor.GetComponentIndex<C>();
+            if (idx == -1)
+            {
+                idx = pool.Allocate(actor.InternalID);
+                actor.AssignComponent<C>(idx);
+            }
             return ref pool.Components[idx];
         }
 
@@ -130,6 +160,13 @@ namespace Dirt.Simulation.Builder
         public void RegisterComponent(Type compType)
         {
             m_Injectors.Add(compType, new ComponentInjector(compType));
+            Components.RegisterComponentArray(compType);
+        }
+        
+        public Type GetComponentType(string compName)
+        {
+            m_ValidComponents.TryGetValue(compName, out Type compType);
+            return compType;
         }
 
         // internal
@@ -175,13 +212,11 @@ namespace Dirt.Simulation.Builder
                 m_ValidComponents.TryGetValue(compName, out Type compType);
                 if ( compType != null )
                 {
-                    var pool = Components.GetPool(compType);
-                    int idx = pool.Allocate(actor.InternalID);
-                    actor.AssignComponent(compType, idx);
+                    int idx = AddComponent(actor, compType);
 
                     if ( archetype.Settings != null && archetype.Settings.TryGetValue(compType.Name, out ComponentParameters parameters))
                     {
-                        InjectParameters(pool, idx, parameters);
+                        InjectParameters(Components.GetPool(compType), idx, parameters);
                     }
                 }
                 else

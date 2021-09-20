@@ -33,7 +33,6 @@ namespace Dirt.Simulation
 
         public SimulationContext Context { get; private set; }
 
-        private ActorFilter m_Filter;
         public SystemContainer(IContentProvider content, IManagerProvider manager)
         {
             Context = new SimulationContext();
@@ -88,8 +87,6 @@ namespace Dirt.Simulation
             {
                 sys.Initialize(simulation);
             });
-
-            m_Filter = new ActorFilter(simulation);
         }
 
         public void SetSystemStatus(int systemIndex, bool enabled)
@@ -113,7 +110,7 @@ namespace Dirt.Simulation
                     SystemMetric metric = m_MetricsOverTime[i];
                     m_SystemStopWatch.Reset();
                     m_SystemStopWatch.Start();
-                    sys.UpdateActors(m_Filter, deltaTime);
+                    sys.UpdateActors(simulation, deltaTime);
                     m_SystemStopWatch.Stop();
                     totalTicks += m_SystemStopWatch.ElapsedMilliseconds;
                     microTime = (int) (m_SystemStopWatch.ElapsedTicks * tickToSec * 1000000);
@@ -125,7 +122,7 @@ namespace Dirt.Simulation
             DispatchQueuedEvents(simulation);
 
             // actor clean up
-            List<ActorTuple<Destroy>> destroyedActors = m_Filter.GetAll<Destroy>();
+            List<ActorTuple<Destroy>> destroyedActors = simulation.Filter.GetAll<Destroy>();
             for (int i = 0; i < destroyedActors.Count; ++i)
             {
                 //Console.Message($"Destroying Actor {destroyedActors[i].Item1.ID}");

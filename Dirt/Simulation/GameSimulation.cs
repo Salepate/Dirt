@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using Dirt.Simulation.Actor;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Events;
 
@@ -13,7 +13,7 @@ namespace Dirt.Simulation
         public string Archetype;
         public Queue<SimulationEvent> Events { get; private set; }
         public ActorBuilder Builder { get; private set; }
-
+        public ActorFilter Filter { get; private set; }
         public GameSimulation(int id = 0)
         {
             ID = id;
@@ -23,6 +23,7 @@ namespace Dirt.Simulation
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
+            Filter = new ActorFilter(Builder.Components, World.Actors);
         }
 
         public GameSimulation(ActorBuilder builder, int id = 0)
@@ -34,6 +35,7 @@ namespace Dirt.Simulation
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
+            Filter = new ActorFilter(Builder.Components, World.Actors);
         }
 
         private void OnActorBuilt(GameActor actor)

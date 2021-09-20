@@ -13,6 +13,7 @@ namespace Dirt.Systems
 {
     public abstract class SimulationViewDispatcher : DirtSystem, IContentSystem
     {
+        protected virtual bool IsDebug => false;
         public override bool HasUpdate => true;
 
         protected PoolManager PoolManager;
@@ -20,16 +21,17 @@ namespace Dirt.Systems
         private PrefabService m_Prefabs;
         private List<ISimulationView> m_Views;
         private IContentProvider m_Content;
+        private SimulationSystem m_Simulation;
 
         public override void Initialize(DirtMode mode)
         {
-            PoolManager = new PoolManager();
+            PoolManager = new PoolManager(IsDebug);
             m_Views = new List<ISimulationView>();
             m_Prefabs = mode.FindSystem<PrefabService>();
             m_Content = mode.FindSystem<ContentSystem>().Content;
 
-            SimulationSystem simSys = mode.FindSystem<SimulationSystem>();
-            Dictionary<string, System.Type> compMap = AssemblyReflection.BuildTypeMap<IComponent>(simSys.ValidAssemblies.Assemblies);
+            m_Simulation = mode.FindSystem<SimulationSystem>();
+            Dictionary<string, System.Type> compMap = AssemblyReflection.BuildTypeMap<IComponent>(m_Simulation.ValidAssemblies.Assemblies);
 
             for (int i = 0; i < ViewDefinitions.Length; ++i)
             {
@@ -48,21 +50,18 @@ namespace Dirt.Systems
         {
             List<string> comps = new List<string>();
 
-            for (int i = 0; i < actor.ComponentCount; ++i)
+            for(int i = 0; i < actor.Components.Length; ++i)
             {
-                comps.Add(actor.ComponentTypes[i].Name);
+                if (actor.Components[i] != -1)
+                {
+
+                    comps.Add(actor.ComponentTypes[i].Name);
+                }
             }
 
             List<ViewDefinition> views = GetValidViews(comps.ToArray());
-
             if (views.Count > 0)
             {
-                //if ( views.Count > 1 )
-                //{
-                //    Console.Warning($"Multiple views found for actor {actor.ID}");
-                //    //views.ForEach(v => Console.Warning($"View {v.Prefab}"));
-                //}
-
                 for (int i = 0; i < views.Count; ++i)
                 {
                     ViewDefinition viewDef = views[i];
@@ -78,7 +77,7 @@ namespace Dirt.Systems
                         var inst = GetInstance(prefab);
                         var simView = inst.GetComponent<ISimulationView>();
                         SetupView(simView);
-                        simView.SetActor(actor);
+                        simView.SetActor(actor, m_Simulation.Simulation.Filter);
                         m_Views.Add(simView);
                     }
                     else
@@ -142,7 +141,7 @@ namespace Dirt.Systems
             for (int i = 0; i < ViewDefinitions.Length; ++i)
             {
                 ViewDefinition viewDef = ViewDefinitions[i];
-
+                int dups = CountDuplicates(compList, viewDef.Components);
                 if (CountDuplicates(compList, viewDef.Components) == viewDef.Components.Length)
                     res.Add(viewDef);
 

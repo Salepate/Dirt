@@ -17,6 +17,9 @@ namespace Dirt.Network.Systems
     {
         private int m_IDGenerator;
         private NetworkSerializer m_Serializer;
+        private ActorFilter Filter => m_Simulation.Filter;
+
+        private GameSimulation m_Simulation;
         public ActorStreaming()
         {
             m_IDGenerator = 0;
@@ -25,20 +28,18 @@ namespace Dirt.Network.Systems
         protected virtual bool ShouldSerialize(bool isOwner) => true;
         protected virtual bool ShouldDeserialize(bool isOwner) => isOwner;
 
-        public void UpdateActors(List<GameActor> actors, float deltaTime)
+        public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            var netActors = actors.GetActors<NetInfo>();
-
-            netActors.ForEach(t =>
+            foreach (ActorTuple<NetInfo> netActor in Filter.GetAll<NetInfo>())
             {
-                GameActor actor = t.Item1;
-                NetInfo netBhv = t.Item2;
+                GameActor actor = netActor.Actor;
+                ref NetInfo netBhv = ref netActor.Get();
 
                 //@TODO Server exclusive
                 if (netBhv.ID == -1)
                     netBhv.ID = GetID();
 
-                DeserializeActor(actor, netBhv);
+                DeserializeActor(actor, ref netBhv);
 
 
                 MessageHeader stateToSerialize = SerializeActor(actor, netBhv);
@@ -67,7 +68,7 @@ namespace Dirt.Network.Systems
                         }
                     }
                 }
-            });
+            }
         }
 
         public static string ByteArrayToString(byte[] ba)
@@ -80,12 +81,14 @@ namespace Dirt.Network.Systems
             return m_IDGenerator++;
         }
 
-        private void DeserializeActor(GameActor actor, NetInfo sync)
+        private void DeserializeActor(GameActor actor, ref NetInfo sync)
         {
             if (sync.Fields.Count < 1 || sync.LastInBuffer == null)
                 return;
 
             MessageHeader header = sync.LastInBuffer;
+            sync.LastInBuffer = null;
+            SimulationPool pool = m_Simulation.Builder.Components;
 
             for (int i = 0; i < header.FieldIndex.Length; ++i)
             {
@@ -95,7 +98,9 @@ namespace Dirt.Network.Systems
                     Type compType = actor.ComponentTypes[field.Component];
                     if (NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessors))
                     {
-                        accessors[field.Accessor].Setter(actor.Components[field.Component], header.FieldValue[i]);
+                        int compIdx = actor.Components[field.Component];
+                        GenericArray genArr = pool.GetPool(compType);
+                        accessors[field.Accessor].Setter(genArr, compIdx, header.FieldValue[i]);
                     }
                 }
             }
@@ -107,18 +112,18 @@ namespace Dirt.Network.Systems
                 return null;
 
             MessageHeader header = new MessageHeader();
-
+            SimulationPool pool = m_Simulation.Builder.Components;
             List<int> fields = new List<int>();
             List<object> values = new List<object>();
-
             MessageHeader oldState = sync.LastState;
 
             for (int i = 0; i < sync.Fields.Count; ++i)
             {
                 ComponentFieldInfo field = sync.Fields[i];
-                IComponent component = actor.Components[field.Component];
+                Type compType = actor.ComponentTypes[field.Component];
+                IComponent component = (IComponent) pool.GetPool(compType).Get(actor.Components[field.Component]);
 
-                if (ShouldSerialize(field.Owner) && NetworkSerializer.TryGetSetters(component.GetType(), out ObjectFieldAccessor[] accessor))
+                if (ShouldSerialize(field.Owner) && NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessor))
                 {
                     bool changed = true;
                     Func<IComponent, object> getter = accessor[field.Accessor].Getter;
@@ -159,7 +164,7 @@ namespace Dirt.Network.Systems
 
         public void Initialize(GameSimulation sim)
         {
-
+            m_Simulation = sim;
         }
 
         public void SetManagers(IManagerProvider provider)

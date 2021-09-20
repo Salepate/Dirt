@@ -61,7 +61,7 @@ namespace Dirt.Simulation
 
         public void UnassignComponent<C>()
         {
-            int compIndex = GetComponentIndex<C>();
+            int compIndex = GetComponentLocalIndex<C>();
             if (compIndex != -1)
             {
                 ComponentTypes[compIndex] = null;
@@ -69,8 +69,49 @@ namespace Dirt.Simulation
                 ComponentCount--;
             }
         }
-        
+
+        public void UnassignComponent(Type compType)
+        {
+            int compIndex = GetComponentLocalIndex(compType);
+            if ( compIndex != -1 )
+            {
+                ComponentTypes[compIndex] = null;
+                Components[compIndex] = -1;
+                ComponentCount--;
+            }
+        }
+
+        public int GetComponentIndex(Type compType)
+        {
+            for (int i = 0; i < ComponentCount; ++i)
+            {
+                if (ComponentTypes[i] == compType)
+                    return Components[i];
+            }
+            return -1;
+        }
+
         public int GetComponentIndex<C>()
+        {
+            for (int i = 0; i < ComponentCount; ++i)
+            {
+                if (ComponentTypes[i] == typeof(C))
+                    return Components[i];
+            }
+            return -1;
+        }
+
+        public int GetComponentLocalIndex(Type compType)
+        {
+            for (int i = 0; i < ComponentCount; ++i)
+            {
+                if (ComponentTypes[i] == compType)
+                    return i;
+            }
+            return -1;
+        }
+
+        private int GetComponentLocalIndex<C>()
         {
             for (int i = 0; i < ComponentCount; ++i)
             {
@@ -78,24 +119,6 @@ namespace Dirt.Simulation
                     return i;
             }
             return -1;
-        }
-    
-        public void CacheActor()
-        {
-            int compCount = 0;
-
-            if (m_Types == null)
-                m_Types = new Type[MaxComponents];
-
-            for(int i = 0; i < MaxComponents; ++i)
-            {
-                if ( Components[i] != -1 )
-                {
-                    ++compCount;
-                    m_Types[i] = Components[i].GetType();
-                }
-            }
-            ComponentCount = compCount;
         }
 
         public void ResetActor()

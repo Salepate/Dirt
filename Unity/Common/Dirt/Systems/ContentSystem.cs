@@ -11,7 +11,7 @@ namespace Dirt.Systems
     {
         public IContentProvider Content { get { return m_ContentProvider; } }
 
-        public virtual string ContentPath => Path.Combine(Application.dataPath, @"..\..\Content");
+        public virtual string ContentPath => Path.Combine(Application.dataPath, "Content");
         public virtual string ContentName => "gamecontent";
 
         public Action OnContentReloadAction { get; set; }

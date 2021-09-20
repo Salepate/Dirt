@@ -6,6 +6,6 @@ namespace Dirt.Simulation.SystemHelper
     public interface ISimulationSystem
     {
         void Initialize(GameSimulation sim);
-        void UpdateActors(ActorFilter filter, float deltaTime);
+        void UpdateActors(GameSimulation sim, float deltaTime);
     }
 }
