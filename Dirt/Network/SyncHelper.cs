@@ -29,7 +29,7 @@ namespace Dirt.Network
             List<ComponentFieldInfo> fields = new List<ComponentFieldInfo>();
             netInfo.Owner = owner;
 
-            Console.Message($"Sync actor {actor.ID}");
+            //Console.Message($"Sync actor {actor.ID}");
 
             for (int i = 0; i < syncDesc.SyncedComponents.Length; ++i)
             {
@@ -47,7 +47,7 @@ namespace Dirt.Network
                             Accessor = j,
                             Owner = CanWrite(compType.Name, accessors[j].Name, syncDesc)
                         };
-                        Console.Message($"Component Sync {compType.Name}: [Owner:{fieldSync.Owner}] [Accessor:{accessors[j].Name}]");
+                        //Console.Message($"Component Sync {compType.Name}: [Owner:{fieldSync.Owner}] [Accessor:{accessors[j].Name}]");
                         fields.Add(fieldSync);
                     }
                 }
