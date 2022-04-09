@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dirt\DirtBuild.cs" />
     <Compile Include="Dirt\DirtDebug.cs" />
     <Compile Include="Dirt\DirtMode.cs" />
     <Compile Include="Dirt\DirtStarter.cs" />
