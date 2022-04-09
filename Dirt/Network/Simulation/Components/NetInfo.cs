@@ -17,10 +17,13 @@ namespace Dirt.Network.Simulation.Components
         public byte[] LastOutBuffer;
         [NonSerialized]
         public MessageHeader LastState;
+        [NonSerialized]
+        public bool Owned;
 
         public void Assign()
         {
             ID = -1;
+            Owned = true;
             Fields = new List<ComponentFieldInfo>();
         }
     }

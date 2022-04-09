@@ -82,6 +82,7 @@ namespace Mud.DirtSystems
                     {
                         ref NetInfo netBhv = ref m_Simulation.Simulation.Filter.Get<NetInfo>(copyActor);
                         bool isOwner = netBhv.Owner == m_Proxy.LocalPlayer;
+                        netBhv.Owned = isOwner;
                         for (int i = 0; i < netBhv.Fields.Count; ++i)
                         {
                             ComponentFieldInfo field = netBhv.Fields[i];
