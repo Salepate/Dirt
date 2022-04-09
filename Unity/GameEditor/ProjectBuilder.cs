@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using UnityEditor;
 using UnityEngine;
 
@@ -95,7 +96,7 @@ namespace Dirt.GameEditor
                         DirectoryInfo projectContent = new DirectoryInfo(Settings.ContentPath);
                         string targetDir = Path.Combine("Builds/", $"{Settings.BinaryName}_Data", "Content");
                         CopyDirectory(projectContent, targetDir, true);
-                        //ZipFile.CreateFromDirectory(buildDir.FullName, $"{GetBuildName((options & BuildOptions.Development) != 0)}.zip");
+                        ZipFile.CreateFromDirectory(buildDir.FullName, $"{GetBuildName((options & BuildOptions.Development) != 0)}.zip");
                     }
                     settings.BuildNumber++;
                     EditorUtility.SetDirty(settings);
