@@ -12,4 +12,7 @@
     <copyright>$copyright$</copyright>
     <tags>Dirt.Framework</tags>
   </metadata>
+  <files>
+    <file src="bin\$configuration$\$id$.pdb" target="lib\net461\" />
+  </files>
 </package>

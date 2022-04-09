@@ -33,9 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dirt.Log, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dirt.Log.1.0.0\lib\net461\Dirt.Log.dll</HintPath>
-    </Reference>
     <Reference Include="NetSerializer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Dirt.Network.0.0.9\lib\net461\NetSerializer.dll</HintPath>
     </Reference>
@@ -74,6 +71,10 @@
     <ProjectReference Include="..\..\Dirt\Game\Dirt.Game.csproj">
       <Project>{60343db1-e6b8-44f9-b387-d4cbe088fe37}</Project>
       <Name>Dirt.Game</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Dirt\Log\Dirt.Log.csproj">
+      <Project>{2d2bb064-885c-45a5-aa6c-ffce1747477d}</Project>
+      <Name>Dirt.Log</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Dirt\Network\Dirt.Network.csproj">
       <Project>{f727213e-bdec-483a-b9c9-cfefef584463}</Project>
