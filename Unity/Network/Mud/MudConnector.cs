@@ -54,14 +54,14 @@ namespace Mud.DirtSystems
                 m_SocketThread.IsBackground = true;
                 m_SocketThread.Start();
 
-                if (string.IsNullOrEmpty(userName) || userName.Length < 3)
-                {
-                    userName = $"User{Random.Range(10000, 99999)}";
-                }
+                //if (string.IsNullOrEmpty(userName) || userName.Length < 3)
+                //{
+                //    userName = $"User{Random.Range(10000, 99999)}";
+                //}
 
                 PlayerName = userName;
 
-                Socket.Send(MudMessage.Create(MudOperation.ClientAuth, Encoding.ASCII.GetBytes(userName)));
+                Socket.Send(MudMessage.Create(MudOperation.ClientAuth, null));
                 m_Authed = true;
             }
         }

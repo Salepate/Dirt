@@ -60,6 +60,7 @@ namespace Dirt.ServerApplication
             m_Game = new GameInstance(m_Server.StreamGroups, contentPath, contentVersion, plugin);
             WebService = new WebService("127.0.0.1", GetConfig("WebServerPort"));
             m_Game.RegisterManager(WebService);
+            m_Game.RegisterManager(new RealTimeServerManager(m_Server));
             m_Game.InitializePlugin();
             //Web.RegisterHandler(new PlayerMonitorRoute(m_Game));
             //Web.RegisterHandler(new SimulationRoute(m_Game));

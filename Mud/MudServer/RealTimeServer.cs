@@ -42,6 +42,11 @@ namespace Mud.Server
             m_ClientConsumer = null;
         }
 
+        public GameClient GetClient(int number)
+        {
+            int idx = number - 1;
+            return m_Clients[idx];
+        }
 
         public void Run()
         {

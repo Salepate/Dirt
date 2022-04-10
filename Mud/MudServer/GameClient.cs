@@ -46,6 +46,11 @@ namespace Mud.Server
             RequestDisconnection = true;
         }
 
+        public void ChangeClientName(string newName)
+        {
+            ID = newName;
+        }
+
         public void SendLargeMessage(int op, byte[] message)
         {
             int packetCount = message.Length / MudSocket.BufferSize;

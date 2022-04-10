@@ -47,6 +47,7 @@
     <Compile Include="GameInstance.cs" />
     <Compile Include="Managers\GameDataManager.cs" />
     <Compile Include="Managers\PlayerManager.cs" />
+    <Compile Include="Managers\RealTimeServerManager.cs" />
     <Compile Include="Managers\SimulationManager.cs" />
     <Compile Include="Managers\WebService.cs" />
     <Compile Include="PlayerProxy.cs" />
