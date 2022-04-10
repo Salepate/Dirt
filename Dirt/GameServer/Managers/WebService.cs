@@ -42,8 +42,12 @@ namespace Dirt.GameServer.Managers
 
                 if ( req.Url.Segments.Length > 1)
                 {
-                    string mainRoute = req.Url.Segments[1].Replace("/", "");
-                    if (!m_Routes.TryGetValue(mainRoute, out responseDelegate))
+                    string relative_uri = string.Concat(req.Url.Segments).Substring(1);
+                    if (relative_uri.EndsWith("/"))
+                        relative_uri = relative_uri.Substring(0, -1);
+
+                    //string mainRoute = req.Url.Segments[1].Replace("/", "");
+                    if (!m_Routes.TryGetValue(relative_uri, out responseDelegate))
                         responseDelegate = DefaultResponseDelegate;
                 }
 
