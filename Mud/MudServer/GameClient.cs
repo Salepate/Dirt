@@ -21,6 +21,8 @@ namespace Mud.Server
         private int m_MultipacketReceived;
         private List<byte> m_MultipacketBuffer;
 
+        private Random m_AnonID;
+
         public GameClient(MudAddress clientAddress, ServerSocket socket, int number)
         {
             m_Auth = false;
@@ -28,6 +30,7 @@ namespace Mud.Server
             m_Socket = socket;
             Number = number;
             RequestDisconnection = false;
+            m_AnonID = new Random();
         }
 
         public void Send(MudMessage message)
@@ -83,20 +86,22 @@ namespace Mud.Server
                 case MudOperation.ClientAuth:
                     if ( !m_Auth )
                     {
-                        string userAuth = Encoding.ASCII.GetString(buffer);
+                        // string userAuth = Encoding.ASCII.GetString(buffer);
+                        int ranId = m_AnonID.Next(1, 9999);
+                        string userAuth = $"player{ranId.ToString("D4")}";
+                        ID = userAuth;
+                        m_Auth = true;
+                        Console.Message($"Client {ToString()}: Authed as {ID} (Player {Number})");
+                        m_Socket.Send(MudMessage.Create(MudOperation.ValidateAuth, new byte[] { (byte) Number }));
+                        return ClientOperation.Connect;
 
-                        if ( !string.IsNullOrEmpty(userAuth) && userAuth.Length > 3 )
-                        {
-                            ID = userAuth;
-                            m_Auth = true;
-                            Console.Message($"Client {ToString()}: Authed as {ID} (Player {Number})");
-                            m_Socket.Send(MudMessage.Create(MudOperation.ValidateAuth, new byte[] { (byte) Number }));
-                            return ClientOperation.Connect;
-                        } 
-                        else
-                        {
-                            m_Socket.Send(MudMessage.Error($"Invalid Auth"));
-                        }
+                        //if ( !string.IsNullOrEmpty(userAuth) && userAuth.Length > 3 )
+                        //{
+                        //} 
+                        //else
+                        //{
+                        //    m_Socket.Send(MudMessage.Error($"Invalid Auth"));
+                        //}
                     }
                     return ClientOperation.Idle;
                 case MudOperation.MultiPackets:
