@@ -53,7 +53,7 @@ namespace Dirt.Network.Simulation.Systems
                             {
                                 st.WriteByte((byte)netBhv.ID);
                                 st.Write(netBhv.LastOutBuffer, 0, netBhv.LastOutBuffer.Length);
-                                m_Server.Socket.Send(MudMessage.Create((byte)NetworkOperation.ActorSync, st.ToArray()));
+                                m_Server.Send(MudMessage.Create((byte)NetworkOperation.ActorSync, st.ToArray()));
                             }
                             netBhv.LastOutBuffer = null;
                         }

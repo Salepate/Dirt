@@ -9,10 +9,13 @@ namespace Mud.Managers
     {
         private MudConnector m_Connector;
         public int LocalPlayer { get; private set; }
-        public ServerSocket Socket { get { return m_Connector.Socket; } }
+
+        private float m_PingClock;
+        private const float PING_DELAY = 15f;
         public ServerProxy(MudConnector connector)
         {
             m_Connector = connector;
+            m_PingClock = 0f;
         }
 
         public void SetLocalPlayer(int number)
@@ -23,6 +26,18 @@ namespace Mud.Managers
 
         public void Update(float deltaTime)
         {
+            m_PingClock += deltaTime;
+            if (m_PingClock >= PING_DELAY )
+            {
+                Send(MudMessage.Create(MudOperation.Ping, null));
+                m_PingClock -= PING_DELAY;
+            }
+        }
+
+        public void Send(MudMessage message)
+        {
+            m_Connector.Socket.Send(message);
+            m_PingClock = 0f;
         }
     }
 }

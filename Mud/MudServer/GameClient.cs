@@ -12,6 +12,8 @@ namespace Mud.Server
         public int Number { get; private set; }
         public bool RequestDisconnection { get; private set; }
 
+        public float LastPing { get; set; }
+
         private ServerSocket m_Socket;
         private bool m_Auth;
         private MudAddress m_Address;
@@ -48,6 +50,7 @@ namespace Mud.Server
 
         public void ChangeClientName(string newName)
         {
+            Console.Message($"Client {Number} name changed to {newName}");
             ID = newName;
         }
 

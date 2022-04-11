@@ -24,7 +24,9 @@ namespace Mud.Server
         private UdpClient m_Socket;
         private Thread m_ReceiveThread;
         private IClientConsumer m_ClientConsumer;
-
+        private float m_Clock;
+        private const float PING_CYCLE = 120f;
+        private const float PING_TIMEOUT = 30f;
         public const int SIO_UDP_CONNRESET = -1744830452;
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
@@ -40,11 +42,16 @@ namespace Mud.Server
             m_ServerPort = port;
             m_MessageQueue = new Queue<NetworkMessage>();
             m_ClientConsumer = null;
+            m_Clock = 0f;
         }
 
         public GameClient GetClient(int number)
         {
             int idx = number - 1;
+
+            if (idx < 0 || idx >= m_Clients.Length)
+                return null;
+
             return m_Clients[idx];
         }
 
@@ -70,6 +77,9 @@ namespace Mud.Server
         }
 
         public void ProcessMessages(float delta) {
+            m_Clock += delta;
+            if (m_Clock >= PING_CYCLE)
+                m_Clock -= PING_CYCLE;
             //if (m_MessageQueue.Count <= 0)
             //    return;
 
@@ -116,8 +126,9 @@ namespace Mud.Server
 
                 if (clientIdx != -1)
                 {
-                    ClientOperation clientEvent = m_Clients[clientIdx].OnMessage((MudOperation)msg.opCode, msg.buffer);
+                    m_Clients[clientIdx].LastPing = m_Clock;
 
+                    ClientOperation clientEvent = m_Clients[clientIdx].OnMessage((MudOperation)msg.opCode, msg.buffer);
                     if ( clientEvent == ClientOperation.Connect || clientEvent == ClientOperation.Disconnect )
                     {
                         ClientOperations.Enqueue(Tuple.Create(m_Clients[clientIdx], clientEvent));
@@ -136,7 +147,34 @@ namespace Mud.Server
                 }
             }
 
-            if (ClientOperations.Count >0 && m_ClientConsumer != null)
+            for (int i = 0; i < m_Clients.Length; ++i)
+            {
+                if (m_Clients[i] == null)
+                    continue;
+
+                GameClient client = m_Clients[i];
+                float dt;
+
+                if (client.LastPing > m_Clock)
+                {
+                    dt = (PING_CYCLE - client.LastPing) + m_Clock;
+                }
+                else
+                {
+                    dt = m_Clock - client.LastPing;
+                }
+
+                if (dt >= PING_TIMEOUT) // timedout
+                {
+                    Console.Message($"Client {m_Clients[i].ID} timed out ({PING_TIMEOUT}s)");
+                    m_Clients[i].ForceDisconnect();
+                    m_Server.FreeSlot(i);
+                    ClientOperations.Enqueue(Tuple.Create(m_Clients[i], ClientOperation.Disconnect));
+                    m_Clients[i] = null;
+                }
+            }
+
+            if (ClientOperations.Count > 0 && m_ClientConsumer != null)
             {
                 do
                 {
