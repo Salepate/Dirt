@@ -28,6 +28,7 @@ namespace Dirt.Systems
 
         private List<IContextItem> m_SharedContext;
         public override bool HasFixedUpdate => true;
+        public override bool HasUpdate => true;
 
         private IContentProvider m_Content;
 
@@ -110,6 +111,13 @@ namespace Dirt.Systems
             m_Systems.InitializeSystems(Simulation);
         }
 
+        public override void Update()
+        {
+            foreach(var mgr in m_Managers)
+            {
+                mgr.Value.Update(Time.deltaTime);
+            }
+        }
         public override void FixedUpdate()
         {
             m_Systems.UpdateSystems(Simulation, Time.fixedDeltaTime);
