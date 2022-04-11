@@ -15,7 +15,7 @@ namespace Mud.ServerInstance
             server.Run();
             while(true)
             {
-                server.ProcessMessages();
+                server.ProcessMessages(1f);
             }
 
             server.Stop();

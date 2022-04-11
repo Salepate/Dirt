@@ -121,9 +121,9 @@ namespace Dirt.ServerApplication
 
         public void Update(float delta)
         {
-            float deltaMs = delta / 1000f;
-            m_Server.ProcessMessages();
-            m_Game.UpdateInstance(deltaMs);
+            float deltaInSeconds = delta / 1000f;
+            m_Server.ProcessMessages(deltaInSeconds);
+            m_Game.UpdateInstance(deltaInSeconds);
         }
 
         private int GetConfig(string name)

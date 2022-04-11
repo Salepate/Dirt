@@ -69,7 +69,7 @@ namespace Mud.Server
             }
         }
 
-        public void ProcessMessages() {
+        public void ProcessMessages(float delta) {
             //if (m_MessageQueue.Count <= 0)
             //    return;
 
