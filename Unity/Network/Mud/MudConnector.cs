@@ -24,18 +24,20 @@ namespace Mud.DirtSystems
         private Queue<MudMessage> m_Messages;
         private object _QueueLock = new object();
         private MudLargeMessage m_LargeMessage;
-        private IMessageConsumer m_MessageConsumer;
+        //private IMessageConsumer m_MessageConsumer;
+        private List<IMessageConsumer> m_Consumers;
         private bool m_Authed;
         private Thread m_SocketThread;
 
         public string PlayerName { get; private set; }
         public void SetConsumer(IMessageConsumer consumer)
         {
-            m_MessageConsumer = consumer;
+            m_Consumers.Add(consumer);
         }
 
         public override void Initialize(DirtMode mode)
         {
+            m_Consumers = new List<IMessageConsumer>(2);
             m_Messages = new Queue<MudMessage>();
 
             if ( mode.HasSystem<SimulationSystem>())
@@ -112,7 +114,8 @@ namespace Mud.DirtSystems
                     int id = (int)buffer[0];
                     PlayerNumber = id;
                     Connected = true;
-                    m_MessageConsumer?.OnLocalNumber(id);
+                    for (int i = 0; i < m_Consumers.Count; ++i)
+                        m_Consumers[i].OnLocalNumber(id);
                     AuthAction?.Invoke(true);
                     break;
                 case MudOperation.Disconnect:
@@ -138,7 +141,11 @@ namespace Mud.DirtSystems
                     Console.Error(Encoding.ASCII.GetString(buffer));
                     break;
                 default:
-                    m_MessageConsumer?.OnCustomMessage((byte)operation, buffer);
+                    for(int i = 0; i < m_Consumers.Count; ++i)
+                    {
+                        if (m_Consumers[i].OnCustomMessage((byte)operation, buffer))
+                            break;
+                    }
                     break;
             }
         }

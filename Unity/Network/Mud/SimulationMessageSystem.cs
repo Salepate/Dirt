@@ -36,17 +36,14 @@ namespace Mud.DirtSystems
             m_Proxy = m_Simulation.GetManager<ServerProxy>();
         }
 
-        public void OnCustomMessage(byte opCode, byte[] buffer)
-        {
-            ProcessCustomMessage((NetworkOperation)opCode, buffer);
-        }
+        public bool OnCustomMessage(byte opCode, byte[] buffer) => ProcessCustomMessage((NetworkOperation)opCode, buffer);
 
         public void OnLocalNumber(int number)
         {
             m_Proxy.SetLocalPlayer(number);
         }
 
-        private void ProcessCustomMessage(NetworkOperation netOp, byte[] message)
+        private bool ProcessCustomMessage(NetworkOperation netOp, byte[] message)
         {
             switch (netOp)
             {
@@ -65,7 +62,7 @@ namespace Mud.DirtSystems
                     break;
                 case NetworkOperation.ActorState:
                     ActorState state;
-                    //Console.Message("Received Actor");
+                    Console.Message("Received Actor");
                     using (MemoryStream st = new MemoryStream(message))
                     {
                         state = (ActorState)m_Serializer.Deserialize(st);
@@ -100,8 +97,9 @@ namespace Mud.DirtSystems
                     m_Simulation.DispatchEvent(new ActorNetCullEvent(message[0]));
                     break;
                 default:
-                    break;
+                    return false;
             }
+            return true;
         }
     }
 }
