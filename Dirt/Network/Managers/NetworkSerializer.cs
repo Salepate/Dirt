@@ -85,7 +85,6 @@ namespace Dirt.Network.Managers
             Type compType = typeof(T);
             FieldInfo[] pubFields = compType.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
             List<ObjectFieldAccessor> accessors = new List<ObjectFieldAccessor>();
-
             for (int i = 0; i < pubFields.Length; ++i)
             {
                 if (!pubFields[i].IsNotSerialized)
@@ -98,14 +97,6 @@ namespace Dirt.Network.Managers
                         ComponentArray<T> compArr = (ComponentArray<T>)arr;
                         specializedSetter(ref compArr.Components[idx], newValue);
                     };
-                    //ObjectFieldAccessor.SetterAction setterAction = (ref IComponent comp, object value) =>
-                    //{
-                    //    specializedSetter(ref comp, value);
-                    //};
-                    //Action<IComponent, object> genericSetter = (comp, value) =>
-                    //{
-                    //    specializedSetter((T)comp, value);
-                    //};
 
                     Func<IComponent, object> genericGetter = (comp) =>
                     {
@@ -121,10 +112,7 @@ namespace Dirt.Network.Managers
                 }
             }
 
-            if (accessors.Count > 0)
-            {
-                s_ComponentSetters.Add(compType, accessors.ToArray());
-            }
+            s_ComponentSetters.Add(compType, accessors.ToArray());
         }
 
         private void CreateComponentSetters(Type compType)

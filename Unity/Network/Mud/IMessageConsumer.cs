@@ -2,7 +2,8 @@
 {
     public interface IMessageConsumer
     {
-        void OnCustomMessage(byte opCode, byte[] buffer);
+        // Return true if message was processed
+        bool OnCustomMessage(byte opCode, byte[] buffer);
         void OnLocalNumber(int number);
     }
 }

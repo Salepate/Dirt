@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dirt\ServerApplication\Dirt.ServerApplication.csproj">
+    <ProjectReference Include="..\ServerApplication\Dirt.ServerApplication.csproj">
       <Project>{2B0F5AB7-2FA4-4E3E-9157-247C24830F00}</Project>
       <Name>Dirt.ServerApplication</Name>
     </ProjectReference>
