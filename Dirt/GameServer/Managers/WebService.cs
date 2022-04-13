@@ -19,6 +19,11 @@ namespace Dirt.GameServer.Managers
 
         private List<IWebRouteHandler> m_Handlers;
 
+        public void AddPrefix(string prefix)
+        {
+            m_Listener.Prefixes.Add(prefix);
+        }
+
         public WebService(string host, int port)
         {
             m_Handlers = new List<IWebRouteHandler>();
