@@ -144,7 +144,7 @@ namespace Dirt.Simulation.Builder
                 {
                     if (actor.Components[i] != -1)
                     {
-                        Components.GetPool(actor.ComponentTypes[i]).Free(actor.InternalID);
+                        Components.GetPool(actor.ComponentTypes[i]).Free(actor.Components[i]);
                     }
                 }
                 actor.ResetActor();

@@ -42,5 +42,19 @@ namespace Dirt.Tests.Simulation
             int idx = compArray.Allocate(0);
             Assert.AreEqual(SampleComponent.DefaultValue, compArray.Components[idx].Value);
         }
+
+        [TestMethod]
+        public void Test_ComponentArray_Uniqueness()
+        {
+            ComponentArray<SampleComponent> compArray = new ComponentArray<SampleComponent>();
+            compArray.SetSize(50);
+            int idx = compArray.Allocate(0);
+            int idx2 = compArray.Allocate(1);
+
+            Assert.AreNotEqual(idx, idx2, "idx should be unique");
+            compArray.Free(idx);
+            idx = compArray.Allocate(0);
+            Assert.AreNotEqual(idx, idx2, "idx should be unique");
+        }
     }
 }
