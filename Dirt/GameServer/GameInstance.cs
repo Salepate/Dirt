@@ -254,6 +254,7 @@ namespace Dirt.GameServer
             {
                 simGroup = m_GroupManager.CreateGroup();
                 m_Groups.Add(simID, simGroup);
+                simProxy.SetGroup(simGroup);
             }
 
             if (!Simulations.IsReady(simID))

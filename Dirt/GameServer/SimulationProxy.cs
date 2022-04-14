@@ -1,5 +1,6 @@
 ﻿using Dirt.Simulation;
 using Dirt.Simulation.Context;
+using Mud.Server.Stream;
 
 namespace Dirt.GameServer
 {
@@ -11,6 +12,8 @@ namespace Dirt.GameServer
 
         public IContextItem[] BaseContext { get; private set; }
 
+        public StreamGroup Group { get; private set; }
+
 
         public SimulationProxy(GameSimulation simulation, SimulationSpan span, IContextItem[] contextItems)
         {
@@ -21,6 +24,11 @@ namespace Dirt.GameServer
                 BaseContext = new IContextItem[0];
             else
                 BaseContext = contextItems;
+        }
+
+        public void SetGroup(StreamGroup group)
+        {
+            Group = group;
         }
 
         public void AttachSystems(SystemContainer systems)
