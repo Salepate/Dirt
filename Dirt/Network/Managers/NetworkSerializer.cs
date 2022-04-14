@@ -83,6 +83,10 @@ namespace Dirt.Network.Managers
         private void CreateComponentMeta<T>() where T : IComponent, new()
         {
             Type compType = typeof(T);
+
+            if (s_ComponentSetters.ContainsKey(compType))
+                return;
+
             FieldInfo[] pubFields = compType.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
             List<ObjectFieldAccessor> accessors = new List<ObjectFieldAccessor>();
             for (int i = 0; i < pubFields.Length; ++i)
