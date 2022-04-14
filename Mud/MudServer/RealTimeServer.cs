@@ -26,17 +26,19 @@ namespace Mud.Server
         private IClientConsumer m_ClientConsumer;
         private float m_Clock;
         private const float PING_CYCLE = 120f;
-        private const float PING_TIMEOUT = 30f;
+        private const int PING_TIMEOUT = 30;
         public const int SIO_UDP_CONNRESET = -1744830452;
+        private int m_ClientTimeout;
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
             m_ClientConsumer = clientConsumer;
         }
-        public RealTimeServer(int maxClient, int port)
+        public RealTimeServer(int maxClient, int port, int clientTimeoutInSeconds = PING_TIMEOUT)
         {
             ClientOperations = new Queue<GameClientOperation>();
             StreamGroups = new StreamGroupManager();
 
+            m_ClientTimeout = clientTimeoutInSeconds;
             m_Server = new MudServer(maxClient);
             m_Clients = new GameClient[maxClient];
             m_ServerPort = port;
@@ -164,9 +166,9 @@ namespace Mud.Server
                     dt = m_Clock - client.LastPing;
                 }
 
-                if (dt >= PING_TIMEOUT) // timedout
+                if (dt >= m_ClientTimeout) // timedout
                 {
-                    Console.Message($"Client {m_Clients[i].ID} timed out ({PING_TIMEOUT}s)");
+                    Console.Message($"Client {m_Clients[i].ID} timed out ({m_ClientTimeout}s)");
                     m_Clients[i].ForceDisconnect();
                     m_Server.FreeSlot(i);
                     ClientOperations.Enqueue(Tuple.Create(m_Clients[i], ClientOperation.Disconnect));

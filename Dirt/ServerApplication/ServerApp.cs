@@ -26,7 +26,7 @@ namespace Dirt.ServerApplication
         {
             Console.Logger = new BasicLogger();
 
-            m_Server = new RealTimeServer(GetConfig("MaxClient"), GetConfig("ServerPort"));
+            m_Server = new RealTimeServer(GetConfig("MaxClient"), GetConfig("ServerPort"), GetConfig("ClientTimeout"));
 
             string contentPath = GetConfigString("ContentRoot");
             string contentVersion = GetConfigString("ContentVersion");
