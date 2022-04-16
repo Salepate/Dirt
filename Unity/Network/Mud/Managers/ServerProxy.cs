@@ -11,7 +11,7 @@ namespace Mud.Managers
         public int LocalPlayer { get; private set; }
 
         private float m_PingClock;
-        private const float PING_DELAY = 15f;
+        public const float PING_DELAY = 15f;
         public ServerProxy(MudConnector connector)
         {
             m_Connector = connector;
@@ -30,7 +30,6 @@ namespace Mud.Managers
             if (m_PingClock >= PING_DELAY )
             {
                 Send(MudMessage.Create(MudOperation.Ping, null));
-                m_PingClock -= PING_DELAY;
             }
         }
 
