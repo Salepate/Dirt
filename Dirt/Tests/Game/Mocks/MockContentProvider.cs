@@ -31,6 +31,11 @@ namespace Dirt.Tests.Mocks
             throw new NotImplementedException();
         }
 
+        public string LoadContentAsText(string contentName)
+        {
+            throw new NotImplementedException();
+        }
+
         public void LoadGameContent(string manifestName)
         {
         }

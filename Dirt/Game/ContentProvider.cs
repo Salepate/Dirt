@@ -94,6 +94,32 @@ namespace Dirt.Game
             return res;
         }
 
+        public string LoadContentAsText(string contentName)
+        {
+            string res = string.Empty;
+            if (m_ContentBufferMap.TryGetValue(contentName, out object bufferValue))
+            {
+                res = (string)bufferValue;
+            }
+            else
+            {
+                if (m_ContentMap.TryGetValue(contentName, out string assetPath))
+                {
+                    res = File.ReadAllText(Path.Combine(m_ContentDirectory.FullName, assetPath));
+                    if (res != null)
+                    {
+                        m_ContentBufferMap.Add(contentName, res);
+                    }
+                }
+                else
+                {
+                    Log.Console.Warning($"Unknown asset {contentName}");
+                }
+            }
+
+            return res;
+        }
+
         public T LoadContent<T>(string contentName)
         {
             T res = default;
