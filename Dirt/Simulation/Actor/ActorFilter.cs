@@ -96,7 +96,7 @@ namespace Dirt.Simulation.Actor
             return excludedActors;
         }
 
-        public List<ActorTuple<C1, C2>> GetAll<C1, C2>() 
+        public List<ActorTuple<C1, C2>> GetAll<C1, C2>()
             where C1 : new()
             where C2 : new()
         {
@@ -116,6 +116,30 @@ namespace Dirt.Simulation.Actor
                         actorTuple.SetC2(m_Components.GetPool<C2>(), c2Idx);
                         res.Add(actorTuple);
                     }
+                }
+            }
+            return res;
+        }
+
+        public List<ActorTuple<C1, C2, C3>> GetAll<C1, C2, C3>()
+        where C1 : new()
+        where C2 : new()
+        where C3 : new()
+        {
+            List<ActorTuple<C1, C2, C3>> res = new List<ActorTuple<C1, C2, C3>>();
+            for (int i = 0; i < Actors.Count; ++i)
+            {
+                GameActor actor = Actors[i];
+                int c1Idx = actor.GetComponentIndex<C1>();
+                int c2Idx = actor.GetComponentIndex<C2>();
+                int c3Idx = actor.GetComponentIndex<C3>();
+                if (c1Idx != -1 && c2Idx != -1 && c3Idx != -1)
+                {
+                    var actorTuple = new ActorTuple<C1, C2, C3>(actor);
+                    actorTuple.SetC1(m_Components.GetPool<C1>(), c1Idx);
+                    actorTuple.SetC2(m_Components.GetPool<C2>(), c2Idx);
+                    actorTuple.SetC3(m_Components.GetPool<C3>(), c3Idx);
+                    res.Add(actorTuple);
                 }
             }
             return res;
