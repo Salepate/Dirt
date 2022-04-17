@@ -26,7 +26,7 @@ namespace GameContent
 
             Dictionary<string, string> filemap = new Dictionary<string, string>();
 
-            var jsons = inputDir.GetFiles("*.json");
+            var jsons = inputDir.GetFiles("*.*");
             for(int i = 0; i < jsons.Length; ++i)
             {
                 string ext = jsons[i].Extension;
