@@ -3,7 +3,7 @@
 #pragma warning disable CS0660
 namespace Dirt.Game.Math
 {
-    [System.Serializable]
+    [Serializable]
     public struct float3 : IEquatable<float3>
     {
         public float x, y, z;

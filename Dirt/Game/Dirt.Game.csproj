@@ -51,11 +51,12 @@
     <Compile Include="ContentProvider.cs" />
     <Compile Include="Managers\MetricsManager.cs" />
     <Compile Include="Math\AreaOfEffect.cs" />
+    <Compile Include="Math\float2.cs" />
     <Compile Include="Math\Line.cs" />
     <Compile Include="Math\MersenneTwister.cs" />
     <Compile Include="Math\RNG.cs" />
     <Compile Include="Math\TrajectorySolver.cs" />
-    <Compile Include="Math\Vector.cs" />
+    <Compile Include="Math\float3.cs" />
     <Compile Include="Metrics\MetricObject.cs" />
     <Compile Include="Model\GamePlayer.cs" />
     <Compile Include="Model\PlayerProfile.cs" />
