@@ -72,6 +72,7 @@
     <Compile Include="Dirt\Simulation\Events\LocalSimulationEvent.cs" />
     <Compile Include="Dirt\Simulation\UnityExtension.cs" />
     <Compile Include="Dirt\Simulation\View\GenericView.cs" />
+    <Compile Include="Dirt\Simulation\View\IDirtAccess.cs" />
     <Compile Include="Dirt\Simulation\View\ISimulationView.cs" />
     <Compile Include="Dirt\SystemAttributes\BaseContentAttribute.cs" />
     <Compile Include="Dirt\SystemReflection\ContentMeta.cs" />

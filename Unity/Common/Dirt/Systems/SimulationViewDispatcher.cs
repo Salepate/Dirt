@@ -22,6 +22,7 @@ namespace Dirt.Systems
         private List<ISimulationView> m_Views;
         private IContentProvider m_Content;
         private SimulationSystem m_Simulation;
+        private DirtMode m_Mode;
 
         public override void Initialize(DirtMode mode)
         {
@@ -29,6 +30,7 @@ namespace Dirt.Systems
             m_Views = new List<ISimulationView>();
             m_Prefabs = mode.FindSystem<PrefabService>();
             m_Content = mode.FindSystem<ContentSystem>().Content;
+            m_Mode = mode;
 
             m_Simulation = mode.FindSystem<SimulationSystem>();
             Dictionary<string, System.Type> compMap = AssemblyReflection.BuildTypeMap<IComponent>(m_Simulation.ValidAssemblies.Assemblies);
@@ -132,6 +134,8 @@ namespace Dirt.Systems
         {
             if (view is IContentReader)
                 ((IContentReader)view).SetContent(m_Content);
+            if (view is IDirtAccess)
+                ((IDirtAccess)view).SetMode(m_Mode);
         }
 
 
