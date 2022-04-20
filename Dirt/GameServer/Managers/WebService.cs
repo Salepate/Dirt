@@ -19,6 +19,14 @@ namespace Dirt.GameServer.Managers
 
         private List<IWebRouteHandler> m_Handlers;
 
+        private struct UserRequest
+        {
+            public HttpListenerContext context;
+            public ResponseDelegate respDelegate;
+        }
+
+        private Queue<UserRequest> m_IncomingRequests;
+
         public void AddPrefix(string prefix)
         {
             m_Listener.Prefixes.Add(prefix);
@@ -30,6 +38,7 @@ namespace Dirt.GameServer.Managers
             m_Listener = new HttpListener();
             m_Listener.Prefixes.Add($"http://{host}:{port}/");
             m_Routes = new Dictionary<string, ResponseDelegate>();
+            m_IncomingRequests = new Queue<UserRequest>();
         }
 
         public async void Start()
@@ -56,16 +65,17 @@ namespace Dirt.GameServer.Managers
                         responseDelegate = DefaultResponseDelegate;
                 }
 
-                string serverResponse = responseDelegate(req);
-                byte[] encoded = Encoding.UTF8.GetBytes(serverResponse);
-                resp.ContentLength64 = encoded.Length;
-                resp.OutputStream.Write(encoded, 0, encoded.Length);
-                resp.OutputStream.Close();
+                UserRequest userReq = new UserRequest()
+                {
+                    context = ctx,
+                    respDelegate = responseDelegate
+                };
+
+                m_IncomingRequests.Enqueue(userReq);
             }
 
             m_Listener.Close();
         }
-
 
         public void RegisterHandler(IWebRouteHandler routeHandler)
         {
@@ -92,6 +102,16 @@ namespace Dirt.GameServer.Managers
         }
         public void Update(float deltaTime)
         {
+            while(m_IncomingRequests.Count > 0)
+            {
+                UserRequest userreq = m_IncomingRequests.Dequeue();
+                string serverResponse = userreq.respDelegate(userreq.context.Request);
+                byte[] encoded = Encoding.UTF8.GetBytes(serverResponse);
+                HttpListenerResponse resp = userreq.context.Response;
+                resp.ContentLength64 = encoded.Length;
+                resp.OutputStream.Write(encoded, 0, encoded.Length);
+                resp.OutputStream.Close();
+            }
         }
 
         private string DefaultResponseDelegate(HttpListenerRequest request)
