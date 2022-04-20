@@ -5,6 +5,7 @@ using Dirt.Log;
 using Dirt.Simulation;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Context;
+using Dirt.Simulation.Events;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
 using System.Collections.Generic;
@@ -71,6 +72,7 @@ namespace Dirt.Systems
 
         public override void Unload()
         {
+            DispatchEvent(new LocalSimulationEvent(LocalSimulationEvent.SimulationDestroyed));
             m_Systems.ClearSimulation(Simulation);
         }
 
@@ -101,6 +103,7 @@ namespace Dirt.Systems
                 m_Systems.Context.SetContext(ctx);
             });
 
+            DispatchEvent(new LocalSimulationEvent(LocalSimulationEvent.SimulationDestroyed));
             m_Systems.ClearSimulation(Simulation);
 
             for (int i = 0; i < systems.Length; ++i)
@@ -109,6 +112,8 @@ namespace Dirt.Systems
             }
 
             m_Systems.InitializeSystems(Simulation);
+
+            DispatchEvent(new LocalSimulationEvent(LocalSimulationEvent.SimulationLoaded));
         }
 
         public override void Update()

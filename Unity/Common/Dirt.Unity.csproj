@@ -69,6 +69,7 @@
     <Compile Include="Dirt\ModeStates\RunState.cs" />
     <Compile Include="Dirt\PoolManager.cs" />
     <Compile Include="Dirt\PrefabPoolManager.cs" />
+    <Compile Include="Dirt\Simulation\Events\LocalSimulationEvent.cs" />
     <Compile Include="Dirt\Simulation\UnityExtension.cs" />
     <Compile Include="Dirt\Simulation\View\GenericView.cs" />
     <Compile Include="Dirt\Simulation\View\ISimulationView.cs" />

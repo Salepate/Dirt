@@ -50,11 +50,16 @@ namespace Dirt.Simulation.Context
             }
         }
 
-        public T GetContext<T>() where T : IContextItem
+        /// <summary>
+        /// Return a specific context from simulation
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>null if the context does not exist</returns>
+        public T GetContext<T>() where T : class, IContextItem
         {
             if (!m_Context.TryGetValue(typeof(T), out object subContext))
             {
-                return default(T);
+                return null;
             }
             return (T)subContext;
         }
