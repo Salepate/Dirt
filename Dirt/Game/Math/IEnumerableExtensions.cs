@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dirt.Extensions
+namespace Dirt.Game.Extensions
 {
     public static class EnumerableExtensions
     {
@@ -13,6 +13,14 @@ namespace Dirt.Extensions
         }
 
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, RNG rng)
+        {
+            if (source == null) throw new ArgumentNullException("source");
+            if (rng == null) throw new ArgumentNullException("rng");
+
+            return source.ShuffleIterator(rng);
+        }
+
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
         {
             if (source == null) throw new ArgumentNullException("source");
             if (rng == null) throw new ArgumentNullException("rng");
@@ -31,14 +39,6 @@ namespace Dirt.Extensions
 
                 buffer[j] = buffer[i];
             }
-        }
-
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
-        {
-            if (source == null) throw new ArgumentNullException("source");
-            if (rng == null) throw new ArgumentNullException("rng");
-
-            return source.ShuffleIterator(rng);
         }
 
         private static IEnumerable<T> ShuffleIterator<T>(

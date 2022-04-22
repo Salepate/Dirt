@@ -52,6 +52,7 @@
     <Compile Include="Managers\MetricsManager.cs" />
     <Compile Include="Math\AreaOfEffect.cs" />
     <Compile Include="Math\float2.cs" />
+    <Compile Include="Math\IEnumerableExtensions.cs" />
     <Compile Include="Math\Line.cs" />
     <Compile Include="Math\MersenneTwister.cs" />
     <Compile Include="Math\RNG.cs" />

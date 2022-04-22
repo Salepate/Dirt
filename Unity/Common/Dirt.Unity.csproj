@@ -84,7 +84,6 @@
     <Compile Include="Dirt\Systems\SimulationViewDispatcher.cs" />
     <Compile Include="Dirt\SytemInterfaces\IContentSystem.cs" />
     <Compile Include="Dirt\Utility\AssemblyUtility.cs" />
-    <Compile Include="Dirt\Utility\IEnumerableExtensions.cs" />
     <Compile Include="Dirt\Utility\SimpleHash.cs" />
     <Compile Include="Dirt\Utility\SmallClock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
