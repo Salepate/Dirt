@@ -4,8 +4,11 @@
     {
         public const int SimulationLoaded = 0;
         public const int SimulationDestroyed = 1;
-        public LocalSimulationEvent(int eventType) : base()
+
+        public string Archetype { get; private set; }
+        public LocalSimulationEvent(string archetype, int eventType) : base()
         {
+            Archetype = archetype;
             Event = eventType;
         }
     }

@@ -72,7 +72,7 @@ namespace Dirt.Systems
 
         public override void Unload()
         {
-            DispatchEvent(new LocalSimulationEvent(LocalSimulationEvent.SimulationDestroyed));
+            DispatchEvent(new LocalSimulationEvent(Simulation.Archetype, LocalSimulationEvent.SimulationDestroyed));
             m_Systems.ClearSimulation(Simulation);
         }
 
@@ -92,7 +92,9 @@ namespace Dirt.Systems
             string contextName = $"context.{context ?? "default"}";
 
             m_Systems.Context.ClearContext();
-
+            DispatchEvent(new LocalSimulationEvent(Simulation.Archetype, LocalSimulationEvent.SimulationDestroyed));
+            m_Systems.ClearSimulation(Simulation);
+            Simulation.Archetype = archetypeName;
             if (m_Content.HasContent(contextName))
             {
                 m_Systems.LoadContext(contextName);
@@ -103,9 +105,6 @@ namespace Dirt.Systems
                 m_Systems.Context.SetContext(ctx);
             });
 
-            DispatchEvent(new LocalSimulationEvent(LocalSimulationEvent.SimulationDestroyed));
-            m_Systems.ClearSimulation(Simulation);
-
             for (int i = 0; i < systems.Length; ++i)
             {
                 m_Systems.AddSystem(systems[i]);
@@ -113,7 +112,7 @@ namespace Dirt.Systems
 
             m_Systems.InitializeSystems(Simulation);
 
-            DispatchEvent(new LocalSimulationEvent(LocalSimulationEvent.SimulationLoaded));
+            DispatchEvent(new LocalSimulationEvent(archetypeName, LocalSimulationEvent.SimulationLoaded));
         }
 
         public override void Update()
