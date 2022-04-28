@@ -57,6 +57,7 @@
     <Compile Include="ActorBuilderTests.cs" />
     <Compile Include="Framework\BaseSimulation.cs" />
     <Compile Include="Framework\DirtTest.cs" />
+    <Compile Include="LineTests.cs" />
     <Compile Include="Mocks\MockContentProvider.cs" />
     <Compile Include="Mocks\MockManagerProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
