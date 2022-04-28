@@ -148,6 +148,7 @@ namespace Dirt
             }
             catch(System.Exception e)
             {
+                Console.Error(e.Message);
                 Console.Error(e.StackTrace);
                 this.enabled = false;
                 if ( !string.IsNullOrEmpty(ErrorSceneName))
