@@ -2,6 +2,7 @@
 using Dirt.Log;
 using Dirt.Model;
 using Dirt.Simulation;
+using Dirt.Simulation.Context;
 using Dirt.Simulation.SystemHelper;
 using Dirt.Simulation.Utility;
 using Dirt.Simulation.View;
@@ -132,6 +133,8 @@ namespace Dirt.Systems
 
         public void SetupView(ISimulationView view)
         {
+            if (view is IContextReader)
+                ((IContextReader)view).SetContext(m_Simulation.Context);
             if (view is IContentReader)
                 ((IContentReader)view).SetContent(m_Content);
             if (view is IDirtAccess)
