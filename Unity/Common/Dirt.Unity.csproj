@@ -74,6 +74,7 @@
     <Compile Include="Dirt\Simulation\View\GenericView.cs" />
     <Compile Include="Dirt\Simulation\View\IDirtAccess.cs" />
     <Compile Include="Dirt\Simulation\View\ISimulationView.cs" />
+    <Compile Include="Dirt\Simulation\View\TimelineView.cs" />
     <Compile Include="Dirt\SystemAttributes\BaseContentAttribute.cs" />
     <Compile Include="Dirt\SystemReflection\ContentMeta.cs" />
     <Compile Include="Dirt\SystemReflection\DirtSystemMeta.cs" />
