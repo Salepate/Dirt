@@ -53,20 +53,15 @@ namespace Dirt.Systems
             m_Managers = new Dictionary<System.Type, IGameManager>();
             m_SimBuilder = new SimulationBuilder();
             m_SharedContext = new List<IContextItem>();
-
-
             m_Content = mode.FindSystem<ContentSystem>().Content;
-
-            //@TODO do the same thing as stated Server Side (GameInstance.cs)
             ValidAssemblies = m_Content.LoadContent<AssemblyCollection>(AssemblyCollection);
-            //GameplayDB gameDB = new GameplayDB();
-            //gameDB.PopulateFromContent(m_Content);
-            //m_CommonContext.Add(gameDB);
+
+            AddSharedContext(ValidAssemblies);
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             RegisterManager(new MetricsManager());
-            //RegisterManager(new DirtSystemProvider(mode));
             Simulation = new GameSimulation();
             Simulation.Builder.LoadAssemblies(ValidAssemblies);
+            Simulation.Builder.SetGameContent(m_Content);
             m_Systems = new SystemContainer(m_Content, this);
         }
 
@@ -136,7 +131,7 @@ namespace Dirt.Systems
         {
             m_SharedContext.Add(context);
 
-            if ( Context != null )
+            if (m_Systems != null && Context != null )
             {
                 Context.SetContext(context);
             }

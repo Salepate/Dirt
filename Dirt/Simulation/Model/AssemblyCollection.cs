@@ -1,7 +1,9 @@
-﻿namespace Dirt.Simulation.Model
+﻿using Dirt.Simulation.Context;
+
+namespace Dirt.Simulation.Model
 {
     [System.Serializable]
-    public class AssemblyCollection
+    public class AssemblyCollection : IContextItem
     {
         public string[] Assemblies;
 

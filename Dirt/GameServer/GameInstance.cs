@@ -64,6 +64,7 @@ namespace Dirt.GameServer
             m_SharedContexts = new List<IContextItem>();
             NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             ValidAssemblies = Content.LoadContent<AssemblyCollection>(AssemblyCollection);
+            m_SharedContexts.Add(ValidAssemblies);
             //@hack: Load missing assemblies before serializer 
             AssemblyReflection.BuildTypeMap<ISimulationSystem>(ValidAssemblies.Assemblies);
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
@@ -300,36 +301,5 @@ namespace Dirt.GameServer
         {
             m_Managers.Add(typeof(T), manager);
         }
-
-
-        //private void RegisterPlayerActions(ActionContext context)
-        //{
-        //    context.RegisterPlayerAction(PlayerActions.JoinSimulation, (actor, playerIndex, simIdx) =>
-        //    {
-        //        GamePlayer player = m_Players.FindPlayer(playerIndex);
-        //        MovePlayerToSimulation(player, int.Parse(simIdx));
-        //    });
-
-        //    context.RegisterPlayerAction(PlayerActions.SafeJoinSimulation, (actor, playerIndex, simName) =>
-        //    {
-        //        int simIdx = Simulations.FindSimulation((sim) => sim.Archetype == simName);
-
-        //        if (simIdx == -1 )
-        //        {
-        //            simIdx = Simulations.CreateSimulation(simName, SimulationSpan.Temporary);
-        //        }
-
-        //        GamePlayer player = m_Players.FindPlayer(playerIndex);
-        //        MovePlayerToSimulation(player, simIdx);
-        //    });
-
-        //    // Space
-        //    context.RegisterPlayerAction(PlayerActions.ChangeSkin, (actor, playerIndex, simName) =>
-        //    {
-        //        PlayerData data = m_Sessions.GetOrCreate(playerIndex);
-        //        data.CharacterSkin = (data.CharacterSkin + 1) % 21;
-        //        actor.GetComponent<Character>().Skin = data.CharacterSkin;
-        //    });
-        //}
     }
 }
