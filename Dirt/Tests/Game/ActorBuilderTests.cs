@@ -69,6 +69,21 @@ namespace Dirt.Tests.Simulation
         }
 
         [TestMethod]
+        public void Test_Builder_GetByID()
+        {
+            Assert.IsNull(m_Builder.GetActorByID(0));
+
+            var actorOne = m_Builder.CreateActor();
+            var actorTwo = m_Builder.CreateActor();
+            Assert.AreEqual(actorOne, m_Builder.GetActorByID(actorOne.ID));
+            Assert.AreEqual(actorTwo, m_Builder.GetActorByID(actorTwo.ID));
+            m_Builder.DestroyActor(actorOne);
+            m_Builder.DestroyActor(actorTwo);
+            actorOne = m_Builder.CreateActor();
+            Assert.AreEqual(actorOne, m_Builder.GetActorByID(actorOne.ID));
+        }
+
+        [TestMethod]
         public void Test_Builder_AddComponent_Generic()
         {
             GameActor actor = m_Builder.CreateActor();

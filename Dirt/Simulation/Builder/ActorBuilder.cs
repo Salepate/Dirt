@@ -15,7 +15,8 @@ namespace Dirt.Simulation.Builder
         public System.Action<GameActor> ActorCreateAction;
         public System.Action<GameActor> ActorDestroyAction;
 
-        private GameActor[] m_Actors;
+        private GameActor[] m_AvailableActor;
+        private GameActor[] m_ActorCollection;
 
         private int m_LastFreeIndex;
 
@@ -38,7 +39,7 @@ namespace Dirt.Simulation.Builder
         public ActorBuilder()
         {
             m_Injectors = new Dictionary<Type, ComponentInjector>();
-            m_Actors = new GameActor[0];
+            m_AvailableActor = new GameActor[0];
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
         }
@@ -50,17 +51,32 @@ namespace Dirt.Simulation.Builder
 
         public void InitializePool(int poolSize)
         {
-            m_Actors = new GameActor[poolSize];
+            m_AvailableActor = new GameActor[poolSize];
+            m_ActorCollection = new GameActor[poolSize];
             for (int i = 0; i < poolSize; ++i)
-                m_Actors[i] = new GameActor(i);
+            {
+                m_AvailableActor[i] = new GameActor(i);
+                m_ActorCollection[i] = m_AvailableActor[i];
+            }
 
             Components = new SimulationPool(poolSize);
         }
 
+        public GameActor GetActorByID(int actorID)
+        {
+            int internalID = actorID >> 8;
+            int version = actorID & 0xFF;
+
+            if (m_AvailableActor[internalID] == null && m_ActorCollection[internalID].Version == version)
+            {
+                return m_ActorCollection[internalID];
+            }
+            return null;
+        }
         public void LoadAssemblies(AssemblyCollection collection)
         {
             m_ValidComponents = AssemblyReflection.BuildTypeMap<IComponent>(collection.Assemblies);
-            foreach(KeyValuePair<string, Type> kvp in m_ValidComponents)
+            foreach (KeyValuePair<string, Type> kvp in m_ValidComponents)
             {
                 Console.Message($"Register Comp Pool {kvp.Key}");
                 RegisterComponent(kvp.Value);
@@ -80,7 +96,7 @@ namespace Dirt.Simulation.Builder
             {
                 int idx = actor.GetComponentIndex(compType);
 
-                if ( idx == -1 )
+                if (idx == -1)
                 {
                     GenericArray pool = Components.GetPool(compType);
                     idx = pool.Allocate(actor.InternalID);
@@ -99,7 +115,7 @@ namespace Dirt.Simulation.Builder
             actor.UnassignComponent(compType);
             Components.GetPool(compType).Free(compIdx);
         }
-        public ref C AddComponent<C>(GameActor actor) where C: new()
+        public ref C AddComponent<C>(GameActor actor) where C : new()
         {
             ComponentArray<C> pool = Components.GetPool<C>();
             int idx = actor.GetComponentIndex<C>();
@@ -111,7 +127,7 @@ namespace Dirt.Simulation.Builder
             return ref pool.Components[idx];
         }
 
-        public void RemoveComponent<C>(GameActor actor) where C: new()
+        public void RemoveComponent<C>(GameActor actor) where C : new()
         {
             int compIdx = actor.GetComponentIndex<C>();
             if (compIdx == -1)
@@ -136,11 +152,11 @@ namespace Dirt.Simulation.Builder
 
         public void DestroyActor(GameActor actor)
         {
-            int freeSlot = GetEmptyIndex();
-            if (freeSlot != -1)
+            int actorSlot = actor.InternalID;
+            if (m_AvailableActor[actorSlot] == null)
             {
                 ActorDestroyAction?.Invoke(actor);
-                for(int i = 0; i < actor.Components.Length; ++i)
+                for (int i = 0; i < actor.Components.Length; ++i)
                 {
                     if (actor.Components[i] != -1)
                     {
@@ -148,8 +164,10 @@ namespace Dirt.Simulation.Builder
                     }
                 }
                 actor.ResetActor();
-                m_Actors[freeSlot] = actor;
-                m_LastFreeIndex = freeSlot;
+                m_AvailableActor[actorSlot] = actor;
+
+                if (actorSlot < m_LastFreeIndex)
+                    m_LastFreeIndex = actorSlot;
             }
             else
             {
@@ -162,7 +180,7 @@ namespace Dirt.Simulation.Builder
             m_Injectors.Add(compType, new ComponentInjector(compType));
             Components.RegisterComponentArray(compType);
         }
-        
+
         public Type GetComponentType(string compName)
         {
             m_ValidComponents.TryGetValue(compName, out Type compType);
@@ -172,11 +190,11 @@ namespace Dirt.Simulation.Builder
         // internal
         private GameActor GetActor()
         {
-            if (m_LastFreeIndex >= m_Actors.Length || m_LastFreeIndex == -1)
+            if (m_LastFreeIndex >= m_AvailableActor.Length || m_LastFreeIndex == -1)
                 throw new System.Exception($"Actor Limit exceeded {m_LastFreeIndex}");
 
-            GameActor actor = m_Actors[m_LastFreeIndex];
-            m_Actors[m_LastFreeIndex] = null;
+            GameActor actor = m_AvailableActor[m_LastFreeIndex];
+            m_AvailableActor[m_LastFreeIndex] = null;
             m_LastFreeIndex = GetNextFreeIndex(m_LastFreeIndex + 1);
             actor.SetVersion((actor.Version + 1) % 256);
             return actor;
@@ -186,7 +204,7 @@ namespace Dirt.Simulation.Builder
         {
             for (int i = m_LastFreeIndex - 1; i >= 0; --i)
             {
-                if (m_Actors[i] == null)
+                if (m_AvailableActor[i] == null)
                     return i;
             }
 
@@ -195,26 +213,26 @@ namespace Dirt.Simulation.Builder
 
         private int GetNextFreeIndex(int from)
         {
-            for(int i = from; i < m_Actors.Length; ++i)
+            for (int i = from; i < m_AvailableActor.Length; ++i)
             {
-                if (m_Actors[i] != null)
+                if (m_AvailableActor[i] != null)
                     return i;
             }
 
-            return m_Actors.Length;
+            return m_AvailableActor.Length;
         }
 
         private void InternalBuild(GameActor actor, ActorArchetype archetype)
         {
-            for(int i = 0; i < archetype.Components.Length; ++i)
+            for (int i = 0; i < archetype.Components.Length; ++i)
             {
                 string compName = archetype.Components[i];
                 m_ValidComponents.TryGetValue(compName, out Type compType);
-                if ( compType != null )
+                if (compType != null)
                 {
                     int idx = AddComponent(actor, compType);
 
-                    if ( archetype.Settings != null && archetype.Settings.TryGetValue(compType.Name, out ComponentParameters parameters))
+                    if (archetype.Settings != null && archetype.Settings.TryGetValue(compType.Name, out ComponentParameters parameters))
                     {
                         InjectParameters(Components.GetPool(compType), idx, parameters);
                     }
@@ -228,7 +246,7 @@ namespace Dirt.Simulation.Builder
 
         private void InjectParameters(GenericArray comp, int compIndex, ComponentParameters parameters)
         {
-            if ( !m_Injectors.TryGetValue(comp.ComponentType, out ComponentInjector injector))
+            if (!m_Injectors.TryGetValue(comp.ComponentType, out ComponentInjector injector))
             {
                 RegisterComponent(comp.ComponentType);
                 injector = m_Injectors[comp.ComponentType];
