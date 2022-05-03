@@ -68,4 +68,5 @@ Network Socket Thread handler.
 
 ## NetSerializer
 
-Some library found on the internet that provides efficient serizaliation, intended for network operations. Customized for Mud.
+An efficient data serializer created by [@tomba](https://github.com/tomba)
+* https://github.com/tomba/netserializer
