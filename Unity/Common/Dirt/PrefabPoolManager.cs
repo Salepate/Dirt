@@ -74,8 +74,8 @@ namespace Framework
         private GameObject Instantiate()
         {
             GameObject obj = GameObject.Instantiate(m_Reference, m_Root);
-            if (!m_Debug)
-                obj.hideFlags = HideFlags.HideAndDontSave;
+            //if (!m_Debug)
+            //    obj.hideFlags = HideFlags.HideAndDontSave;
             return obj;
         }
         #endregion
