@@ -35,6 +35,7 @@
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -44,6 +45,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CommandContext.cs" />
+    <Compile Include="Commands\CommandData.cs" />
+    <Compile Include="Commands\CommandParameters.cs" />
+    <Compile Include="Commands\CommandProcessor.cs" />
+    <Compile Include="Commands\GameCommandAttribute.cs" />
     <Compile Include="GameInstance.cs" />
     <Compile Include="Managers\GameDataManager.cs" />
     <Compile Include="Managers\PlayerManager.cs" />
@@ -51,6 +57,15 @@
     <Compile Include="Managers\SimulationManager.cs" />
     <Compile Include="Managers\WebService.cs" />
     <Compile Include="PlayerProxy.cs" />
+    <Compile Include="PlayerStore\Helpers\PlayerName.cs" />
+    <Compile Include="PlayerStore\Model\PlayerCredential.cs" />
+    <Compile Include="PlayerStore\Model\SimpleID.cs" />
+    <Compile Include="PlayerStore\OnlinePlayerTable.cs" />
+    <Compile Include="PlayerStore\PersistentStore.cs" />
+    <Compile Include="PlayerStore\PlayerStoreError.cs" />
+    <Compile Include="PlayerStore\PlayerStoreManager.cs" />
+    <Compile Include="PlayerStore\SessionCommands.cs" />
+    <Compile Include="PlayerStore\StoreResponse.cs" />
     <Compile Include="PluginInstance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerActorBuilder.cs" />

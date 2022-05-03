@@ -2,7 +2,9 @@
 using Dirt.Game.Managers;
 using Dirt.Game.Metrics;
 using Dirt.Game.Model;
+using Dirt.GameServer.GameCommand;
 using Dirt.GameServer.Managers;
+using Dirt.GameServer.PlayerStore;
 using Dirt.Network;
 using Dirt.Network.Events;
 using Dirt.Network.Managers;
@@ -21,6 +23,7 @@ using Mud.Server;
 using Mud.Server.Stream;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Console = Dirt.Log.Console;
 
@@ -45,8 +48,6 @@ namespace Dirt.GameServer
         public List<IContextItem> m_SharedContexts;
         private PlayerManager m_Players;
         private PluginInstance m_Plugin;
-        //@TODO Move in space
-        //private PlayerSession m_Sessions;
 
         public Action<GameClient, MudMessage> CustomMessage;
         public GameInstance(StreamGroupManager groupManager, string contentPath, string contentManifest, PluginInstance plugin)
@@ -77,6 +78,13 @@ namespace Dirt.GameServer
             RegisterManager(m_Players);
             RegisterManager(Simulations);
 
+            int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
+            RegisterManager(new WebService("127.0.0.1", webServicePort));
+            RegisterManager(new PlayerStoreManager(this));
+            RegisterManager(new CommandProcessor(this));
+
+            GetManager<WebService>().Start();
+            GetManager<CommandProcessor>().RegisterClassCommands<SessionCommands>();
             Console.Message($"{m_Plugin.PluginName} Started");
         }
 
