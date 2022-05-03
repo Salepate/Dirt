@@ -7,8 +7,8 @@ using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Network.Simulation.Events;
 using Dirt.Simulation;
+using Dirt.Simulation.Action;
 using Dirt.Simulation.Builder;
-using Dirt.Simulation.Events;
 using Dirt.Systems;
 using Mud.Framework;
 using Mud.Managers;
@@ -16,6 +16,7 @@ using System.IO;
 
 namespace Mud.DirtSystems
 {
+    using BitConverter = System.BitConverter;
     public class SimulationMessageSystem : DirtSystem, IMessageConsumer
     {
         private const string SettingsContentName = "settings.netserial";
@@ -49,7 +50,7 @@ namespace Mud.DirtSystems
             {
                 case NetworkOperation.LoadSimulation:
                     string sim = System.Text.Encoding.ASCII.GetString(message);
-                    Console.Message($"Loading simulation {sim}");
+                    Console.Message($"Load simulation {sim}");
                     m_Simulation.ChangeSimulation(sim);
                     break;
                 case NetworkOperation.GameEvent:
@@ -62,7 +63,6 @@ namespace Mud.DirtSystems
                     break;
                 case NetworkOperation.ActorState:
                     ActorState state;
-                    Console.Message("Received Actor");
                     using (MemoryStream st = new MemoryStream(message))
                     {
                         state = (ActorState)m_Serializer.Deserialize(st);
@@ -95,6 +95,21 @@ namespace Mud.DirtSystems
                     break;
                 case NetworkOperation.ActorRemove:
                     m_Simulation.DispatchEvent(new ActorNetCullEvent(message[0]));
+                    break;
+                case NetworkOperation.ActorAction:
+                    int netID = BitConverter.ToInt32(message, 0);
+                    int actionIndex = BitConverter.ToInt32(message, 4);
+                    // TODO have a network map instead of searching
+                    var sourceActors = m_Simulation.Simulation.Filter.GetActorsMatching<NetInfo>(n => n.ID == netID);
+                    if (sourceActors.Count > 0)
+                    {
+                        ActorActionEvent actionEvent = new ActorActionEvent(sourceActors[0].Actor.ID, actionIndex);
+                        m_Simulation.DispatchEvent(actionEvent);
+                    }
+                    else
+                    {
+                        Console.Warning($"Actor (NetID {netID}) not found");
+                    }
                     break;
                 default:
                     return false;

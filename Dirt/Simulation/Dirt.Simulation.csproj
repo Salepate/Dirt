@@ -38,6 +38,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action\ActorAction.cs" />
+    <Compile Include="Action\ActorActionContext.cs" />
+    <Compile Include="Action\ActorActionEvent.cs" />
+    <Compile Include="Systems\ActorActionInterpreter.cs" />
     <Compile Include="Actor\ActorFilterExtension.cs" />
     <Compile Include="Actor\ActorFilter.cs" />
     <Compile Include="Actor\ActorTuple.cs" />
