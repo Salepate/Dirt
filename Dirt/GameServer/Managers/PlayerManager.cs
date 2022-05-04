@@ -4,6 +4,7 @@ using Dirt.Network;
 using Dirt.Network.Managers;
 using Mud;
 using Mud.Server;
+using Mud.Server.Stream;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -66,6 +67,18 @@ namespace Dirt.GameServer.Managers
             {
                 kvp.Value.Client.Send(message);
             }
+        }
+
+        public void SendEventTo<T>(T gameEvent, StreamGroup group) where T: NetworkEvent
+        {
+            byte[] eventBuffer;
+            using (MemoryStream st = new MemoryStream())
+            {
+                m_NetSerializer.Serialize(st, gameEvent);
+                eventBuffer = st.ToArray();
+            }
+            MudMessage message = MudMessage.Create((int)NetworkOperation.GameEvent, eventBuffer);
+            group.Broadcast(message);
         }
 
         public void SendEventTo<T>(GamePlayer player, T gameEvent) where T : NetworkEvent
