@@ -115,7 +115,7 @@ namespace Dirt.GameServer
                 };
 
                 m_Players.SendEvent<PlayerConnectionEvent>(new PlayerConnectionEvent() { Player = proxy.Player });
-                m_Players.SendEventTo(proxy.Player, playerListEvent);
+                m_Players.SendEventTo(playerListEvent, proxy.Player);
 
                 int simID = DefaultSimulation;
                 GameSimulation sim = Simulations.GetSimulation(simID);

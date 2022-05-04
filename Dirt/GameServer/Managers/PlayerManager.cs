@@ -81,7 +81,7 @@ namespace Dirt.GameServer.Managers
             group.Broadcast(message);
         }
 
-        public void SendEventTo<T>(GamePlayer player, T gameEvent) where T : NetworkEvent
+        public void SendEventTo<T>(T gameEvent, GamePlayer player) where T : NetworkEvent
         {
             if (m_PlayerMap.TryGetValue(player.Number, out PlayerProxy proxy))
             {
