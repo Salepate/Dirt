@@ -167,6 +167,12 @@ namespace Dirt.GameServer.PlayerStore
             proxy.Client.Send(MudMessage.Create((int)NetworkOperation.SetSession, BitConverter.GetBytes(sessID)));
         }
 
+        public void ClearSession(PlayerProxy proxy)
+        {
+            Table.RemoveSession(proxy.Client.Number);
+            Table.RemoveCredentials(proxy.Client.Number);
+        }
+
         private bool AuthUser(int playerNumber, PlayerCredential credential)
         {
             GameClient client = m_RTServer.Server.GetClient(playerNumber);
