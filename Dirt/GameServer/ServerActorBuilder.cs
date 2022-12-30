@@ -22,7 +22,6 @@ namespace Dirt.GameServer
                 int netInfoIdx = builtActor.GetComponentIndex<NetInfo>();
                 if (netInfoIdx == -1)
                 {
-                    Console.Warning($"Archetype {archetype} NetInfo component was not declared");
                     ref NetInfo netInfo = ref AddComponent<NetInfo>(builtActor);
                     SyncHelper.SyncActor(builtActor, ref netInfo, syncInfo, owner);
                 }

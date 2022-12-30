@@ -24,6 +24,7 @@ namespace Dirt.Systems
         {
             m_PoolManager.InitializePool(prefab, parent, baseCapacity);
         }
+        //TODO add pool destroy
 
         public GameObject Instantiate(GameObject prefab, Transform parent = null)
         {
