@@ -3,10 +3,11 @@
     public enum NetworkOperation
     {
         GameEvent = 100,
-        LoadSimulation = 101,
-        ActorState = 102,
-        ActorRemove = 103,
-        ActorSync = 104,
-        ActorAction = 105
+        SetSession = 101,
+        LoadSimulation = 102,
+        ActorState = 103,
+        ActorRemove = 104,
+        ActorSync = 105,
+        ActorAction = 106
     }
 }

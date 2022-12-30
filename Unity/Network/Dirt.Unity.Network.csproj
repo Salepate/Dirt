@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\SessionIDEvent.cs" />
     <Compile Include="Mud\IMessageConsumer.cs" />
     <Compile Include="Mud\Managers\ServerProxy.cs" />
     <Compile Include="Mud\MudConnector.cs" />

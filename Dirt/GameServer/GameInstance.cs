@@ -5,6 +5,7 @@ using Dirt.Game.Model;
 using Dirt.GameServer.GameCommand;
 using Dirt.GameServer.Managers;
 using Dirt.GameServer.PlayerStore;
+using Dirt.GameServer.PlayerStore.Model;
 using Dirt.Network;
 using Dirt.Network.Events;
 using Dirt.Network.Managers;
@@ -80,16 +81,16 @@ namespace Dirt.GameServer
 
             int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
             RegisterManager(new WebService("127.0.0.1", webServicePort));
-            RegisterManager(new PlayerStoreManager(this));
-            RegisterManager(new CommandProcessor(this));
-
             GetManager<WebService>().Start();
-            GetManager<CommandProcessor>().RegisterClassCommands<SessionCommands>();
             Console.Message($"{m_Plugin.PluginName} Started");
         }
 
         public void InitializePlugin()
         {
+            RegisterManager(new PlayerStoreManager(this));
+            RegisterManager(new CommandProcessor(this));
+            GetManager<CommandProcessor>().RegisterClassCommands<SessionCommands>();
+
             m_Plugin.Initialize(m_SharedContexts, this);
         }
 
@@ -114,7 +115,7 @@ namespace Dirt.GameServer
                     Players = m_Players.ActivePlayers.ToArray()
                 };
 
-                m_Players.SendEvent<PlayerConnectionEvent>(new PlayerConnectionEvent() { Player = proxy.Player });
+                m_Players.SendEvent(new PlayerConnectionEvent() { Player = proxy.Player });
                 m_Players.SendEventTo(playerListEvent, proxy.Player);
 
                 int simID = DefaultSimulation;
@@ -126,9 +127,12 @@ namespace Dirt.GameServer
                     sim = Simulations.GetSimulation(simID);
                 }
 
+                GetManager<PlayerStoreManager>().CreateSession(proxy);
                 MovePlayerToSimulation(proxy, simID);
                 m_Plugin.PlayerJoined(proxy);
             }
+
+
             return null;
         }
 
@@ -174,6 +178,15 @@ namespace Dirt.GameServer
             client.Send(MudMessage.Create((int)NetworkOperation.LoadSimulation, System.Text.Encoding.ASCII.GetBytes(newSim.Archetype)));
             PlayerEvent playerEvent = new PlayerEvent(client.Number, PlayerEvent.JoinedSimulation);
             newSim.Events.Enqueue(playerEvent);
+        }
+
+        internal void AuthPlayer(int playerNumber, PlayerCredential credential)
+        {
+            PlayerProxy proxy = m_Players.FindPlayer(playerNumber);
+            if ( proxy != null)
+            {
+                m_Plugin.PlayerAuthed(proxy, credential);
+            }
         }
 
         public void UnregisterPlayer(GameClient client)
@@ -302,6 +315,7 @@ namespace Dirt.GameServer
             {
                 return (T)manager;
             }
+            Console.Warning($"Trying to get unregistered IGameManager: {typeof(T).Name}");
             return default;
         }
 

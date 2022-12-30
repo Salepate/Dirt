@@ -1,4 +1,5 @@
 ﻿using Dirt;
+using Dirt.Events;
 using Dirt.Log;
 using Dirt.Network;
 using Dirt.Network.Managers;
@@ -17,6 +18,7 @@ using System.IO;
 namespace Mud.DirtSystems
 {
     using BitConverter = System.BitConverter;
+    // @TODO: Rename to NetworkMessageSystem
     public class SimulationMessageSystem : DirtSystem, IMessageConsumer
     {
         private const string SettingsContentName = "settings.netserial";
@@ -52,6 +54,11 @@ namespace Mud.DirtSystems
                     string sim = System.Text.Encoding.ASCII.GetString(message);
                     Console.Message($"Load simulation {sim}");
                     m_Simulation.ChangeSimulation(sim);
+                    break;
+                case NetworkOperation.SetSession:
+                    int sessionID = BitConverter.ToInt32(message, 0);
+                    ClientCommandProcessor.SessionID = sessionID.ToString();
+                    m_EventDispatcher.Dispatch(new SessionIDEvent(sessionID));
                     break;
                 case NetworkOperation.GameEvent:
                     NetworkEvent netEvent;

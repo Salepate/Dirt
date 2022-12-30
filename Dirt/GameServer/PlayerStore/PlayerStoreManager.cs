@@ -4,12 +4,15 @@ using Dirt.GameServer.Managers;
 using Dirt.GameServer.PlayerStore.Helpers;
 using Dirt.GameServer.PlayerStore.Model;
 using Dirt.Log;
+using Dirt.Network;
+using Mud;
 using Mud.Server;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Dirt.GameServer.PlayerStore
 {
+    using BitConverter = System.BitConverter;
     public class PlayerStoreManager : IGameManager
     {
         public const string SimpleIDFile = "_id";
@@ -155,6 +158,15 @@ namespace Dirt.GameServer.PlayerStore
             }
             return false;
         }
+
+        internal void CreateSession(PlayerProxy proxy)
+        {
+            int sessID = m_IDGenerator.Range(100000000, 999999999);
+            Console.Message($"Player {proxy.Player.Number} Session ID: {sessID}");
+            Table.SetSessionNumber(proxy.Client.Number, sessID);
+            proxy.Client.Send(MudMessage.Create((int)NetworkOperation.SetSession, BitConverter.GetBytes(sessID)));
+        }
+
         private bool AuthUser(int playerNumber, PlayerCredential credential)
         {
             GameClient client = m_RTServer.Server.GetClient(playerNumber);
@@ -163,6 +175,7 @@ namespace Dirt.GameServer.PlayerStore
                 Console.Message($"Player {credential.UserName} authed");
                 client.ChangeClientName(credential.UserName);
                 Table.SetCredentials(playerNumber, credential);
+                m_Game.AuthPlayer(playerNumber, credential);
                 return true;
             }
             return false;
