@@ -1,11 +1,11 @@
-﻿namespace Dirt.Simulation.Action
+﻿using Dirt.Simulation.Context;
+using System.Collections.Generic;
+
+namespace Dirt.Simulation.Action
 {
     public class ActorAction
     {
-        public struct ExecutionContext
-        {
-            public GameActor SourceActor;
-        }
-        public virtual void PerformAction(GameSimulation simulation, in ExecutionContext ctx) { }
+        public virtual void FetchParameters(GameSimulation simulation, SimulationContext simContext, GameActor sourceActor, List<ActionParameter> parameters) { }
+        public virtual void PerformAction(GameSimulation simulation, SimulationContext simContext, in ActionExecutionData data) { }
     }
 }

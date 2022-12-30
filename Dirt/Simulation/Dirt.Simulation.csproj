@@ -38,6 +38,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action\ActionExecutionData.cs" />
+    <Compile Include="Action\ActionParameter.cs" />
+    <Compile Include="Action\ActionParameterHelper.cs" />
     <Compile Include="Action\ActorAction.cs" />
     <Compile Include="Action\ActorActionContext.cs" />
     <Compile Include="Action\ActorActionEvent.cs" />

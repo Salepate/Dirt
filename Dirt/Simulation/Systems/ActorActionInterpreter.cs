@@ -3,28 +3,33 @@ using Dirt.Simulation.Action;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
+using System.Collections.Generic;
 
 namespace Dirt.Simulation.Systems
 {
     public class ActorActionInterpreter : ISimulationSystem, IContextReader, IEventReader
     {
-        private ActorActionContext m_Context;
         private GameSimulation m_Simulation;
+        private SimulationContext m_SimulationContext;
+        private ActorActionContext m_ActionContext;
+        private List<ActionParameter> m_ParamsBuffer;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
+            m_ParamsBuffer = new List<ActionParameter>(20);
         }
 
         public void SetContext(SimulationContext context)
         {
-            m_Context = context.GetContext<ActorActionContext>();
-            if (m_Context == null)
+            m_SimulationContext = context;
+            m_ActionContext = context.GetContext<ActorActionContext>();
+            if (m_ActionContext == null)
             {
                 Console.Warning($"Actor Action context is missing");
             }
             else
             {
-                m_Context.CreateActionMap(context.GetContext<AssemblyCollection>());
+                m_ActionContext.CreateActionMap(context.GetContext<AssemblyCollection>());
             }
         }
 
@@ -42,18 +47,29 @@ namespace Dirt.Simulation.Systems
                 return;
             }
 
-            ActorAction.ExecutionContext actionCtx = new ActorAction.ExecutionContext()
-            {
-                SourceActor = actor
-            };
-
-            if (!m_Context.TryGetAction(actionEvent.ActionIndex, out ActorAction action))
+            if (!m_ActionContext.TryGetAction(actionEvent.ActionIndex, out ActorAction action))
             {
                 Console.Warning($"Invalid Action {actionEvent.ActionIndex}");
             }
 
             Console.Message($"Perform action {action.GetType().Name}");
-            action.PerformAction(m_Simulation, actionCtx);
+
+            ActionParameter[] actionParams = actionEvent.Parameters;
+
+            if (actionEvent.Parameters == null)
+            {
+                m_ParamsBuffer.Clear();
+                action.FetchParameters(m_Simulation, m_SimulationContext, actor, m_ParamsBuffer);
+                actionParams = m_ParamsBuffer.ToArray();
+            }
+
+
+            ActionExecutionData execData = new ActionExecutionData()
+            {
+                SourceActor = actor,
+                Parameters = actionParams
+            };
+            action.PerformAction(m_Simulation, m_SimulationContext, execData);
         }
     }
 }
