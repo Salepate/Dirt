@@ -200,6 +200,7 @@ namespace Dirt.GameServer
 
                 m_Players.RemovePlayer(player);
                 m_Groups[proxy.Simulation].UnregisterClient(client);
+                GetManager<PlayerStoreManager>().ClearSession(proxy);
 
                 if ( m_Groups[proxy.Simulation].Clients.Count == 0 && Simulations.GetSpan(proxy.Simulation) == SimulationSpan.Temporary)
                 {
