@@ -54,11 +54,13 @@
     <Compile Include="Managers\NetworkSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\ComponentFieldInfo.cs" />
+    <Compile Include="Simulation\Action\ActionHelper.cs" />
     <Compile Include="Simulation\ActorState.cs" />
     <Compile Include="Simulation\Components\NetInfo.cs" />
     <Compile Include="Simulation\Events\ActorNetCullEvent.cs" />
     <Compile Include="Simulation\Events\ActorSyncEvent.cs" />
     <Compile Include="Simulation\Events\PlayerEvent.cs" />
+    <Compile Include="Simulation\Events\RemoteActionRequestEvent.cs" />
     <Compile Include="Simulation\Systems\ActorReceiver.cs" />
     <Compile Include="Simulation\Systems\ActorStreaming.cs" />
     <Compile Include="SyncHelper.cs" />

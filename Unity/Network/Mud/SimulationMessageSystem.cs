@@ -104,13 +104,11 @@ namespace Mud.DirtSystems
                     m_Simulation.DispatchEvent(new ActorNetCullEvent(message[0]));
                     break;
                 case NetworkOperation.ActorAction:
-                    int netID = BitConverter.ToInt32(message, 0);
-                    int actionIndex = BitConverter.ToInt32(message, 4);
-                    // TODO have a network map instead of searching
+                    NetworkActionHelper.ExtractAction(message, out int netID, out int actionIndex, out ActionParameter[] parameters);
                     var sourceActors = m_Simulation.Simulation.Filter.GetActorsMatching<NetInfo>(n => n.ID == netID);
                     if (sourceActors.Count > 0)
                     {
-                        ActorActionEvent actionEvent = new ActorActionEvent(sourceActors[0].Actor.ID, actionIndex);
+                        ActorActionEvent actionEvent = new ActorActionEvent(sourceActors[0].Actor.ID, actionIndex, parameters);
                         m_Simulation.DispatchEvent(actionEvent);
                     }
                     else

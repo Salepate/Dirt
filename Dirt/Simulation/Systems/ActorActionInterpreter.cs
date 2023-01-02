@@ -13,6 +13,8 @@ namespace Dirt.Simulation.Systems
         private SimulationContext m_SimulationContext;
         private ActorActionContext m_ActionContext;
         private List<ActionParameter> m_ParamsBuffer;
+
+        public ActorActionContext ActionContext => m_ActionContext;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
@@ -32,7 +34,6 @@ namespace Dirt.Simulation.Systems
                 m_ActionContext.CreateActionMap(context.GetContext<AssemblyCollection>());
             }
         }
-
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
         }
@@ -56,7 +57,7 @@ namespace Dirt.Simulation.Systems
 
             ActionParameter[] actionParams = actionEvent.Parameters;
 
-            if (actionEvent.Parameters == null)
+            if (actionEvent.EmptyParameters)
             {
                 m_ParamsBuffer.Clear();
                 action.FetchParameters(m_Simulation, m_SimulationContext, actor, m_ParamsBuffer);
