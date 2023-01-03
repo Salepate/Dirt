@@ -139,6 +139,8 @@ namespace Dirt.Systems
                 ((IContentReader)view).SetContent(m_Content);
             if (view is IDirtAccess)
                 ((IDirtAccess)view).SetMode(m_Mode);
+            if (view is IEventReader)
+                m_Simulation.RegisterEventReader(((IEventReader)view));
         }
 
 
