@@ -58,7 +58,6 @@
     <Compile Include="Mud\MudConnector.cs" />
     <Compile Include="Mud\ServerSocket.cs" />
     <Compile Include="Mud\SimulationMessageSystem.cs" />
-    <Compile Include="Simulation\Action\NetworkActorAction.cs" />
     <Compile Include="Simulation\Systems\ClientActorStreaming.cs" />
     <Compile Include="Simulation\Systems\ClientActorSynchronization.cs" />
     <Compile Include="Systems\MultiplayerViewDispatcher.cs" />
