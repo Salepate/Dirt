@@ -51,6 +51,7 @@
     <Compile Include="Commands\CommandProcessor.cs" />
     <Compile Include="Commands\GameCommandAttribute.cs" />
     <Compile Include="GameInstance.cs" />
+    <Compile Include="Managers\ActionRequestManager.cs" />
     <Compile Include="Managers\GameDataManager.cs" />
     <Compile Include="Managers\PlayerManager.cs" />
     <Compile Include="Managers\RealTimeServerManager.cs" />
