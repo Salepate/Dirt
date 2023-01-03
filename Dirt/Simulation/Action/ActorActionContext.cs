@@ -36,6 +36,7 @@ namespace Dirt.Simulation.Action
                 }
 
                 ActorAction action = (ActorAction)System.Activator.CreateInstance(actionType);
+                action.SetIndex(i);
                 m_Actions[i] = action;
             }
         }
