@@ -206,12 +206,16 @@ namespace Dirt.Systems
         {
             ISimulationView view = m_Views[idx];
             m_Views.Remove(view);
-
             Component comp = (Component)view;
 
             if (comp != null)
             {
                 PoolManager.Free(comp.gameObject);
+            }
+
+            if (view is IEventReader)
+            {
+                m_Simulation.RemoveEventReader((IEventReader)view);
             }
         }
     }

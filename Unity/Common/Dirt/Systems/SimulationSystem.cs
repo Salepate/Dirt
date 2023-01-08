@@ -76,6 +76,11 @@ namespace Dirt.Systems
             m_Systems.InjectEventDispatchers(eventReader);
         }
 
+        public void RemoveEventReader(IEventReader eventReader)
+        {
+            m_Systems.RemoveEventDispatchers(eventReader);
+        }
+
         public void DispatchEvent(SimulationEvent simEvent)
         {
             Simulation.Events.Enqueue(simEvent);
