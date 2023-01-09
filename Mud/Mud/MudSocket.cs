@@ -13,7 +13,7 @@ namespace Mud
             m_Buffer = new byte[BufferSize+1];
         }
 
-        public void Send(MudMessage message)
+        public void Send(MudMessage message, bool reliable = false)
         {
             m_Buffer[0] = (byte)message.opCode;
             int messageLength = 1;
@@ -22,9 +22,19 @@ namespace Mud
                 Array.Copy(message.buffer, 0, m_Buffer, 1, message.buffer.Length);
                 messageLength += message.buffer.Length;
             }
-            SendNetworkMessage(m_Buffer, messageLength);
+
+            if ( !reliable )
+            {
+                SendNetworkMessage(m_Buffer, messageLength);
+            }
+            else
+            {
+                SendNetworkMessageReliable(m_Buffer, messageLength);
+            }
         }
 
         protected abstract void SendNetworkMessage(byte[] message, int messageLength);
+
+        protected virtual void SendNetworkMessageReliable(byte[] message, int messageLength) { SendNetworkMessage(message, messageLength);  }
     }
 }

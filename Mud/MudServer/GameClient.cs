@@ -12,20 +12,21 @@ namespace Mud.Server
         public int Number { get; private set; }
         public bool RequestDisconnection { get; private set; }
 
+        public float RTT { get; private set; }
         public float LastPing { get; set; }
 
-        private ServerSocket m_Socket;
+        private ClientSocket m_Socket;
         private bool m_Auth;
         private MudAddress m_Address;
         // large packet progress
-        private int m_MultipacketOperation;
-        private int m_MultipacketExpected;
-        private int m_MultipacketReceived;
-        private List<byte> m_MultipacketBuffer;
+        //private int m_MultipacketOperation;
+        //private int m_MultipacketExpected;
+        //private int m_MultipacketReceived;
+        //private List<byte> m_MultipacketBuffer;
 
         private Random m_AnonID;
 
-        public GameClient(MudAddress clientAddress, ServerSocket socket, int number)
+        public GameClient(MudAddress clientAddress, ClientSocket socket, int number)
         {
             m_Auth = false;
             m_Address = clientAddress;
@@ -33,12 +34,13 @@ namespace Mud.Server
             Number = number;
             RequestDisconnection = false;
             m_AnonID = new Random();
+            RTT = 80f / 1000f;
         }
 
-        public void Send(MudMessage message)
+        public void Send(MudMessage message, bool reliable = false)
         {
             if (message.buffer.Length <= MudSocket.BufferSize)
-                m_Socket.Send(message);
+                m_Socket.Send(message, reliable);
             else
                 SendLargeMessage(message.opCode, message.buffer);
         }
@@ -52,6 +54,11 @@ namespace Mud.Server
         {
             Console.Message($"Client {Number} name changed to {newName}");
             ID = newName;
+        }
+
+        public void UpdateSocket(float deltaTime)
+        {
+            m_Socket.SendReliables(deltaTime, RTT);
         }
 
         public void SendLargeMessage(int op, byte[] message)
@@ -94,7 +101,6 @@ namespace Mud.Server
                 case MudOperation.ClientAuth:
                     if ( !m_Auth )
                     {
-                        // string userAuth = Encoding.ASCII.GetString(buffer);
                         int ranId = m_AnonID.Next(1, 9999);
                         string userAuth = $"player{ranId.ToString("D4")}";
                         ID = userAuth;
@@ -102,14 +108,6 @@ namespace Mud.Server
                         Console.Message($"Client {ToString()}: Authed as {ID} (Player {Number})");
                         m_Socket.Send(MudMessage.Create(MudOperation.ValidateAuth, new byte[] { (byte) Number }));
                         return ClientOperation.Connect;
-
-                        //if ( !string.IsNullOrEmpty(userAuth) && userAuth.Length > 3 )
-                        //{
-                        //} 
-                        //else
-                        //{
-                        //    m_Socket.Send(MudMessage.Error($"Invalid Auth"));
-                        //}
                     }
                     return ClientOperation.Idle;
                 case MudOperation.MultiPackets:
@@ -136,6 +134,9 @@ namespace Mud.Server
                 //        }
                 //        return ClientEvent.Idle;
                 //    }
+                case MudOperation.ReliableConfirm:
+                    m_Socket.ConfirmReliableMessage(buffer[0]);
+                    return ClientOperation.Idle;
                 case MudOperation.Disconnect:
                     {
                         Console.Message($"Client {ToString()}: Disconnect");

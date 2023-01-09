@@ -51,7 +51,7 @@ namespace Dirt.GameServer.Managers
                             int targetClient = cullArea.Get().Client;
                             if (targetClient != client.Number)
                             {
-                                m_Players.FindPlayer(targetClient).Client.Send(actionMessage);
+                                m_Players.FindPlayer(targetClient).Client.Send(actionMessage, true);
                             }
                         }
                         sim.Events.Enqueue(new ActorActionEvent(validActors[0].Actor.ID, actionIndex, actionParams));

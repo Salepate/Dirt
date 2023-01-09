@@ -8,16 +8,12 @@ namespace Mud.ServerInstance
         static void Main(string[] args)
         {
             Dirt.Log.Console.Logger = new Dirt.Log.BasicLogger();
-            int port = int.Parse(ConfigurationManager.AppSettings["ServerPort"]);
-            int maxClient = int.Parse(ConfigurationManager.AppSettings["MaxClient"]);
-
-            RealTimeServer server = new RealTimeServer(maxClient, port);
+            RealTimeServer server = new RealTimeServer(new MudConfig());
             server.Run();
             while(true)
             {
                 server.ProcessMessages(1f);
             }
-
             server.Stop();
         }
     }

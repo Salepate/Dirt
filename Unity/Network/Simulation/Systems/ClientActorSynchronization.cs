@@ -45,9 +45,9 @@ namespace Dirt.Network.Simulation.Systems
         [SimulationListener(typeof(RemoteActionRequestEvent), 0)]
         private void OnRemoteActionRequested(RemoteActionRequestEvent requestEvent)
         {
-            GameActor actor = null;
+            GameActor actor;
             ActorAction action = null;
-            Dirt.Log.Console.Message("Net Action Request");
+            //Dirt.Log.Console.Message("Net Action Request");
             if ( Filter.TryGetActor(requestEvent.SourceActor, out actor) &&
                 m_ActionContext.TryGetAction(requestEvent.ActionIndex, out action))
             {

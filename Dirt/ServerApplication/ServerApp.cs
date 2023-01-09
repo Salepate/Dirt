@@ -25,14 +25,16 @@ namespace Dirt.ServerApplication
         public ServerApp()
         {
             Console.Logger = new BasicLogger();
+            ServerConfig config = new ServerConfig();
 
-            m_Server = new RealTimeServer(GetConfig("MaxClient"), GetConfig("ServerPort"), GetConfig("ClientTimeout"));
+            m_Server = new RealTimeServer(config);
 
-            string contentPath = GetConfigString("ContentRoot");
-            string contentVersion = GetConfigString("ContentVersion");
+            string contentPath = config.GetString("ContentRoot");
+            string contentVersion = config.GetString("ContentVersion");
 
-            string pluginLib = GetConfigString("PluginFile");
-            string pluginClass = GetConfigString("PluginClass");
+            string pluginLib = config.GetString("PluginFile");
+            string pluginClass = config.GetString("PluginClass");
+            m_TickPeriod = new TimeSpan(10000 * 1000 / config.GetInt("TickRate"));
 
             PluginInstance plugin = null;
 
@@ -66,7 +68,6 @@ namespace Dirt.ServerApplication
 
         public void Run()
         {
-            m_TickPeriod = new TimeSpan(10000 * 1000 / GetConfig("TickRate"));
             bool terminate = false;
 
             m_Clock.Reset();
@@ -91,7 +92,6 @@ namespace Dirt.ServerApplication
 
         public void ManuelSetup()
         {
-            m_TickPeriod = new TimeSpan(10000 * 1000 / GetConfig("TickRate"));
             m_Clock.Reset();
             m_Server.SetClientConsumer(m_Game);
             m_Server.Run();
@@ -119,21 +119,6 @@ namespace Dirt.ServerApplication
             float deltaInSeconds = delta / 1000f;
             m_Server.ProcessMessages(deltaInSeconds);
             m_Game.UpdateInstance(deltaInSeconds);
-        }
-
-        private int GetConfig(string name)
-        {
-            bool exist = int.TryParse(ConfigurationManager.AppSettings[name], out int val);
-            if (!exist)
-            {
-                Console.Message($"Unable to get {name} configuration value");
-            }
-            return val;
-        }
-
-        private string GetConfigString(string name)
-        {
-            return ConfigurationManager.AppSettings[name];
         }
     }
 }

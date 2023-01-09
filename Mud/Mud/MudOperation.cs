@@ -8,6 +8,8 @@
         Disconnect       = 3,
         MultiPackets     = 4,
         CustomOperation0 = 20,
+        Reliable        = 253,
+        ReliableConfirm = 254,
         Error           = 255
     }
 }

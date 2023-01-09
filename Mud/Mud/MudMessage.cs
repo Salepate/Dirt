@@ -8,6 +8,8 @@ namespace Mud
     {
         public int opCode; // < 255
         public byte[] buffer;
+        public bool reliable;
+        public byte reliableId;
 
         public static MudMessage Create(int op, byte[] data)
         {
@@ -38,12 +40,25 @@ namespace Mud
 
         public static MudMessage FromRaw(byte[] raw, int count)
         {
-            byte[] buffer = new byte[count - 1];
-            Array.Copy(raw, 1, buffer, 0, count - 1);
+            int message_size = count - 1;
+            int start_index = 0;
+            bool is_reliable = false;
+            byte reliable_number = 0;
+            if ( (MudOperation) raw[0] == MudOperation.Reliable )
+            {
+                message_size -= 2; // remove bytes
+                start_index = 2;
+                is_reliable = true;
+                reliable_number = raw[1];
+            }
+            byte[] buffer = new byte[message_size];
+            Array.Copy(raw, start_index + 1, buffer, 0, message_size);
             return new MudMessage()
             {
-                opCode = raw[0],
-                buffer = buffer
+                opCode = raw[start_index],
+                buffer = buffer,
+                reliable = is_reliable,
+                reliableId = reliable_number
             };
         }
     }

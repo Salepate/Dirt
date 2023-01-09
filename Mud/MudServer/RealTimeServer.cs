@@ -13,6 +13,11 @@ namespace Mud.Server
 {
     public class RealTimeServer
     {
+        public const string CONF_CLIENT_TIMEOUT = "ClientTimeout";
+        public const string CONF_MAX_CLIENT = "MaxClient";
+        public const string CONF_UDP_PORT = "ServerPort";
+        public const string CONF_ACK_ROTATION = "ClientAckRotation";
+
         public Queue<GameClientOperation> ClientOperations;
         public StreamGroupManager StreamGroups;
 
@@ -29,19 +34,21 @@ namespace Mud.Server
         private const int PING_TIMEOUT = 30;
         public const int SIO_UDP_CONNRESET = -1744830452;
         private int m_ClientTimeout;
+        private byte m_PacketRotationSize;
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
             m_ClientConsumer = clientConsumer;
         }
-        public RealTimeServer(int maxClient, int port, int clientTimeoutInSeconds = PING_TIMEOUT)
+        public RealTimeServer(IConfigurationReader config)
         {
             ClientOperations = new Queue<GameClientOperation>();
             StreamGroups = new StreamGroupManager();
-
-            m_ClientTimeout = clientTimeoutInSeconds;
+            int maxClient = config.GetInt(CONF_MAX_CLIENT);
+            m_ClientTimeout = config.GetInt(CONF_CLIENT_TIMEOUT);
             m_Server = new MudServer(maxClient);
             m_Clients = new GameClient[maxClient];
-            m_ServerPort = port;
+            m_ServerPort = config.GetInt(CONF_UDP_PORT);
+            m_PacketRotationSize = (byte)config.GetInt(CONF_ACK_ROTATION);
             m_MessageQueue = new Queue<NetworkMessage>();
             m_ClientConsumer = null;
             m_Clock = 0f;
@@ -115,7 +122,7 @@ namespace Mud.Server
                     int newSlot = m_Server.FindFreeSlot();
                     if (newSlot >= 0 && m_Server.SetConnectedClient(newSlot, clientAddr))
                     {
-                        ServerSocket clientSocket = new ServerSocket(m_Socket, clientAddr);
+                        ClientSocket clientSocket = new ClientSocket(m_Socket, clientAddr, m_PacketRotationSize);
                         m_Clients[newSlot] = new GameClient(clientAddr, clientSocket, newSlot + 1);
                         clientIdx = newSlot;
                         Console.Message($"Client connected: {m_Clients[newSlot]}");
@@ -166,13 +173,17 @@ namespace Mud.Server
                     dt = m_Clock - client.LastPing;
                 }
 
-                if (dt >= m_ClientTimeout) // timedout
+                if (dt >= m_ClientTimeout) // timed out
                 {
                     Console.Message($"Client {m_Clients[i].ID} timed out ({m_ClientTimeout}s)");
                     m_Clients[i].ForceDisconnect();
                     m_Server.FreeSlot(i);
                     ClientOperations.Enqueue(Tuple.Create(m_Clients[i], ClientOperation.Disconnect));
                     m_Clients[i] = null;
+                }
+                else
+                {
+                    client.UpdateSocket(delta);
                 }
             }
 

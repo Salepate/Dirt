@@ -36,12 +36,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientOperation.cs" />
+    <Compile Include="IConfigurationReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameClient.cs" />
     <Compile Include="IClientConsumer.cs" />
     <Compile Include="MudServer.cs" />
     <Compile Include="RealTimeServer.cs" />
-    <Compile Include="ServerSocket.cs" />
+    <Compile Include="ClientSocket.cs" />
     <Compile Include="Stream\StreamGroup.cs" />
     <Compile Include="Stream\StreamGroupManager.cs" />
   </ItemGroup>

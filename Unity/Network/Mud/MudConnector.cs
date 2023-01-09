@@ -13,21 +13,22 @@ namespace Mud.DirtSystems
 {
     public class MudConnector : DirtSystem
     {
+        public const int ReliableMessageBuffer = 20;
+
         public System.Action<bool> AuthAction;
         public const int DefaultPort = 11000;
         public ServerSocket Socket { get; private set; }
         public override bool HasUpdate => true;
-
         public bool Connected { get; private set; }
-
         public int PlayerNumber { get; private set; }
         private Queue<MudMessage> m_Messages;
         private object _QueueLock = new object();
         private MudLargeMessage m_LargeMessage;
-        //private IMessageConsumer m_MessageConsumer;
         private List<IMessageConsumer> m_Consumers;
         private bool m_Authed;
         private Thread m_SocketThread;
+
+        private CircularBuffer<byte> m_ReliableBuffer;
 
         public string PlayerName { get; private set; }
         public void SetConsumer(IMessageConsumer consumer)
@@ -39,6 +40,7 @@ namespace Mud.DirtSystems
         {
             m_Consumers = new List<IMessageConsumer>(2);
             m_Messages = new Queue<MudMessage>();
+            m_ReliableBuffer = new CircularBuffer<byte>(ReliableMessageBuffer);
 
             if ( mode.HasSystem<SimulationSystem>())
             {
@@ -95,8 +97,24 @@ namespace Mud.DirtSystems
             {
                 while (m_Messages.Count > 0)
                 {
+                    bool process = true;
+
                     MudMessage msg = m_Messages.Dequeue();
-                    ProcessMessage(msg.opCode, msg.buffer);
+
+                    if ( msg.reliable )
+                    {
+                        process = m_ReliableBuffer.IndexOf(msg.reliableId) == -1;
+                        if ( process )
+                        {
+                            m_ReliableBuffer.Add(msg.reliableId);
+                        }
+                        Socket.Confirm(msg.reliableId);
+                    }
+
+                    if ( process )
+                    {
+                        ProcessMessage(msg.opCode, msg.buffer);
+                    }
                 }
             }
         }
