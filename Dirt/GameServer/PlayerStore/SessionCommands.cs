@@ -1,5 +1,7 @@
 ﻿using Dirt.Game.Model;
 using Dirt.GameServer.GameCommand;
+using Dirt.GameServer.Managers;
+using Dirt.Network.Events;
 
 namespace Dirt.GameServer.PlayerStore
 {
@@ -38,7 +40,16 @@ namespace Dirt.GameServer.PlayerStore
             string playerPass = parameters.PopString();
             PlayerStoreManager pStore = ctx.Instance.GetManager<PlayerStoreManager>();
             var hashedPass = pStore.GetHash(playerPass);
-            return pStore.AttemptUserAuth(ctx.PlayerNumber, playerTag, hashedPass);
+            bool auth = pStore.AttemptUserAuth(ctx.PlayerNumber, playerTag, hashedPass);
+
+            if ( auth )
+            {
+                ctx.Player.Player.Name = ctx.Player.Client.ID;
+                PlayerManager playerMgr = ctx.Instance.GetManager<PlayerManager>();
+                playerMgr.SendEvent(new PlayerRenameEvent(ctx.PlayerNumber, ctx.Player.Player.Name));
+            }
+
+            return auth;
         }
     }
 }
