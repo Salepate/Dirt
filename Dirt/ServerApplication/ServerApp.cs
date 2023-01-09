@@ -90,7 +90,7 @@ namespace Dirt.ServerApplication
             m_Server.Stop();
         }
 
-        public void ManuelSetup()
+        public void ManualSetup()
         {
             m_Clock.Reset();
             m_Server.SetClientConsumer(m_Game);
