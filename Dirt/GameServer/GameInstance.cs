@@ -78,6 +78,7 @@ namespace Dirt.GameServer
             RegisterManager(netSerializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
+            RegisterManager(new ActionRequestManager(this));
 
             int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
             RegisterManager(new WebService("127.0.0.1", webServicePort));
@@ -136,6 +137,18 @@ namespace Dirt.GameServer
             return null;
         }
 
+        public void MovePlayerToSimulation(GameClient client, int simID)
+        {
+            PlayerProxy proxy = m_Players.FindPlayer(client.Number);
+            if ( proxy == null)
+            {
+                Console.Error($"Invalid Player {client.ID}");
+            }
+            else
+            {
+                MovePlayerToSimulation(proxy, simID);
+            }
+        }
         public void MovePlayerToSimulation(PlayerProxy proxy, int simID)
         {
             // Ensure player can be moved
