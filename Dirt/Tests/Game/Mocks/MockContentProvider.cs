@@ -39,5 +39,9 @@ namespace Dirt.Tests.Mocks
         public void LoadGameContent(string manifestName)
         {
         }
+
+        public void Update(float deltaTime)
+        {
+        }
     }
 }

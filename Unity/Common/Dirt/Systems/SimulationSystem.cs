@@ -58,6 +58,7 @@ namespace Dirt.Systems
 
             AddSharedContext(ValidAssemblies);
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
+            RegisterManager<IContentProvider>(m_Content);
             RegisterManager(new MetricsManager());
             Simulation = new GameSimulation();
             Simulation.Builder.LoadAssemblies(ValidAssemblies);

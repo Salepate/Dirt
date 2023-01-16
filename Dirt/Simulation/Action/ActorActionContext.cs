@@ -1,4 +1,5 @@
-﻿using Dirt.Log;
+﻿using Dirt.Game.Content;
+using Dirt.Log;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.Utility;
@@ -14,6 +15,7 @@ namespace Dirt.Simulation.Action
         /// </summary>
         public string[] AvailableActions;
 
+        private AssemblyCollection m_Assemblies;
         private ActorAction[] m_Actions;
 
         public ActorActionContext()
@@ -22,9 +24,9 @@ namespace Dirt.Simulation.Action
             m_Actions = new ActorAction[0];
         }
 
-        public void CreateActionMap(AssemblyCollection coll)
+        public void CreateActionMap(GameSimulation sim, SimulationContext simContext, IContentProvider content)
         {
-            Dictionary<string, System.Type> typeMap = AssemblyReflection.BuildTypeMap<ActorAction>(coll.Assemblies);
+            Dictionary<string, System.Type> typeMap = AssemblyReflection.BuildTypeMap<ActorAction>(m_Assemblies.Assemblies);
 
             m_Actions = new ActorAction[AvailableActions.Length];
             for (int i = 0; i < AvailableActions.Length; ++i)
@@ -37,8 +39,14 @@ namespace Dirt.Simulation.Action
 
                 ActorAction action = (ActorAction)System.Activator.CreateInstance(actionType);
                 action.SetIndex(i);
+                action.Initialize(sim, simContext, content);
                 m_Actions[i] = action;
             }
+        }
+
+        internal void SetAssemblies(AssemblyCollection assemblyCollection)
+        {
+            m_Assemblies = assemblyCollection;
         }
 
         public bool TryGetAction(string actionName, out ActorAction actorAction)

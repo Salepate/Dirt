@@ -1,4 +1,5 @@
 ﻿using Dirt.Game;
+using Dirt.Game.Content;
 using Dirt.Game.Managers;
 using Dirt.Game.Metrics;
 using Dirt.Game.Model;
@@ -54,8 +55,8 @@ namespace Dirt.GameServer
         public GameInstance(StreamGroupManager groupManager, string contentPath, string contentManifest, PluginInstance plugin)
         {
             Console.Assert(plugin != null, "No plugin specified");
+            int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
             // Dirt
-            string contentManifestPath = $"{contentPath}/{contentManifest}.json";
             Content = new ContentProvider(contentPath);
             Content.LoadGameContent(contentManifest);
             Simulations = new SimulationManager(Content);
@@ -64,9 +65,9 @@ namespace Dirt.GameServer
             m_Groups = new Dictionary<int, StreamGroup>();
             m_SimBuilder = new SimulationBuilder();
             m_SharedContexts = new List<IContextItem>();
-            NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             ValidAssemblies = Content.LoadContent<AssemblyCollection>(AssemblyCollection);
             m_SharedContexts.Add(ValidAssemblies);
+            NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             //@hack: Load missing assemblies before serializer 
             AssemblyReflection.BuildTypeMap<ISimulationSystem>(ValidAssemblies.Assemblies);
             NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
@@ -74,13 +75,14 @@ namespace Dirt.GameServer
 
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             m_Plugin = plugin;
+
+            RegisterManager<IContentProvider>(Content);
             RegisterManager(new MetricsManager());
             RegisterManager(netSerializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
             RegisterManager(new ActionRequestManager(this));
 
-            int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
             RegisterManager(new WebService("127.0.0.1", webServicePort));
             GetManager<WebService>().Start();
             Console.Message($"{m_Plugin.PluginName} Started");
@@ -91,7 +93,6 @@ namespace Dirt.GameServer
             RegisterManager(new PlayerStoreManager(this));
             RegisterManager(new CommandProcessor(this));
             GetManager<CommandProcessor>().RegisterClassCommands<SessionCommands>();
-
             m_Plugin.Initialize(m_SharedContexts, this);
         }
 

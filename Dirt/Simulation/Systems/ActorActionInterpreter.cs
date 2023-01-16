@@ -1,4 +1,6 @@
-﻿using Dirt.Log;
+﻿using Dirt.Game;
+using Dirt.Game.Content;
+using Dirt.Log;
 using Dirt.Simulation.Action;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
@@ -7,33 +9,41 @@ using System.Collections.Generic;
 
 namespace Dirt.Simulation.Systems
 {
-    public class ActorActionInterpreter : ISimulationSystem, IContextReader, IEventReader
+    public class ActorActionInterpreter : ISimulationSystem, IContextReader, IEventReader, IManagerAccess
     {
         private GameSimulation m_Simulation;
         private SimulationContext m_SimulationContext;
         private ActorActionContext m_ActionContext;
         private List<ActionParameter> m_ParamsBuffer;
-
+        private IContentProvider m_Provider;
         public ActorActionContext ActionContext => m_ActionContext;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
             m_ParamsBuffer = new List<ActionParameter>(20);
-        }
 
-        public void SetContext(SimulationContext context)
-        {
-            m_SimulationContext = context;
-            m_ActionContext = context.GetContext<ActorActionContext>();
             if (m_ActionContext == null)
             {
                 Console.Warning($"Actor Action context is missing");
             }
             else
             {
-                m_ActionContext.CreateActionMap(context.GetContext<AssemblyCollection>());
+                m_ActionContext.CreateActionMap(sim, m_SimulationContext, m_Provider);
             }
         }
+
+        public void SetContext(SimulationContext context)
+        {
+            m_SimulationContext = context;
+            m_ActionContext = context.GetContext<ActorActionContext>();
+            m_ActionContext.SetAssemblies(context.GetContext<AssemblyCollection>());
+        }
+
+        public void SetManagers(IManagerProvider provider)
+        {
+            m_Provider = provider.GetManager<IContentProvider>();
+        }
+
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
         }

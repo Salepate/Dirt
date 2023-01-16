@@ -2,7 +2,7 @@
 
 namespace Dirt.Game.Content
 {
-    public interface IContentProvider
+    public interface IContentProvider : IGameManager
     {
         T LoadContent<T>(string contentName);
         object LoadContent(string contentName, System.Type contentType);

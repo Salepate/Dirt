@@ -6,21 +6,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using Type = System.Type;
 
 namespace Dirt.Game
 {
+    using Console = Log.Console;
     public class ContentProvider : IContentProvider
     {
         public string LoadedManifestName { get; private set; }
         private GameContent m_RawMap;
         private Dictionary<string, object> m_ContentBufferMap;
         private Dictionary<string, string> m_ContentMap;
+        private JsonSerializerSettings m_Settings;
 
         private DirectoryInfo m_ContentDirectory;
         public ContentProvider(string contentPath)
         {
             LoadedManifestName = string.Empty;
+
+            m_Settings = new JsonSerializerSettings()
+            {
+                Culture = System.Globalization.CultureInfo.InvariantCulture
+            };
 
             m_ContentDirectory = new DirectoryInfo(contentPath);
             m_ContentMap = new Dictionary<string, string>();
@@ -148,7 +154,7 @@ namespace Dirt.Game
             return res;
         }
 
-        public static JObject DeserializeContent(string assetPath)
+        public JObject DeserializeContent(string assetPath)
         {
             try
             {
@@ -164,11 +170,11 @@ namespace Dirt.Game
 
         }
 
-        public static object DeserializeContent(string assetPath, Type contentType)
+        public object DeserializeContent(string assetPath, Type contentType)
         {
             try
             {
-                return JsonConvert.DeserializeObject(File.ReadAllText(assetPath), contentType);
+                return JsonConvert.DeserializeObject(File.ReadAllText(assetPath), contentType, m_Settings);
 
             }
             catch (System.Exception e)
@@ -179,11 +185,11 @@ namespace Dirt.Game
 
         }
 
-        public static T DeserializeContent<T>(string assetPath)
+        public T DeserializeContent<T>(string assetPath)
         {
             try
             {
-                T res = JsonConvert.DeserializeObject<T>(File.ReadAllText(assetPath));
+                T res = JsonConvert.DeserializeObject<T>(File.ReadAllText(assetPath), m_Settings);
                 return res;
 
             }
@@ -219,6 +225,10 @@ namespace Dirt.Game
         public GameContent GetContentMap()
         {
             return m_RawMap;
+        }
+
+        public void Update(float deltaTime)
+        {
         }
     }
 }
