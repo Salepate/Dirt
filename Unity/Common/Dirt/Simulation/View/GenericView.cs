@@ -45,5 +45,7 @@ namespace Dirt.Simulation.View
                 m_DecayClock -= deltaTime;
             }
         }
+
+        public virtual void CleanView() {}
     }
 }

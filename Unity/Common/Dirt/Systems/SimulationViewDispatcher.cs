@@ -42,6 +42,14 @@ namespace Dirt.Systems
             }
         }
 
+        public override void Unload()
+        {
+            for(int i = m_Views.Count -1; i >= 0; --i)
+            {
+                FreeView(i);
+            }
+        }
+
         public ISimulationView FindView(int actorID)
         {
             return m_Views.Find(view => view.ActorID == actorID);
@@ -205,6 +213,7 @@ namespace Dirt.Systems
         private void FreeView(int idx)
         {
             ISimulationView view = m_Views[idx];
+            view.CleanView();
             m_Views.Remove(view);
             Component comp = (Component)view;
 
