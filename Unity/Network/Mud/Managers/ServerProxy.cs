@@ -26,10 +26,13 @@ namespace Mud.Managers
 
         public void Update(float deltaTime)
         {
-            m_PingClock += deltaTime;
-            if (m_PingClock >= PING_DELAY )
+            if ( m_Connector.Connected )
             {
-                Send(MudMessage.Create(MudOperation.Ping, null));
+                m_PingClock += deltaTime;
+                if (m_PingClock >= PING_DELAY )
+                {
+                    Send(MudMessage.Create(MudOperation.Ping, null));
+                }
             }
         }
 
