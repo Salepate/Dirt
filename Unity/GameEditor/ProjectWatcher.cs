@@ -20,9 +20,7 @@ namespace Dirt.GameEditor
         };
 
         private static EditorWaitForSeconds m_CheckInterval = new EditorWaitForSeconds(5f);
-        private static EditorWaitForSeconds m_CheckLongInterval = new EditorWaitForSeconds(20f);
-        public static readonly string Destination = Path.Combine(Application.dataPath, "Duality/Plugins/");
-
+        private static EditorWaitForSeconds m_CheckLongInterval = new EditorWaitForSeconds(8f);
 
         // Coroutine Cache
         private static Dictionary<string, long> s_ProjectWatcher;
