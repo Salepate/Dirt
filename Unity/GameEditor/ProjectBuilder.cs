@@ -56,6 +56,12 @@ namespace Dirt.GameEditor
             BuildGame(BuildTarget.StandaloneWindows64, true, Settings.BinaryName);
         }
 
+        [MenuItem("Dirt/Build Windows (Debug)")]
+        internal static void BuildGameWindowsDebug()
+        {
+            BuildGame(BuildTarget.StandaloneWindows64, true, Settings.BinaryName, BuildOptions.AllowDebugging | BuildOptions.Development);
+        }
+
         [MenuItem("Dirt/Build Android")]
         internal static void BuildGameAndroid()
         {
