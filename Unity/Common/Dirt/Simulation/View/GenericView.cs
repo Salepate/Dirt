@@ -14,11 +14,11 @@ namespace Dirt.Simulation.View
         protected bool Destroyed { get; private set; }
         bool ISimulationView.Destroy => Destroyed && DestroyClock <= 0f;
 
-        public int ActorID => m_Actor.ID;
+        public int ActorID => Actor.ID;
 
-        protected ref Position ActorPosition => ref m_Filter.Get<Position>(m_Actor);
+        protected ref Position ActorPosition => ref m_Filter.Get<Position>(Actor);
         private ActorFilter m_Filter;
-        private GameActor m_Actor;
+        protected GameActor Actor { get; private set; }
         public virtual bool NotifyActorDestroyed()
         {
             Destroyed = true;
@@ -28,7 +28,7 @@ namespace Dirt.Simulation.View
 
         public virtual void SetActor(GameActor actor, ActorFilter filter)
         {
-            m_Actor = actor;
+            Actor = actor;
             m_Filter = filter;
             Destroyed = false;
             transform.position = ActorPosition.Origin.toVector();
