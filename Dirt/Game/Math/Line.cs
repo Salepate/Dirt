@@ -104,7 +104,6 @@
             }
             return false;
         }
-
         public static bool GetLinesIntersection(float2 l1_start, float2 l1_end, float2 l2_start, float2 l2_end, out float2 intersection)
         {
             float A1 = l1_end.y - l1_start.y;
@@ -124,6 +123,108 @@
             float invdelta = 1 / delta;
             intersection = new float2((B2 * C1 - B1 * C2) * invdelta, (A1 * C2 - A2 * C1) * invdelta);
             return true;
+        }
+
+        /// <summary>
+        /// Get the x/z intersection point (X/Z) space of 2 lines.
+        /// </summary>
+        /// <param name="l1_start"></param>
+        /// <param name="l1_end"></param>
+        /// <param name="l2_start"></param>
+        /// <param name="l2_end"></param>
+        /// <param name="intersection"></param>
+        /// <returns></returns>
+        public static bool GetLinesIntersectionXZ(float3 l1_start, float3 l1_end, float3 l2_start, float3 l2_end, out float3 intersection)
+        {
+            float A1 = l1_end.z - l1_start.z;
+            float B1 = l1_start.x - l1_end.x;
+            float A2 = l2_end.z - l2_start.z;
+            float B2 = l2_start.x - l2_end.x;
+            float delta = A1 * B2 - A2 * B1;
+            intersection = float3.zero;
+
+            if (delta == 0)
+            {
+                return false;
+            }
+
+            float C2 = A2 * l2_start.x + B2 * l2_start.z;
+            float C1 = A1 * l1_start.x + B1 * l1_start.z;
+            float invdelta = 1 / delta;
+            intersection = new float3((B2 * C1 - B1 * C2) * invdelta, 0f, (A1 * C2 - A2 * C1) * invdelta);
+            return true;
+        }
+
+        /// <summary>
+        /// Find the x/z intersection point between 2 segments s1 and s2. (X/Z space)
+        /// </summary>
+        /// <param name="seg1_start"></param>
+        /// <param name="seg1_end"></param>
+        /// <param name="seg2_start"></param>
+        /// <param name="seg2_end"></param>
+        /// <param name="intersection">intersection point</param>
+        /// <param name="endPointThreshold">extra threshold for edge case intersections</param>
+        /// <returns>true if segments intersection</returns>
+        public static bool GetSegmentsIntersectionXZ(float3 seg1_start, float3 seg1_end, float3 seg2_start, float3 seg2_end, out float3 intersection, float endPointThreshold = 0f)
+        {
+            float A1 = seg1_end.z - seg1_start.z;
+            float B1 = seg1_start.x - seg1_end.x;
+            float A2 = seg2_end.z - seg2_start.z;
+            float B2 = seg2_start.x - seg2_end.x;
+            float delta = A1 * B2 - A2 * B1;
+            intersection = float3.zero;
+
+            if (delta == 0)
+            {
+                return false;
+            }
+            float C2 = A2 * seg2_start.x + B2 * seg2_start.z;
+            float C1 = A1 * seg1_start.x + B1 * seg1_start.z;
+            float invdelta = 1 / delta;
+            intersection = new float3((B2 * C1 - B1 * C2) * invdelta, 0f, (A1 * C2 - A2 * C1) * invdelta);
+
+            float3 min_1 = float3.min(seg1_start, seg1_end) - float3.one * endPointThreshold;
+            float3 max_1 = float3.max(seg1_start, seg1_end) + float3.one * endPointThreshold;
+            float3 min_2 = float3.min(seg2_start, seg2_end) - float3.one * endPointThreshold;
+            float3 max_2 = float3.max(seg2_start, seg2_end) + float3.one * endPointThreshold;
+
+            return  intersection.x >= min_1.x && intersection.x >= min_2.x
+                    && intersection.z >= min_1.z && intersection.z >= min_2.z
+                    && intersection.x <= max_1.x && intersection.x <= max_2.x
+                    && intersection.z <= max_1.z && intersection.z <= max_2.z;
+        }
+
+        /// <summary>
+        /// Project the x/z of pt on the segment s1,s2 (X/Z space)
+        /// </summary>
+        /// <param name="s1">segment start</param>
+        /// <param name="s2">segment end</param>
+        /// <param name="pt">point to project</param>
+        /// <param name="projection">projected point</param>
+        /// <returns>true if the projection is on the segment directly</returns>
+        public static bool ProjectXZ(float3 s1, float3 s2, float3 pt, out float3 projection)
+        {
+            float A1 = s2.z - s1.z;
+            float B1 = s1.x - s2.x;
+            float C1 = A1 * s1.x + B1 * s1.z;
+            float C2 = -B1 * pt.x + A1 * pt.z;
+            float det = A1 * A1 - -B1 * B1;
+            float cx, cz;
+            if (det != 0)
+            {
+                cx = (float)((A1 * C1 - B1 * C2) / det);
+                cz = (float)((A1 * C2 - -B1 * C1) / det);
+            }
+            else
+            {
+                cx = pt.x;
+                cz = pt.z;
+            }
+            projection = new float3(cx, 0f, cz);
+
+            float3 min = float3.min(s1, s2) - float3.one * 0.01f;
+            float3 max = float3.max(s1, s2) + float3.one * 0.01f;
+            return projection.x >= min.x && projection.x <= max.x && projection.z >= min.z && projection.z <= max.z;
         }
     }
 }

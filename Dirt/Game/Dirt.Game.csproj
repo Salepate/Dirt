@@ -63,6 +63,7 @@
     <Compile Include="Math\float2.cs" />
     <Compile Include="Math\IEnumerableExtensions.cs" />
     <Compile Include="Math\Line.cs" />
+    <Compile Include="Math\mathop.cs" />
     <Compile Include="Math\MersenneTwister.cs" />
     <Compile Include="Math\RNG.cs" />
     <Compile Include="Math\TrajectorySolver.cs" />
