@@ -76,6 +76,11 @@ namespace Dirt.Game.Math
             float3 prod = l * r;
             return prod.x + prod.y + prod.z;
         }
+
+        public static float3 cross(float3 l, float3 r)
+        {
+            return new float3(l.x * r.z - l.z * r.y, l.z * r.x - l.x * r.z, l.x * r.y - l.y * r.x);
+        }
         public static float3 max(float3 l, float3 r)
         {
             return new float3() { x = l.x > r.x ? l.x : r.x, y = l.y > r.y ? l.y : r.y, z = l.z > r.z ? l.z : r.z };
