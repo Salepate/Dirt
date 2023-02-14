@@ -3,7 +3,22 @@
     public static class Line
     {
         /// <summary>
-        /// Line / Circle Intersection
+        /// 3D distance to the shortest point on line
+        /// </summary>
+        /// <param name="pointOrigin"></param>
+        /// <param name="lineStart"></param>
+        /// <param name="lineDir"></param>
+        /// <returns></returns>
+        public static float PointToLineDistance(float3 pointOrigin, float3 lineStart, float3 lineDir)
+        {
+            float3 linePoint = lineStart + lineDir;
+            float3 deltaPoint = pointOrigin - lineStart;
+            float3 deltaPoint2 = pointOrigin - linePoint;
+            return float3.cross(deltaPoint,deltaPoint2).magnitude / lineDir.magnitude;
+        }
+
+        /// <summary>
+        /// Line / Circle Intersection (X/Z)
         /// </summary>
         /// <remarks>
         /// based on: https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm

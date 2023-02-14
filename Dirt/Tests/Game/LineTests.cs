@@ -7,6 +7,18 @@ namespace Dirt.Tests.Math
     public class Math_Line_Tests
     {
         [TestMethod]
+        public void Point_To_Line_Distance_OnLine()
+        {
+            float3 lineStart = new float3(0f, 0f, 0f);
+            float3 lineDir = new float3(1f, 0f, 0f);
+            float3 pointA = new float3(0.5f, 0.5f, 0f);
+
+            float distToPoint = Line.PointToLineDistance(pointA, lineStart, lineDir);
+            float margin = System.Math.Abs(distToPoint - pointA.y);
+            Assert.IsTrue(margin < 0.01f);
+        }
+
+        [TestMethod]
         public void Line_Intersect_Line()
         {
             float2 a = new float2(0f, 2f);
