@@ -43,6 +43,11 @@ namespace Dirt.Simulation.Context
                 {
                     m_Context.Add(contextType, contextObject);
                 }
+                else
+                {
+                    Dirt.Log.Console.Message($"Context override: {contextType.Name}");
+                    m_Context[contextType] = contextObject;
+                }
             }
             else
             {
