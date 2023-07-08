@@ -15,9 +15,9 @@ namespace Dirt.Simulation.Actor
             Actors = activeActors;
         }
 
-        public delegate bool ActorMatch<T>(T data) where T : new();
+        public delegate bool ActorMatch<T>(T data) where T : struct;
 
-        public ref C Get<C>(GameActor actor) where C: new()
+        public ref C Get<C>(GameActor actor) where C: struct
         {
             int compIdx = actor.GetComponentIndex<C>();
             if (compIdx != -1)
@@ -43,7 +43,7 @@ namespace Dirt.Simulation.Actor
             return false;
         }
 
-        public List<ActorTuple<C1>> GetAll<C1>() where C1 : new()
+        public List<ActorTuple<C1>> GetAll<C1>() where C1 : struct
         {
             List<ActorTuple<C1>> res = new List<ActorTuple<C1>>();
             ComponentArray<C1> pool = m_Components.GetPool<C1>();
@@ -61,7 +61,7 @@ namespace Dirt.Simulation.Actor
             return res;
         }
 
-        public List<ActorTuple<C1>> GetActorsMatching<C1>(ActorMatch<C1> matchCondition) where C1 : new()
+        public List<ActorTuple<C1>> GetActorsMatching<C1>(ActorMatch<C1> matchCondition) where C1 : struct
         {
             List<ActorTuple<C1>> results = new List<ActorTuple<C1>>();
 
@@ -97,8 +97,8 @@ namespace Dirt.Simulation.Actor
         }
 
         public List<ActorTuple<C1, C2>> GetAll<C1, C2>()
-            where C1 : new()
-            where C2 : new()
+            where C1 : struct
+            where C2 : struct
         {
             List<ActorTuple<C1, C2>> res = new List<ActorTuple<C1, C2>>();
             ComponentArray<C1> pool = m_Components.GetPool<C1>();
@@ -122,9 +122,9 @@ namespace Dirt.Simulation.Actor
         }
 
         public List<ActorTuple<C1, C2, C3>> GetAll<C1, C2, C3>()
-        where C1 : new()
-        where C2 : new()
-        where C3 : new()
+        where C1 : struct
+        where C2 : struct
+        where C3 : struct
         {
             List<ActorTuple<C1, C2, C3>> res = new List<ActorTuple<C1, C2, C3>>();
             for (int i = 0; i < Actors.Count; ++i)

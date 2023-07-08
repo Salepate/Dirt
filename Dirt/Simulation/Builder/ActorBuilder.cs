@@ -115,7 +115,7 @@ namespace Dirt.Simulation.Builder
             actor.UnassignComponent(compType);
             Components.GetPool(compType).Free(compIdx);
         }
-        public ref C AddComponent<C>(GameActor actor) where C : new()
+        public ref C AddComponent<C>(GameActor actor) where C : struct
         {
             ComponentArray<C> pool = Components.GetPool<C>();
             int idx = actor.GetComponentIndex<C>();
@@ -127,7 +127,7 @@ namespace Dirt.Simulation.Builder
             return ref pool.Components[idx];
         }
 
-        public void RemoveComponent<C>(GameActor actor) where C : new()
+        public void RemoveComponent<C>(GameActor actor) where C : struct
         {
             int compIdx = actor.GetComponentIndex<C>();
             if (compIdx == -1)

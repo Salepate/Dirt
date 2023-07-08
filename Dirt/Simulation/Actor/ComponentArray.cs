@@ -12,7 +12,7 @@ namespace Dirt.Simulation.Actor
         object Get(int idx);
         void Set(int idx, object newValue);
     }
-    public class ComponentArray<T> : GenericArray where T: new()
+    public class ComponentArray<T> : GenericArray where T: struct
     {
         public delegate T AssignComponentDelegate(T comp);
 

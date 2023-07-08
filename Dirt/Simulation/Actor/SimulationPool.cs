@@ -19,7 +19,7 @@ namespace Dirt.Simulation.Actor
             RegisterComponentArray<Destroy>(maxActor);
         }
 
-        public void RegisterComponentArray<T>(int size = 0) where T : new()
+        public void RegisterComponentArray<T>(int size = 0) where T : struct
         {
             Console.Assert(!Pools.ContainsKey(typeof(T)), "Pool declared twice");
 
@@ -59,7 +59,7 @@ namespace Dirt.Simulation.Actor
             Pools.Add(componentType, genArray);
         }
 
-        public ComponentArray<T> GetPool<T>() where T : new()
+        public ComponentArray<T> GetPool<T>() where T : struct
         {
             if (AllowLazy && !Pools.ContainsKey(typeof(T)))
             {

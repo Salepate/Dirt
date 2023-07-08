@@ -80,7 +80,7 @@ namespace Dirt.Network.Managers
             return ass.GetTypes().Where(t => typeof(C).IsAssignableFrom(t) && t.GetCustomAttribute<SerializableAttribute>() != null);
         }
 
-        private void CreateComponentMeta<T>() where T : IComponent, new()
+        private void CreateComponentMeta<T>() where T : struct, IComponent
         {
             Type compType = typeof(T);
 

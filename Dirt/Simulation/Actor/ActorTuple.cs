@@ -2,7 +2,7 @@
 {
 
     public struct ActorTuple<C1> 
-        where C1 : new()
+        where C1 : struct
     {
         public GameActor Actor { get; private set; }
 
@@ -24,8 +24,8 @@
     }
 
     public struct ActorTuple<C1, C2>
-    where C1 : new()
-    where C2 : new()
+    where C1 : struct
+    where C2 : struct
     {
         public GameActor Actor { get; private set; }
 
@@ -59,9 +59,9 @@
     }
 
     public struct ActorTuple<C1, C2, C3>
-      where C1 : new()
-      where C2 : new()
-      where C3 : new()
+      where C1 : struct
+      where C2 : struct
+      where C3 : struct
     {
         public GameActor Actor { get; private set; }
 
