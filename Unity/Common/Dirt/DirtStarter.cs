@@ -16,11 +16,16 @@ namespace Dirt
 #else
         public static bool IsDebug => false;
 #endif
-        public bool LockFramerate;
-        public int TargetFramerate;
+        [Header(":: Dirt Flow")]
         public string ServiceMode;
         public string InitialMode;
         public string ErrorSceneName;
+        [Header(":: Global Performance Options")]
+        public bool LockFramerate;
+        public int TargetFramerate;
+        [Header(":: Experimental")]
+        [Tooltip("DirtSystem dependencies will be injected before Initialize()")]
+        public bool InjectDependencies;
         
         public static void LoadDefaultGameMode()
         {

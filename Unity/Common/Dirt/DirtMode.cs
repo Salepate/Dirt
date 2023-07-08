@@ -2,6 +2,7 @@
 using Dirt.States;
 using Framework;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -164,5 +165,26 @@ namespace Dirt
         public virtual void OnLateUpdate() { }
         public virtual void OnFixedUpdate() { }
         public virtual void OnModeReady() { }
+
+        internal void InjectDependencies(DirtSystem system)
+        {
+            if ( m_Starter.InjectDependencies )
+            {
+                FieldInfo[] flds = system.GetType().GetFields(BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.NonPublic);
+                int depCount = 0;
+                for (int i = 0; i < flds.Length; ++i)
+                {
+                    FieldInfo field = flds[i];
+                    if (typeof(DirtSystem).IsAssignableFrom(field.FieldType))
+                    {
+                        DirtSystem sysRef = FindSystem(field.FieldType);
+                        field.SetValue(system, sysRef);
+                        ++depCount;
+                    }
+                }
+
+                Console.Message($"System {system.GetType().Name} has {depCount} dependencies");
+            }
+        }
     }
 }

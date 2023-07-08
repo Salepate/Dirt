@@ -2,6 +2,7 @@ using Dirt.Log;
 using Dirt.Reflection;
 using Framework;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Dirt.DirtSystem;
@@ -86,11 +87,11 @@ namespace Dirt.States
             }
             else
             {
+                controller.InjectDependencies(system);
                 system.Initialize(controller);
                 OnSystemReady();
             }
         }
-
         public override void Update()
         {
             if ( AllSystemsLoaded )
@@ -142,6 +143,7 @@ namespace Dirt.States
         {
             DirtSystem system = controller.Systems[m_SystemIndex];
             Console.Message($"{system.GetType().Name} scenes loaded");
+            controller.InjectDependencies(system);
             system.Initialize(controller);
             OnSystemReady();
         }
