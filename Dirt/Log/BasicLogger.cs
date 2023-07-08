@@ -1,9 +1,12 @@
-﻿using NativeConsole = System.Console;
+﻿using System.Diagnostics;
+using NativeConsole = System.Console;
 
 namespace Dirt.Log
 {
     public class BasicLogger : IConsoleLogger
     {
+        private const int s_IgnoreFrameCount = 2; // public + internal
+
         public void Message(string tag, string message, string uniqueColor)
         {
             NativeConsole.WriteLine($"[{tag}] {message}");
@@ -19,5 +22,13 @@ namespace Dirt.Log
             NativeConsole.WriteLine($"<Error> [{tag}] {message}");
         }
 
+        public string GetTag()
+        {
+            StackTrace currentTrace = new StackTrace();
+            StackFrame[] frames = currentTrace.GetFrames();
+            StackFrame frame = frames[s_IgnoreFrameCount];
+            System.Type callingType = frame.GetMethod().DeclaringType;
+            return callingType.Name;
+        }
     }
 }

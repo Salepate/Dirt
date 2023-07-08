@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using FileStream = System.IO.FileStream;
 using Random = System.Random;
-using StackFrame = System.Diagnostics.StackFrame;
-using StackTrace = System.Diagnostics.StackTrace;
 using UTF8Encoding = System.Text.UTF8Encoding;
 
 namespace Dirt.Log
@@ -16,14 +14,12 @@ namespace Dirt.Log
 
     public static class Console
     {
-        private const int s_IgnoreFrameCount = 2; // public + internal
-
         public static IConsoleLogger Logger { get; set; }
 
         public static bool Dump;
 
         #region cache
-        private static Dictionary<System.Type, string> s_ColorMap;
+        private static Dictionary<string, string> s_ColorMap;
         private static Random s_Random;
         private static bool s_Dumping;
         private static FileStream s_DumpFile;
@@ -33,7 +29,7 @@ namespace Dirt.Log
         static Console()
         {
             s_Random = new Random(255);
-            s_ColorMap = new Dictionary<System.Type, string>();
+            s_ColorMap = new Dictionary<string, string>();
             s_Dumping = false;
         }
 
@@ -65,41 +61,39 @@ namespace Dirt.Log
         #region internal
         private static void InternalLog(LogLevel logLevel, string message)
         {
-            StackTrace currentTrace = new StackTrace();
-            StackFrame[] frames = currentTrace.GetFrames();
-            StackFrame frame = frames[s_IgnoreFrameCount];
-            System.Type callingType = frame.GetMethod().DeclaringType;
-            string color = GetColor(callingType);
-
             if (Logger == null)
-                throw new System.Exception($"No Logger set");
+                throw new System.Exception("No Dirt.IConsoleLogger set");
+
+            string tag = Logger.GetTag();
+            string color = GetColor(tag);
+
 
             switch (logLevel)
             {
                 case LogLevel.Info: 
-                    Logger.Message(callingType.Name, message, color);
+                    Logger.Message(tag, message, color);
                     break;
                 case LogLevel.Warning:
-                    Logger.Warning(callingType.Name, message, color);
+                    Logger.Warning(tag, message, color);
                     break;
                 case LogLevel.Error:
-                    Logger.Error(callingType.Name, message, color);
+                    Logger.Error(tag, message, color);
                     break;
                 default:
                     break;
             }
         }
 
-        private static string GetColor(System.Type t)
+        private static string GetColor(string tag)
         {
             string col;
-            if (!s_ColorMap.TryGetValue(t, out col))
+            if (!s_ColorMap.TryGetValue(tag, out col))
             {
                 int r = s_Random.Next(255);
                 int g = s_Random.Next(255);
                 int b = s_Random.Next(255);
                 col = string.Format("{0}{1}{2}", r.ToString("X"), g.ToString("X"), b.ToString("X"));
-                s_ColorMap.Add(t, col);
+                s_ColorMap.Add(tag, col);
             }
             return col;
         }

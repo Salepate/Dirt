@@ -36,9 +36,12 @@ namespace Dirt
 
         private HashSet<DirtSystemContent> m_ServiceContent;
 
+        protected virtual IConsoleLogger CreateLogger() => new UnityLogger();
+
         private void Awake()
         {
-            Console.Logger = new UnityLogger();
+            Console.Logger = CreateLogger();
+
             if (LockFramerate)
                 Application.targetFrameRate = TargetFramerate;
             //#if DIRT_DEBUG
@@ -125,7 +128,7 @@ namespace Dirt
             mode.ContentMap.Clear();
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             if ( Mode != null )
                 UnloadMode(Mode);
