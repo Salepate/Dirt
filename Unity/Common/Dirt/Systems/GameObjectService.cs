@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Dirt.Systems
 {
+    //TODO add pool destroy
     public class GameObjectService : DirtSystem
     {
         public override bool HasUpdate => true;
@@ -24,7 +25,11 @@ namespace Dirt.Systems
         {
             m_PoolManager.InitializePool(prefab, parent, baseCapacity);
         }
-        //TODO add pool destroy
+
+        public void ReleasePool(GameObject prefab)
+        {
+            m_PoolManager.DestroyPool(prefab);
+        }
 
         public GameObject Instantiate(GameObject prefab, Transform parent = null)
         {
@@ -34,11 +39,6 @@ namespace Dirt.Systems
         }
 
         public T Instantiate<T>(GameObject prefab, Transform parent = null) where T : Component
-        {
-            return Instantiate<T>(prefab, null, parent);
-        }
-
-        public T Instantiate<T>(GameObject prefab, ScriptableObject obj, Transform parent = null) where T : Component
         {
             GameObject instance = m_PoolManager.Get(prefab, parent);
             T actor = instance.GetComponent<T>();

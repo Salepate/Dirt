@@ -34,6 +34,20 @@ namespace Framework
             return m_Pools.ContainsKey(prefab);
         }
 
+        /// <summary>
+        /// destroy a specific pool
+        /// note: Active objects are not destroyed
+        /// </summary>
+        /// <param name="prefab"></param>
+        internal void DestroyPool(GameObject prefab)
+        {
+            if ( m_Pools.TryGetValue(prefab, out PrefabPoolManager poolMgr))
+            {
+                poolMgr.DestroyPool();
+                m_Pools.Remove(prefab);
+            }
+        }
+
         public PrefabPoolManager InitializePool(GameObject prefab, Transform instanceRoot = null , int initialCapacity = 1)
         {
             if (!m_Pools.ContainsKey(prefab))
