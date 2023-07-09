@@ -96,10 +96,8 @@ namespace Dirt.GameServer.Managers
         public int CreateSimulation(string archetypeName, SimulationSpan span, IContextItem[] initialContext = null)
         {
             ActorBuilder builder = new ServerActorBuilder();
-            SimulationArchetype archetype = m_Content.LoadContent<SimulationArchetype>(archetypeName);
-
+            SimulationArchetype archetype = m_Content.LoadContent<SimulationArchetype>($"sim.{archetypeName}");
             builder.SetGameContent(m_Content);
-            builder.InitializePool(archetype.MaximumActors);
 
             var gameSim = new GameSimulation(builder, m_IDGenerator, archetype.MaximumQueries)
             {

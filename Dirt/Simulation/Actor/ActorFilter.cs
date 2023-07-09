@@ -7,12 +7,16 @@ namespace Dirt.Simulation.Actor
     public class ActorFilter
     {
         public List<GameActor> Actors { get;  private set; }
-        private SimulationPool m_Components;
-        public ActorFilter(SimulationPool componentPool, List<GameActor> activeActors, int querySize, int maxQueries)
+        public SimulationPool m_Components;
+        public ActorFilter(List<GameActor> activeActors, int querySize, int maxQueries)
         {
-            m_Components = componentPool;
             Actors = activeActors;
             Resize(querySize, maxQueries);
+        }
+
+        public void SetComponentPool(SimulationPool pool)
+        {
+            m_Components = pool;
         }
 
         public delegate bool ActorMatch<T>(T data) where T : struct;

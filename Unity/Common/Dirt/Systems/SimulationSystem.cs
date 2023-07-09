@@ -60,9 +60,10 @@ namespace Dirt.Systems
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             RegisterManager<IContentProvider>(m_Content);
             RegisterManager(new MetricsManager());
-            Simulation = new GameSimulation(0, 1000, 10);
+            Simulation = new GameSimulation(0, 0, 0);
             Simulation.Builder.LoadAssemblies(ValidAssemblies);
             Simulation.Builder.SetGameContent(m_Content);
+            Simulation.Resize(1000, 10);
             m_Systems = new SystemContainer(m_Content, this);
         }
 
@@ -71,7 +72,7 @@ namespace Dirt.Systems
             DispatchEvent(new LocalSimulationEvent(Simulation.ArchetypeName, LocalSimulationEvent.SimulationDestroyed));
             m_Systems.ClearSimulation(Simulation);
         }
-
+        
         public void RegisterEventReader(IEventReader eventReader)
         {
             m_Systems.InjectEventDispatchers(eventReader);

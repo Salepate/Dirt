@@ -34,7 +34,6 @@ namespace Dirt.Simulation.Builder
             m_Injectors = new Dictionary<Type, ComponentInjector>();
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
-            InitializePool(actorPoolSize);
         }
 
         public ActorBuilder()
@@ -62,6 +61,11 @@ namespace Dirt.Simulation.Builder
             }
 
             Components = new SimulationPool(poolSize);
+
+            foreach (KeyValuePair<string, Type> kvp in m_ValidComponents)
+            {
+                RegisterComponent(kvp.Value);
+            }
         }
 
         public GameActor GetActorByID(int actorID)
@@ -81,7 +85,7 @@ namespace Dirt.Simulation.Builder
             foreach (KeyValuePair<string, Type> kvp in m_ValidComponents)
             {
                 Console.Message($"Register Comp Pool {kvp.Key}");
-                RegisterComponent(kvp.Value);
+                m_Injectors.Add(kvp.Value, new ComponentInjector(kvp.Value));
             }
         }
 
@@ -179,7 +183,6 @@ namespace Dirt.Simulation.Builder
 
         public void RegisterComponent(Type compType)
         {
-            m_Injectors.Add(compType, new ComponentInjector(compType));
             Components.RegisterComponentArray(compType);
         }
 

@@ -27,6 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
+using System.Security.AccessControl;
 using Console = Dirt.Log.Console;
 
 namespace Dirt.GameServer
@@ -298,6 +300,8 @@ namespace Dirt.GameServer
             if (!Simulations.IsReady(simID))
             {
                 simulation.Builder.LoadAssemblies(ValidAssemblies);
+                simulation.Resize(simulation.Archetype.MaximumQueries, simulation.Archetype.MaximumQueries);
+
                 ISimulationSystem[] sys = m_SimBuilder.CreateSystems(simulation.Archetype, Content, true, out string contextName);
                 SystemContainer container = new SystemContainer(Content, this);
                 string contextContentFile = $"context.{contextName}";
