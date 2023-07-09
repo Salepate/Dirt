@@ -2,6 +2,7 @@
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Events;
+using Dirt.Simulation.Model;
 
 namespace Dirt.Simulation
 {
@@ -10,23 +11,24 @@ namespace Dirt.Simulation
         public GameWorld World;
         public int ID { get; private set; }
 
-        public string Archetype;
+        public SimulationArchetype Archetype;
+        public string ArchetypeName;
         public Queue<SimulationEvent> Events { get; private set; }
         public ActorBuilder Builder { get; private set; }
         public ActorFilter Filter { get; private set; }
-        public GameSimulation(int id = 0)
+        public GameSimulation(int id, int maxActor, int maxQueries)
         {
             ID = id;
-            Builder = new ActorBuilder(1000);
+            Builder = new ActorBuilder(maxActor);
             World = new GameWorld();
             Events = new Queue<SimulationEvent>();
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
-            Filter = new ActorFilter(Builder.Components, World.Actors);
+            Filter = new ActorFilter(Builder.Components, World.Actors, maxActor, maxQueries);
         }
 
-        public GameSimulation(ActorBuilder builder, int id = 0)
+        public GameSimulation(ActorBuilder builder, int id, int maxQueries)
         {
             ID = id;
             Builder = builder;
@@ -35,7 +37,13 @@ namespace Dirt.Simulation
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
-            Filter = new ActorFilter(Builder.Components, World.Actors);
+            Filter = new ActorFilter(Builder.Components, World.Actors, Builder.ActorPoolSize, maxQueries);
+        }
+
+        public void Resize(int maximumActor, int maximumQueries)
+        {
+            Builder.InitializePool(maximumActor);
+            Filter.Resize(maximumActor, maximumQueries);
         }
 
         private void OnActorBuilt(GameActor actor)

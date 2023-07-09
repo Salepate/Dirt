@@ -14,8 +14,8 @@ namespace Dirt.Simulation
 
         // New ECS
         public int[] Components;
+        public Type[] ComponentTypes { get { return m_Types; } }
         // Old ECS
-        public System.Type[] ComponentTypes { get { return m_Types; } }
         //public IComponent[] Components;
         public int ComponentCount { get; private set; }
 
@@ -91,6 +91,11 @@ namespace Dirt.Simulation
             return -1;
         }
 
+        /// <summary>
+        /// Returns the index in ComponentArray
+        /// </summary>
+        /// <typeparam name="C"></typeparam>
+        /// <returns></returns>
         public int GetComponentIndex<C>()
         {
             for (int i = 0; i < ComponentCount; ++i)

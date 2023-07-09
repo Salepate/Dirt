@@ -15,6 +15,7 @@ namespace Dirt.Simulation.Builder
         public System.Action<GameActor> ActorCreateAction;
         public System.Action<GameActor> ActorDestroyAction;
 
+        public int ActorPoolSize { get; private set; }
         private GameActor[] m_AvailableActor;
         private GameActor[] m_ActorCollection;
 
@@ -51,6 +52,7 @@ namespace Dirt.Simulation.Builder
 
         public void InitializePool(int poolSize)
         {
+            ActorPoolSize = poolSize;
             m_AvailableActor = new GameActor[poolSize];
             m_ActorCollection = new GameActor[poolSize];
             for (int i = 0; i < poolSize; ++i)

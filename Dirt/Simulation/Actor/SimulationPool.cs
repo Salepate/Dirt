@@ -15,8 +15,6 @@ namespace Dirt.Simulation.Actor
         {
             m_MaximumActor = maxActor;
             Pools = new Dictionary<Type, GenericArray>();
-            // Native Component
-            RegisterComponentArray<Destroy>(maxActor);
         }
 
         public void RegisterComponentArray<T>(int size = 0) where T : struct

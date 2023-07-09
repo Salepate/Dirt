@@ -23,4 +23,10 @@
     {
         public ComponentNotFoundException(Type component) : base(component) { }
     }
+
+    public class QueryLimitException : System.Exception
+    {
+        public int MaxQueries;
+
+    }
 }

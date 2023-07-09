@@ -17,12 +17,10 @@ namespace Dirt.Simulation.Builder
 
         }
 
-        public ISimulationSystem[] CreateSystems(string archetypeName, IContentProvider contentProvider, bool isServer, out string contextName)
+        public ISimulationSystem[] CreateSystems(SimulationArchetype archetype, IContentProvider contentProvider, bool isServer, out string contextName)
         {
-            string archetype = $"sim.{archetypeName}";
-            SimulationArchetype newArchetype = contentProvider.LoadContent<SimulationArchetype>(archetype);
-            string[] systems = CreateSystemNames(newArchetype, contentProvider, isServer);
-            contextName = newArchetype.Context;
+            string[] systems = CreateSystemNames(archetype, contentProvider, isServer);
+            contextName = archetype.Context;
             return CreateSystems(systems);
         }
 

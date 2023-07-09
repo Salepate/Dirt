@@ -189,7 +189,7 @@ namespace Dirt.GameServer
 
             WarmSimulation(simID);
             m_Groups[simID].RegisterClient(client);
-            client.Send(MudMessage.Create((int)NetworkOperation.LoadSimulation, System.Text.Encoding.ASCII.GetBytes(newSim.Archetype)));
+            client.Send(MudMessage.Create((int)NetworkOperation.LoadSimulation, System.Text.Encoding.ASCII.GetBytes(newSim.ArchetypeName)));
             PlayerEvent playerEvent = new PlayerEvent(client.Number, PlayerEvent.JoinedSimulation);
             newSim.Events.Enqueue(playerEvent);
         }
@@ -281,6 +281,7 @@ namespace Dirt.GameServer
             m_Groups.Remove(simID);
             m_GroupManager.DestroyGroup(group);
         }
+
         public void WarmSimulation(int simID)
         {
             SimulationProxy simProxy = Simulations.GetSimulationProxy(simID);

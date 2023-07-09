@@ -3,5 +3,7 @@
         "common",
         "network"
     ],
-    "Context": "default"
+    "Context": "default",
+    "MaximumActors": 1000,
+    "MaximumQueries": 10
 }

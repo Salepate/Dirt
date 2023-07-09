@@ -60,7 +60,7 @@ namespace Dirt.Systems
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             RegisterManager<IContentProvider>(m_Content);
             RegisterManager(new MetricsManager());
-            Simulation = new GameSimulation();
+            Simulation = new GameSimulation(0, 1000, 10);
             Simulation.Builder.LoadAssemblies(ValidAssemblies);
             Simulation.Builder.SetGameContent(m_Content);
             m_Systems = new SystemContainer(m_Content, this);
@@ -68,7 +68,7 @@ namespace Dirt.Systems
 
         public override void Unload()
         {
-            DispatchEvent(new LocalSimulationEvent(Simulation.Archetype, LocalSimulationEvent.SimulationDestroyed));
+            DispatchEvent(new LocalSimulationEvent(Simulation.ArchetypeName, LocalSimulationEvent.SimulationDestroyed));
             m_Systems.ClearSimulation(Simulation);
         }
 
@@ -89,13 +89,16 @@ namespace Dirt.Systems
 
         public void ChangeSimulation(string archetypeName)
         {
-            ISimulationSystem[] systems = m_SimBuilder.CreateSystems(archetypeName, m_Content, false, out string context);
+            SimulationArchetype simArch = m_Content.LoadContent<SimulationArchetype>($"sim.{archetypeName}");
+            ISimulationSystem[] systems = m_SimBuilder.CreateSystems(simArch, m_Content, false, out string context);
             string contextName = $"context.{context ?? "default"}";
 
             m_Systems.Context.ClearContext();
-            DispatchEvent(new LocalSimulationEvent(Simulation.Archetype, LocalSimulationEvent.SimulationDestroyed));
+            DispatchEvent(new LocalSimulationEvent(Simulation.ArchetypeName, LocalSimulationEvent.SimulationDestroyed));
             m_Systems.ClearSimulation(Simulation);
-            Simulation.Archetype = archetypeName;
+            Simulation.Archetype = simArch;
+            Simulation.ArchetypeName = archetypeName;
+            Simulation.Resize(simArch.MaximumActors, simArch.MaximumQueries);
             if (m_Content.HasContent(contextName))
             {
                 m_Systems.LoadContext(contextName);

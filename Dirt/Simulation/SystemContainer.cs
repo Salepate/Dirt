@@ -107,9 +107,8 @@ namespace Dirt.Simulation
                 if ( m_SystemStatus[i] )
                 {
                     ISimulationSystem sys = Systems[i];
-                    SystemMetric metric = m_MetricsOverTime[i];
-                    m_SystemStopWatch.Reset();
-                    m_SystemStopWatch.Start();
+                    m_SystemStopWatch.Restart();
+                    simulation.Filter.ResetQueries();
                     sys.UpdateActors(simulation, deltaTime);
                     m_SystemStopWatch.Stop();
                     totalTicks += m_SystemStopWatch.ElapsedMilliseconds;
@@ -122,11 +121,13 @@ namespace Dirt.Simulation
             DispatchQueuedEvents(simulation);
 
             // actor clean up
-            List<ActorTuple<Destroy>> destroyedActors = simulation.Filter.GetAll<Destroy>();
-            for (int i = 0; i < destroyedActors.Count; ++i)
+            //List<ActorTuple<Destroy>> destroyedActors = simulation.Filter.GetAll<Destroy>();
+            simulation.Filter.ResetQueries();
+            ActorList<Destroy> destroyedActors = simulation.Filter.GetActors<Destroy>();
+            for (int i = destroyedActors.Count - 1; i >= 0; --i)
             {
                 //Console.Message($"Destroying Actor {destroyedActors[i].Item1.ID}");
-                simulation.Builder.DestroyActor(destroyedActors[i].Actor);
+                simulation.Builder.DestroyActor(destroyedActors.Actors[i]);
             }
 
             DispatchQueuedEvents(simulation);

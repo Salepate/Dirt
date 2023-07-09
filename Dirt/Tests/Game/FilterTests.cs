@@ -28,6 +28,53 @@ namespace Dirt.Tests.Simulation
             Assert.AreSame(actor, resActor, "Actor found mismatch");
         }
 
+        [TestMethod]
+        public void Test_Filter_ActorList_1Comp()
+        {
+            const int actorWithComp = 20;
+            const int actorWithoutComp = 10;
+            for (int i = 0; i < actorWithComp; ++i)
+            {
+                GameActor actor = Builder.CreateActor();
+                Builder.AddComponent<SampleComponent>(actor);
+            }
+
+            for (int i = 0; i < actorWithoutComp; ++i)
+            {
+                GameActor actor = Builder.CreateActor();
+            }
+
+            ActorList<SampleComponent> res = m_Filter.GetActors<SampleComponent>();
+            Assert.AreEqual(actorWithComp, res.Count);
+        }
+
+        [TestMethod]
+        public void Test_Filter_ActorList_1Comp_CompIndex()
+        {
+            const int sampleValue = 127;
+            const int actorCount = 100;
+            int matchingActors = 0;
+
+            for (int i = 0; i < actorCount; ++i)
+            {
+                GameActor actor = Builder.CreateActor();
+                ref SampleComponent comp = ref Builder.AddComponent<SampleComponent>(actor);
+                if ( i == 0 ) // only first actor
+                {
+                    comp.Value = sampleValue;
+                }
+            }
+
+            ActorList<SampleComponent> actors = m_Filter.GetActors<SampleComponent>();
+            for(int i = 0; i < actors.Count; ++i)
+            {
+                if (actors.GetC1(i).Value == sampleValue)
+                    ++matchingActors;
+
+            }
+
+            Assert.AreEqual(1, matchingActors);
+        }
 
         [TestMethod]
         public void Test_Filter_WriteComponent()

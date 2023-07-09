@@ -3,6 +3,7 @@ using Dirt.Game.Content;
 using Dirt.Simulation;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Context;
+using Dirt.Simulation.Model;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,6 @@ namespace Dirt.GameServer.Managers
         private Dictionary<int, SimulationProxy> m_SimulationMap;
         private int m_IDGenerator;
         private IContentProvider m_Content;
-
         private List<SimulationProxy> m_ActiveSimulations;
 
         public IEnumerable<int> ActiveSimulations => m_SimulationMap.Keys;
@@ -96,12 +96,15 @@ namespace Dirt.GameServer.Managers
         public int CreateSimulation(string archetypeName, SimulationSpan span, IContextItem[] initialContext = null)
         {
             ActorBuilder builder = new ServerActorBuilder();
-            builder.SetGameContent(m_Content);
-            builder.InitializePool(1000);
+            SimulationArchetype archetype = m_Content.LoadContent<SimulationArchetype>(archetypeName);
 
-            var gameSim = new GameSimulation(builder, m_IDGenerator)
+            builder.SetGameContent(m_Content);
+            builder.InitializePool(archetype.MaximumActors);
+
+            var gameSim = new GameSimulation(builder, m_IDGenerator, archetype.MaximumQueries)
             {
-                Archetype = archetypeName
+                ArchetypeName = archetypeName,
+                Archetype = archetype
             };
 
             SimulationProxy proxy = new SimulationProxy(gameSim, span, initialContext);

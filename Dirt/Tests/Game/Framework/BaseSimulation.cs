@@ -21,7 +21,7 @@ namespace Dirt.Tests.Framework
             m_Content = new MockContentProvider();
             m_Managers = new MockManagerProvider();
             Container = new SystemContainer(m_Content, m_Managers);
-            Simulation = new GameSimulation();
+            Simulation = new GameSimulation(0, 1000, 10);
             Builder.LoadAssemblies(new AssemblyCollection() { Assemblies = new string[] {
                 "Dirt.Simulation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "Dirt.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"} 

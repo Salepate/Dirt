@@ -4,5 +4,5 @@
     /// Tag actors with this to destroy them
     /// </summary>
     [System.Serializable]
-    public struct Destroy { }
+    public struct Destroy : IComponent { }
 }
