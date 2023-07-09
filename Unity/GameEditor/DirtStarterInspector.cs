@@ -57,6 +57,7 @@ namespace Dirt.GameEditor
             string errorScene = EditorGUILayout.TextField(new GUIContent("Error Scene"), errProp.stringValue);
 
             starter.DebugGame = EditorGUILayout.Toggle("Debug", starter.DebugGame);
+            starter.InjectDependencies = EditorGUILayout.Toggle("Inject Dependencies", starter.InjectDependencies);
 
             if (EditorGUI.EndChangeCheck())
             {
