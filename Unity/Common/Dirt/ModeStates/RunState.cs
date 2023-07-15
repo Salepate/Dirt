@@ -6,7 +6,7 @@ namespace Dirt.States
     {
         public override void OnEnter()
         {
-            controller.OnModeReady();
+            controller.SetModeReady();
         }
 
         public override void Update()

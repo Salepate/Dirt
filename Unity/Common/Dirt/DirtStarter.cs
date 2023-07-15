@@ -8,6 +8,10 @@ namespace Dirt
 {
     public class DirtStarter : MonoBehaviour
     {
+        // <Loaded Mode>
+        public static System.Action<DirtMode> OnModeBeginLoad;
+        public static System.Action<DirtMode> OnModeStart;
+
         private static DirtStarter s_Starter;
 
 #if !DIRT_PRODUCTION
@@ -53,7 +57,13 @@ namespace Dirt
             //            Console.Dump = true;
             //#endif
 
+            // Clear actions to prevent issue with disabled domain reload
+            OnModeBeginLoad = null;
+            OnModeStart = null;
+
+
             //Services = new Dictionary<System.Type, DirtSystem>();
+
             m_ServiceContent = new HashSet<DirtSystemContent>();
             Services = new List<DirtSystem>();
             ServiceModes = new List<DirtMode>();
@@ -79,19 +89,26 @@ namespace Dirt
         public static void LoadMode(string modeName)
         {
             Console.Assert(s_Starter != null, "DirtStarter missing");
-            s_Starter.InternalLoadMode(modeName);
+            System.Type modeType = AssemblyUtility.GetTypeFromName(modeName);
+            Console.Assert(modeType != null, $"Unknown mode {modeName} {(modeName.Split('.').Length <= 1 ? "(namespace is mandatory)" : "")}");
+            s_Starter.InternalLoadMode(modeType);
         }
 
         public static void LoadMode<T>() where T: DirtMode
         {
+            Console.Assert(s_Starter != null, "DirtStarter missing");
             Console.Assert(!typeof(T).IsAbstract, "Cannot load abstract mode");
-            s_Starter.InternalLoadMode(typeof(T).FullName);
+            s_Starter.InternalLoadMode(typeof(T));
         }
 
-        private void InternalLoadMode(string modeName)
+        public static void LoadMode(System.Type modeType)
         {
-            System.Type modeType = AssemblyUtility.GetTypeFromName(modeName);
-            Console.Assert(modeType != null, $"Unknown mode {modeName} {(modeName.Split('.').Length <= 1 ? "(namespace is mandatory)" : "")}");
+            Console.Assert(s_Starter != null, "DirtStarter missing");
+            s_Starter.InternalLoadMode(modeType);
+        }
+
+        private void InternalLoadMode(System.Type modeType)
+        {
             DirtMode mode = (DirtMode)System.Activator.CreateInstance(modeType);
 
             if (Mode != null)

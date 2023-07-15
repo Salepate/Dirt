@@ -29,6 +29,8 @@ namespace Dirt.States
             m_Waiting = false;
 
             SceneManager.sceneLoaded += OnSceneLoaded;
+
+            DirtStarter.OnModeBeginLoad?.Invoke(controller);
         }
 
         public override void OnLeave()

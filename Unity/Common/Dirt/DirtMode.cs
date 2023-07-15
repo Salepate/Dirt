@@ -114,7 +114,7 @@ namespace Dirt
             OnInitialize();
         }
 
-        public void SetSystemsReady()
+        internal void SetSystemsReady()
         {
             if ( IsService )
             {
@@ -122,6 +122,12 @@ namespace Dirt
                 m_Starter.ServiceModes.Add(this);
                 m_Starter.Services.AddRange(Systems);
             }
+        }
+
+        internal void SetModeReady()
+        {
+            DirtStarter.OnModeStart?.Invoke(this);
+            OnModeReady();
         }
 
         public void Update()
