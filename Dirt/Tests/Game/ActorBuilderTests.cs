@@ -18,7 +18,8 @@ namespace Dirt.Tests.Simulation
         public override void Initialize()
         {
             base.Initialize();
-            m_Builder = new ActorBuilder(MaxActor);
+            m_Builder = new ActorBuilder();
+            m_Builder.InitializePool(100);
             m_Builder.Components.AllowLazy = true;
         }
 

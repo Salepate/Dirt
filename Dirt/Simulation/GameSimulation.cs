@@ -19,7 +19,7 @@ namespace Dirt.Simulation
         public GameSimulation(int id, int maxActor, int maxQueries)
         {
             ID = id;
-            Builder = new ActorBuilder(maxActor);
+            Builder = new ActorBuilder();
             World = new GameWorld();
             Events = new Queue<SimulationEvent>();
 

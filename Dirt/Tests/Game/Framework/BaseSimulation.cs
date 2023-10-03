@@ -26,6 +26,7 @@ namespace Dirt.Tests.Framework
                 "Dirt.Simulation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "Dirt.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"} 
             });
+            Simulation.Resize(10000, 100);
             Container.InitializeSystems(Simulation);
         }
     }

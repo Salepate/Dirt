@@ -1,6 +1,7 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
 using Dirt.Game.Managers;
+using Dirt.Log;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Actor.Components;
 using Dirt.Simulation.Context;
@@ -120,14 +121,11 @@ namespace Dirt.Simulation
 
             DispatchQueuedEvents(simulation);
 
-            // actor clean up
-            //List<ActorTuple<Destroy>> destroyedActors = simulation.Filter.GetAll<Destroy>();
             simulation.Filter.ResetQueries();
             ActorList<Destroy> destroyedActors = simulation.Filter.GetActors<Destroy>();
-            for (int i = destroyedActors.Count - 1; i >= 0; --i)
+            for (int i = 0; i < destroyedActors.Count; ++i)
             {
-                //Console.Message($"Destroying Actor {destroyedActors[i].Item1.ID}");
-                simulation.Builder.DestroyActor(destroyedActors.Actors[i]);
+                simulation.Builder.DestroyActor(destroyedActors.GetActor(i));
             }
 
             DispatchQueuedEvents(simulation);

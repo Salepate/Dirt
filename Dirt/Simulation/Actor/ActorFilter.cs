@@ -1,5 +1,4 @@
 ﻿using Dirt.Simulation.Exceptions;
-using System;
 using System.Collections.Generic;
 
 namespace Dirt.Simulation.Actor

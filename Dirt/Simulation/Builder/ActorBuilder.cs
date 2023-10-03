@@ -1,7 +1,4 @@
 ﻿using System.Collections.Generic;
-
-using Type = System.Type;
-using Console = Dirt.Log.Console;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.Utility;
 using Dirt.Game.Content;
@@ -10,6 +7,9 @@ using Dirt.Simulation.Exceptions;
 
 namespace Dirt.Simulation.Builder
 {
+    using Type = System.Type;
+    using Console = Log.Console;
+
     public class ActorBuilder
     {
         public System.Action<GameActor> ActorCreateAction;
@@ -27,13 +27,17 @@ namespace Dirt.Simulation.Builder
 
         protected IContentProvider Content;
 
-        public SimulationPool Components { get; private set; }
+        public SimulationPool Components => GetComponents();
 
+        private SimulationPool m_Components;
+
+        // obsolete
         public ActorBuilder(int actorPoolSize)
         {
             m_Injectors = new Dictionary<Type, ComponentInjector>();
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
+            m_Components = null;
         }
 
         public ActorBuilder()
@@ -42,6 +46,7 @@ namespace Dirt.Simulation.Builder
             m_AvailableActor = new GameActor[0];
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
+            m_Components = null;
         }
 
         public void SetGameContent(IContentProvider content)
@@ -60,7 +65,7 @@ namespace Dirt.Simulation.Builder
                 m_ActorCollection[i] = m_AvailableActor[i];
             }
 
-            Components = new SimulationPool(poolSize);
+            m_Components = new SimulationPool(poolSize);
 
             foreach (KeyValuePair<string, Type> kvp in m_ValidComponents)
             {
@@ -261,6 +266,15 @@ namespace Dirt.Simulation.Builder
             object genObj = comp.Get(compIndex);
             injector.Inject(genObj, parameters);
             comp.Set(compIndex, genObj);
+        }
+
+        private SimulationPool GetComponents()
+        {
+            if (m_Components == null)
+            {
+                throw new ActorBuilderException("Builder not initialized");
+            }
+            return m_Components;
         }
     }
 }
