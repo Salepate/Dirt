@@ -2,11 +2,14 @@
 
 namespace Dirt.Network.Model
 {
+    /// <summary>
+    /// Component serialization settings
+    /// </summary>
     [Serializable]
     public struct ComponentFieldInfo
     {
-        public int Component;
-        public int Accessor;
-        public bool Owner;
+        public int Component; // local index
+        public int Accessor; 
+        public bool Owner; // grants owner permission to write
     }
 }

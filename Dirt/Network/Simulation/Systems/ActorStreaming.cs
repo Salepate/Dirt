@@ -26,45 +26,54 @@ namespace Dirt.Network.Systems
         }
 
         protected virtual bool ShouldSerialize(bool isOwner) => true;
-        protected virtual bool ShouldDeserialize(bool isOwner) => isOwner;
+        protected virtual bool ShouldDeserialize(bool serverAuthor, bool isOwner) => isOwner;
+        protected virtual bool ShouldDeserialize(ref NetInfo info) => !info.ServerControl;
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            foreach (ActorTuple<NetInfo> netActor in Filter.GetAll<NetInfo>())
+            ActorList<NetInfo> netActors = Filter.GetActors<NetInfo>();
+            for(int i = 0; i < netActors.Count; ++i)
             {
-                GameActor actor = netActor.Actor;
-                ref NetInfo netBhv = ref netActor.Get();
+                GameActor actor = netActors.GetActor(i);
+                ref NetInfo netBhv = ref netActors.GetC1(i);
 
                 //@TODO Server exclusive
                 if (netBhv.ID == -1)
                     netBhv.ID = GetID();
 
-                DeserializeActor(actor, ref netBhv);
+                //@TODO Add timed state deserial/serial to control net throughput
 
-
-                MessageHeader stateToSerialize = SerializeActor(actor, netBhv);
-
-                if (stateToSerialize != null && stateToSerialize.FieldIndex != null)
+                if (ShouldDeserialize(ref netBhv))
                 {
-                    byte[] message = null;
+                    DeserializeActor(actor, ref netBhv);
+                }
 
-                    using (MemoryStream messageStream = new MemoryStream())
-                    {
-                        m_Serializer.Serialize(messageStream, stateToSerialize);
-                        message = messageStream.ToArray();
-                    }
+                if (ShouldSerialize(netBhv.Owned))
+                {
+                    MessageHeader stateToSerialize = SerializeActor(actor, netBhv);
 
-                    netBhv.LastOutBuffer = message;
-                    if (netBhv.LastState == null) // first buffer
+                    if (stateToSerialize != null && stateToSerialize.FieldIndex != null)
                     {
-                        netBhv.LastState = stateToSerialize;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < stateToSerialize.FieldIndex.Length; ++i)
+                        byte[] message = null;
+
+                        using (MemoryStream messageStream = new MemoryStream())
                         {
-                            int indexInFullState = GetIndexInState(netBhv.LastState, stateToSerialize.FieldIndex[i]);
-                            netBhv.LastState.FieldValue[indexInFullState] = stateToSerialize.FieldValue[i];
+                            m_Serializer.Serialize(messageStream, stateToSerialize);
+                            message = messageStream.ToArray();
+                        }
+
+                        netBhv.LastOutBuffer = message;
+                        if (netBhv.LastState == null) // first buffer
+                        {
+                            netBhv.LastState = stateToSerialize;
+                        }
+                        else
+                        {
+                            for (int j = 0; j < stateToSerialize.FieldIndex.Length; ++j)
+                            {
+                                int indexInFullState = GetIndexInState(netBhv.LastState, stateToSerialize.FieldIndex[j]);
+                                netBhv.LastState.FieldValue[indexInFullState] = stateToSerialize.FieldValue[j];
+                            }
                         }
                     }
                 }
@@ -93,7 +102,7 @@ namespace Dirt.Network.Systems
             for (int i = 0; i < header.FieldIndex.Length; ++i)
             {
                 ComponentFieldInfo field = sync.Fields[header.FieldIndex[i]];
-                if (ShouldDeserialize(field.Owner))
+                if (ShouldDeserialize(sync.ServerControl, field.Owner))
                 {
                     Type compType = actor.ComponentTypes[field.Component];
                     if (NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessors))

@@ -1,4 +1,5 @@
-﻿using Dirt.Network.Systems;
+﻿using Dirt.Network.Simulation.Components;
+using Dirt.Network.Systems;
 
 namespace Dirt.Network.Simulations.Systems
 {
@@ -9,9 +10,16 @@ namespace Dirt.Network.Simulations.Systems
             return isOwner;
         }
 
-        protected override bool ShouldDeserialize(bool isOwner)
+        protected override bool ShouldDeserialize(bool serverAuthor, bool isOwner)
         {
-            return !isOwner;
+            return serverAuthor || !isOwner;
         }
+
+        /// <summary>
+        /// Client always deserialize, partial state sync supports dual ownership on entities.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        protected override bool ShouldDeserialize(ref NetInfo info) => true;
     }
 }

@@ -10,6 +10,7 @@ namespace Dirt.Network.Simulation.Components
     {
         public int ID;
         public int Owner;
+        public bool ServerControl;
         public List<ComponentFieldInfo> Fields;
         [NonSerialized]
         public MessageHeader LastInBuffer;
@@ -19,12 +20,15 @@ namespace Dirt.Network.Simulation.Components
         public MessageHeader LastState;
         [NonSerialized]
         public bool Owned;
+        [NonSerialized]
+        public int ServerControlTime;
 
         public void Assign()
         {
             ID = -1;
             Owned = true;
             Fields = new List<ComponentFieldInfo>();
+            ServerControlTime = 0;
         }
     }
 }
