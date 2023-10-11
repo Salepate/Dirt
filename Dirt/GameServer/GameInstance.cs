@@ -300,7 +300,7 @@ namespace Dirt.GameServer
             if (!Simulations.IsReady(simID))
             {
                 simulation.Builder.LoadAssemblies(ValidAssemblies);
-                simulation.Resize(simulation.Archetype.MaximumQueries, simulation.Archetype.MaximumQueries);
+                simulation.Resize(simulation.Archetype.MaximumActors, simulation.Archetype.MaximumQueries);
 
                 ISimulationSystem[] sys = m_SimBuilder.CreateSystems(simulation.Archetype, Content, true, out string contextName);
                 SystemContainer container = new SystemContainer(Content, this);
