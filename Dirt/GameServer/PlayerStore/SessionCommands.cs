@@ -27,9 +27,13 @@ namespace Dirt.GameServer.PlayerStore
             uint id;
             if (storeMgr.TryGetFreeID(userName, out id))
             {
-                return storeMgr.RegisterUser(userName, storeMgr.GetHash(userPass), id);
+                bool valid = storeMgr.RegisterUser(userName, storeMgr.GetHash(userPass), id);
+                if ( valid )
+                {
+                    string playerTag = $"{userName}#{id}";
+                    return storeMgr.AttemptUserAuth(ctx.PlayerNumber, playerTag, storeMgr.GetHash(userPass));
+                }
             }
-
             return false;
         }
 
