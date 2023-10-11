@@ -15,6 +15,7 @@ namespace Dirt.GameServer.PlayerStore
     using BitConverter = System.BitConverter;
     public class PlayerStoreManager : IGameManager
     {
+        public const string DataSep = "data";
         public const string SimpleIDFile = "_id";
         private const int GenerationAttempts = 20;
         private RNG m_IDGenerator;
@@ -55,6 +56,23 @@ namespace Dirt.GameServer.PlayerStore
             if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
             {
                 id = credential.ID;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get the player tag number
+        /// </summary>
+        /// <param name="playerIndex">Player Index</param>
+        /// <param name="number">(out) player tag number (Tag#Number) </param>
+        /// <returns>false if the player does not have an account</returns>
+        public bool TryGetPlayerTagNumber(int playerIndex, out uint number)
+        {
+            number = 0;
+            if (Table.TryGetCredentials(playerIndex, out PlayerCredential credential))
+            {
+                number = credential.UserNumber;
                 return true;
             }
             return false;
@@ -185,6 +203,51 @@ namespace Dirt.GameServer.PlayerStore
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Load a persistent data tied to a connected player
+        /// </summary>
+        /// <typeparam name="T">data type (explicit)</typeparam>
+        /// <param name="playerIndex">Player index (in server)</param>
+        /// <param name="key">unique data identifier</param>
+        /// <param name="data">output data</param>
+        /// <returns>false on failure, true otherwise</returns>
+        public bool TryGetPlayerData<T>(int playerIndex, string key, out T data)
+        {
+            data = default(T);
+
+            if (Table.TryGetCredentials(playerIndex, out PlayerCredential credential))
+            {
+                if (Store.TryRead(GetDataPath(key, credential), out data))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Update persistent data tied to a connected/disconnecting player
+        /// </summary>
+        /// <typeparam name="T">data type (inferred)</typeparam>
+        /// <param name="playerNumber">Player index (in server)</param>
+        /// <param name="key">unique data identifier</param>
+        /// <param name="data">data object to serialize</param>
+        /// <returns>false on failure, true otherwise</returns>
+        public bool UpdatePlayerData<T>(int playerNumber, string key, T data)
+        {
+            if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
+            {
+                Store.Write(GetDataPath(key, credential), data, true);
+                return true;
+            }
+            return false;
+        }
+
+        private static string GetDataPath(string key, PlayerCredential credential)
+        {
+            return $"{DataSep}.{credential.ID}.{key}";
         }
     }
 }
