@@ -123,7 +123,8 @@ namespace Dirt.Simulation
 
             simulation.Filter.ResetQueries();
             ActorList<Destroy> destroyedActors = simulation.Filter.GetActors<Destroy>();
-            for (int i = 0; i < destroyedActors.Count; ++i)
+            // reverse traversal to avoid index invalidation
+            for (int i = destroyedActors.Count - 1; i >= 0 ; --i)
             {
                 simulation.Builder.DestroyActor(destroyedActors.GetActor(i));
             }
