@@ -18,6 +18,17 @@ namespace Dirt.GameServer.PlayerStore
             return ctx.Player.Player;
         }
 
+        [GameCommand(commandName: "GetTagNumber", paramCount: 0, postCommand: false)]
+        public static uint GetTagNumber(CommandContext ctx, CommandParameters parameters)
+        {
+            PlayerStoreManager storeMgr = ctx.Instance.GetManager<PlayerStoreManager>();
+            if ( storeMgr.TryGetPlayerTagNumber(ctx.PlayerNumber, out uint tagNumber))
+            {
+                return tagNumber;
+            }
+            return 0;
+        }
+
         [GameCommand("RegisterPlayer", 2, true)]
         public static bool RegisterPlayer(CommandContext ctx, CommandParameters parameters)
         {
