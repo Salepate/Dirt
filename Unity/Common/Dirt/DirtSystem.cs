@@ -17,8 +17,6 @@ namespace Dirt
         public virtual bool HasFixedUpdate => false;
         // data
         public List<string> Scenes { get; private set; }
-
-        private DirtSystemContent m_Content;
         // init
         public virtual void InitializeContent() { }
         public virtual void SetupScenes() { }
