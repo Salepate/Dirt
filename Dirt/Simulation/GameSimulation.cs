@@ -25,7 +25,7 @@ namespace Dirt.Simulation
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
-            Filter = new ActorFilter(World.Actors, maxActor, maxQueries);
+            Filter = new ActorFilter(Builder, World.Actors, maxActor, maxQueries);
         }
 
         public GameSimulation(ActorBuilder builder, int id, int maxQueries)
@@ -37,7 +37,7 @@ namespace Dirt.Simulation
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
-            Filter = new ActorFilter(World.Actors, Builder.ActorPoolSize, maxQueries);
+            Filter = new ActorFilter(Builder, World.Actors, Builder.ActorPoolSize, maxQueries);
         }
 
         public void Resize(int maximumActor, int maximumQueries)

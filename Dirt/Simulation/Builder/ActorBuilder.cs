@@ -110,7 +110,7 @@ namespace Dirt.Simulation.Builder
                 if (idx == -1)
                 {
                     GenericArray pool = Components.GetPool(compType);
-                    idx = pool.Allocate(actor.InternalID);
+                    idx = pool.Allocate(actor.ID);
                     actor.AssignComponent(compType, idx);
                 }
                 return idx;
@@ -132,7 +132,7 @@ namespace Dirt.Simulation.Builder
             int idx = actor.GetComponentIndex<C>();
             if (idx == -1)
             {
-                idx = pool.Allocate(actor.InternalID);
+                idx = pool.Allocate(actor.ID);
                 actor.AssignComponent<C>(idx);
             }
             return ref pool.Components[idx];

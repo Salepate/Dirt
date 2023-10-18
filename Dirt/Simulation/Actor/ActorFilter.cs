@@ -1,4 +1,5 @@
-﻿using Dirt.Simulation.Exceptions;
+﻿using Dirt.Simulation.Builder;
+using Dirt.Simulation.Exceptions;
 using System.Collections.Generic;
 
 namespace Dirt.Simulation.Actor
@@ -7,9 +8,11 @@ namespace Dirt.Simulation.Actor
     {
         public List<GameActor> Actors { get;  private set; }
         public SimulationPool m_Components;
-        public ActorFilter(List<GameActor> activeActors, int querySize, int maxQueries)
+        private ActorBuilder m_Builder;
+        public ActorFilter(ActorBuilder builder, List<GameActor> activeActors, int querySize, int maxQueries)
         {
             Actors = activeActors;
+            m_Builder = builder;
             Resize(querySize, maxQueries);
         }
 
@@ -151,6 +154,19 @@ namespace Dirt.Simulation.Actor
         // Garbage Free (WIP)
         private ActorQuery[] m_Queries;
         private int m_CurrentQuery;
+
+        public GameActor GetSingle<C1>(ActorMatch<C1> matchCondition) where C1: struct, IComponent
+        {
+            ComponentArray<C1> pool = m_Components.GetPool<C1>();
+            for (int i = 0; i < pool.Actors.Length; ++i)
+            {
+                if (pool.Actors[i] != -1 && matchCondition(pool.Components[i]) )
+                {
+                    return m_Builder.GetActorByID(pool.Actors[i]);
+                }
+            }
+            return null;
+        }
         public ActorList<C1> GetActors<C1>() where C1 : struct, IComponent
         {
             ActorQuery query = GetQuery();

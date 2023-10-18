@@ -52,7 +52,7 @@ namespace Dirt.Simulation.Actor
             while (NextIndex < Actors.Length && Actors[NextIndex] != -1)
                 ++NextIndex;
 
-            Actors[idx] = idx;
+            Actors[idx] = actorIndex;
             Components[idx] = new T();
             if (AssignComponent != null)
             {
