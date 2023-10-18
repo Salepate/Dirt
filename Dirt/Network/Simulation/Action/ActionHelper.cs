@@ -7,9 +7,13 @@ namespace Dirt.Simulation.Action
     {
         public static void RequestRemoteAction(this GameSimulation simulation, GameActor sourceActor, int actionIndex)
         {
-            simulation.Events.Enqueue(new ActorActionEvent(sourceActor.ID, actionIndex));
             simulation.Events.Enqueue(new RemoteActionRequestEvent(sourceActor.ID, actionIndex));
         }
+        public static void RequestRemoteAction(this GameSimulation simulation, GameActor sourceActor, int actionIndex, object[] parameters)
+        {
+            simulation.Events.Enqueue(new RemoteActionRequestEvent(sourceActor.ID, actionIndex, parameters));
+        }
+
         public static void ExtractAction(byte[] buffer, out int netID, out int actionIndex, out ActionParameter[] parameters)
         {
             parameters = null;

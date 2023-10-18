@@ -44,6 +44,10 @@ namespace Dirt.Network.Simulation.Systems
 
         [SimulationListener(typeof(RemoteActionRequestEvent), 0)]
         private void OnRemoteActionRequested(RemoteActionRequestEvent requestEvent)
+            => OnRemoteActionRequested(new ActorActionEvent(requestEvent.SourceActor, requestEvent.ActionIndex, requestEvent.Parameters));
+
+        [SimulationListener(typeof(ActorActionEvent), 0)]
+        private void OnRemoteActionRequested(ActorActionEvent requestEvent)
         {
             GameActor actor;
             ActorAction action = null;
@@ -52,7 +56,8 @@ namespace Dirt.Network.Simulation.Systems
                 m_ActionContext.TryGetAction(requestEvent.ActionIndex, out action))
             {
                 m_ParameterBuffer.Clear();
-                action.FetchParameters(m_Simulation, m_Context, actor, m_ParameterBuffer);
+                m_ParameterBuffer.AddRange(requestEvent.Parameters);
+                action.FetchGameData(m_Simulation, m_Context, actor, m_ParameterBuffer);
                 int netID = Filter.Get<NetInfo>(actor).ID;
                 m_BufferStream.Flush();
                 m_BufferWriter.Seek(0, SeekOrigin.Begin);

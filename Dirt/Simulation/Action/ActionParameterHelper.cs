@@ -10,7 +10,7 @@ namespace Dirt.Simulation.Action
             return ctx.Parameters[index].floatValue;
         }
 
-        public static float getInt(this ActionExecutionData ctx, int index)
+        public static int getInt(this ActionExecutionData ctx, int index)
         {
             return ctx.Parameters[index].intValue;
         }

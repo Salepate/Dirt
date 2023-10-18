@@ -63,14 +63,14 @@ namespace Dirt.Simulation.Systems
                 Console.Warning($"Invalid Action {actionEvent.ActionIndex}");
             }
 
-            Console.Message($"Perform action {action.GetType().Name}");
+            //Console.Message($"Perform action {action.GetType().Name}");
 
             ActionParameter[] actionParams = actionEvent.Parameters;
 
             if (actionEvent.EmptyParameters)
             {
                 m_ParamsBuffer.Clear();
-                action.FetchParameters(m_Simulation, m_SimulationContext, actor, m_ParamsBuffer);
+                action.FetchGameData(m_Simulation, m_SimulationContext, actor, m_ParamsBuffer);
                 actionParams = m_ParamsBuffer.ToArray();
             }
 
