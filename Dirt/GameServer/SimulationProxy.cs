@@ -10,16 +10,15 @@ namespace Dirt.GameServer
         public GameSimulation Simulation { get; private set; }
         public SimulationSpan Span { get; private set; }
         public SystemContainer Systems { get; private set; }
-
         public IContextItem[] BaseContext { get; private set; }
-
         public StreamGroup Group { get; private set; }
-
+        public bool Terminated { get; private set; }
 
         public SimulationProxy(GameSimulation simulation, SimulationSpan span, IContextItem[] contextItems)
         {
             Simulation = simulation;
             Span = span;
+            Terminated = false;
 
             if (contextItems == null)
                 BaseContext = new IContextItem[0];
@@ -35,6 +34,11 @@ namespace Dirt.GameServer
         public void AttachSystems(SystemContainer systems)
         {
             Systems = systems;
+        }
+
+        public void Terminate()
+        {
+            Terminated = true;
         }
     }
 }

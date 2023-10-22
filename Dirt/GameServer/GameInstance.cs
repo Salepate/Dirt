@@ -62,6 +62,7 @@ namespace Dirt.GameServer
             Content = new ContentProvider(contentPath);
             Content.LoadGameContent(contentManifest);
             Simulations = new SimulationManager(Content);
+            Simulations.NotifySimulationDestroyed += OnSimulationDestroyed;
             m_Managers = new Dictionary<Type, IGameManager>();
             m_GroupManager = groupManager;
             m_Groups = new Dictionary<int, StreamGroup>();
@@ -185,7 +186,7 @@ namespace Dirt.GameServer
                 // destroy sim if empty
                 if ( m_Groups[oldSimIndex].Clients.Count == 0 && Simulations.GetSpan(oldSimIndex) == SimulationSpan.Temporary )
                 {
-                    DestroySimulation(oldSimIndex);
+                    Simulations.Terminate(oldSimIndex);
                 }
             }
 
@@ -220,12 +221,12 @@ namespace Dirt.GameServer
 
                 if ( m_Groups[proxy.Simulation].Clients.Count == 0 && Simulations.GetSpan(proxy.Simulation) == SimulationSpan.Temporary)
                 {
-                    DestroySimulation(proxy.Simulation);
+                    Simulations.Terminate(proxy.Simulation);
                 }
                 else
                 {
                     GameSimulation playerSim = Simulations.GetSimulation(proxy.Simulation);
-                    var playerEvent = new PlayerEvent(client.Number, PlayerEvent.LeftSimulation);
+                    PlayerEvent playerEvent = new PlayerEvent(client.Number, PlayerEvent.LeftSimulation);
                     playerSim.Events.Enqueue(playerEvent);
                 }
             }
@@ -275,13 +276,13 @@ namespace Dirt.GameServer
             return true;
         }
 
-        private void DestroySimulation(int simID)
+        // SimulationManager.NotifySimulationDestroyed
+        private void OnSimulationDestroyed(int simID)
         {
-            Console.Message($"Destroying Sim {simID}");
-            Simulations.DestroySimulation(simID);
             StreamGroup group = m_Groups[simID];
             m_Groups.Remove(simID);
             m_GroupManager.DestroyGroup(group);
+            m_Plugin.OnSimulationDestroyed(simID);
         }
 
         public void WarmSimulation(int simID)

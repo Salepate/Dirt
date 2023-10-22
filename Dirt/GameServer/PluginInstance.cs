@@ -19,5 +19,6 @@ namespace Dirt.GameServer
         public virtual void PlayerLeft(PlayerProxy player) {}
         public virtual void PlayerAuthed(PlayerProxy proxy, PlayerCredential credential) { }
         public virtual void OnSimulationCreated(GameSimulation sim, SystemContainer container) { }
+        public virtual void OnSimulationDestroyed(int simID) { }
     }
 }

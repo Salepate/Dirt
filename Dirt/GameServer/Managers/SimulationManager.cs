@@ -17,14 +17,16 @@ namespace Dirt.GameServer.Managers
         private int m_IDGenerator;
         private IContentProvider m_Content;
         private List<SimulationProxy> m_ActiveSimulations;
-
+        private List<int> m_Terminated;
         public IEnumerable<int> ActiveSimulations => m_SimulationMap.Keys;
+        public Action<int> NotifySimulationDestroyed;
         public SimulationManager(IContentProvider content)
         {
             m_SimulationMap = new Dictionary<int, SimulationProxy>();
             m_Content = content;
             m_IDGenerator = 0;
             m_ActiveSimulations = new List<SimulationProxy>();
+            m_Terminated = new List<int>();
         }
 
         public GameSimulation GetSimulation(int id)
@@ -69,21 +71,6 @@ namespace Dirt.GameServer.Managers
                 Console.Error($"Simulation {id} is already running");
             }
         }
-
-        public void DestroySimulation(int id)
-        {
-            if (m_SimulationMap.ContainsKey(id))
-            {
-                m_SimulationMap.Remove(id);
-
-                int activeIdx = m_ActiveSimulations.FindIndex(s => s.Simulation.ID == id);
-                if ( activeIdx != -1 )
-                {
-                    m_ActiveSimulations.RemoveAt(activeIdx);
-                }
-            }
-        }
-
         public SimulationSpan GetSpan(int id)
         {
             if( !m_SimulationMap.TryGetValue(id, out SimulationProxy proxy) )
@@ -127,8 +114,41 @@ namespace Dirt.GameServer.Managers
             int simCount = m_ActiveSimulations.Count;
             for (int i = 0; i < simCount; ++i)
             {
-                m_ActiveSimulations[i].Systems.UpdateSystems(m_ActiveSimulations[i].Simulation, deltaTime);
+                if (m_ActiveSimulations[i].Terminated )
+                {
+                    m_Terminated.Add(i);
+                }
+                else
+                {
+                    m_ActiveSimulations[i].Systems.UpdateSystems(m_ActiveSimulations[i].Simulation, deltaTime);
+                }
             }
+
+            if ( m_Terminated.Count > 0 )
+            {
+                DestroyTerminatedSimulations();
+            }
+        }
+
+        private void DestroyTerminatedSimulations()
+        {
+            for (int i = m_Terminated.Count - 1; i >= 0; --i)
+            {
+                int activeIndex = m_Terminated[i];
+                SimulationProxy proxy = m_ActiveSimulations[activeIndex];
+                m_ActiveSimulations.RemoveAt(activeIndex);
+                m_SimulationMap.Remove(proxy.Simulation.ID);
+                NotifySimulationDestroyed?.Invoke(proxy.Simulation.ID);
+                proxy.Systems.ClearSimulation(proxy.Simulation);
+                Console.Message($"Destroyed simulation {proxy.Simulation.ID}");
+            }
+            m_Terminated.Clear();
+        }
+
+        internal void Terminate(int id)
+        {
+            SimulationProxy proxy = GetSimulationProxy(id);
+            proxy.Terminate();
         }
     }
 }
