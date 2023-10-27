@@ -39,7 +39,7 @@ namespace Framework
         /// note: Active objects are not destroyed
         /// </summary>
         /// <param name="prefab"></param>
-        internal void DestroyPool(GameObject prefab)
+        public void DestroyPool(GameObject prefab)
         {
             if ( m_Pools.TryGetValue(prefab, out PrefabPoolManager poolMgr))
             {

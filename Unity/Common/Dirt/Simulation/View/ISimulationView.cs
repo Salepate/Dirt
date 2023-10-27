@@ -8,6 +8,11 @@ namespace Dirt.Simulation.View
         /// Overrides to notify when to remove
         /// </summary>
         bool Destroy { get; }
+        /// <summary>
+        /// Used in conjuction with SimulationViewDispatcher.SpawnCustomView
+        /// return true if you want to handle prefab instantiation yourself
+        /// </summary>
+        bool UseCustomLoader { get; }
         int ActorID { get; }
         void SetActor(GameActor actor, ActorFilter filter);
         /// <summary>

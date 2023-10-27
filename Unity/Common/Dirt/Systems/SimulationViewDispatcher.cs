@@ -2,6 +2,7 @@
 using Dirt.Log;
 using Dirt.Model;
 using Dirt.Simulation;
+using Dirt.Simulation.Actor;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.SystemHelper;
 using Dirt.Simulation.Utility;
@@ -16,6 +17,11 @@ namespace Dirt.Systems
     {
         protected virtual bool IsDebug => false;
         public override bool HasUpdate => true;
+        /// <summary>
+        /// set to true if you want to delay actor view instantiation
+        /// the dispatcher will queue all requests and spawn them once set to false again
+        /// </summary>
+        public bool QueueRequests { get; set; }
 
         protected PoolManager PoolManager;
         protected abstract ViewDefinition[] ViewDefinitions { get; }
@@ -24,13 +30,14 @@ namespace Dirt.Systems
         private IContentProvider m_Content;
         private SimulationSystem m_Simulation;
         private DirtMode m_Mode;
-
+        private List<ViewBinding> m_QueuedActors;
         public override void Initialize(DirtMode mode)
         {
             PoolManager = new PoolManager(IsDebug);
             m_Views = new List<ISimulationView>();
             m_Prefabs = mode.FindSystem<PrefabService>();
             m_Content = mode.FindSystem<ContentSystem>().Content;
+            m_QueuedActors = new List<ViewBinding>();
             m_Mode = mode;
 
             m_Simulation = mode.FindSystem<SimulationSystem>();
@@ -40,6 +47,8 @@ namespace Dirt.Systems
             {
                 ViewDefinitions[i].CacheViews(compMap);
             }
+
+            QueueRequests = false;
         }
 
         public override void Unload()
@@ -76,29 +85,26 @@ namespace Dirt.Systems
                 for (int i = 0; i < views.Count; ++i)
                 {
                     ViewDefinition viewDef = views[i];
-                    string prefabName = GetPrefabName(viewDef, actor);
 
-                    if ( !SpawnView(viewDef, actor))
+                    if (!SpawnView(viewDef, actor))
                     {
                         continue;
                     }
 
-                    if (m_Prefabs.TryGetPrefab(prefabName, out GameObject prefab))
+                    if ( QueueRequests )
                     {
-                        var inst = GetInstance(prefab);
-                        var simView = inst.GetComponent<ISimulationView>();
-                        SetupView(simView);
-                        simView.SetActor(actor, m_Simulation.Simulation.Filter);
-                        m_Views.Add(simView);
+                        m_QueuedActors.Add(ViewBinding.Create(actor, viewDef));
                     }
                     else
                     {
-                        Console.Warning($"Prefab {prefabName} not found or referenced");
+                        SpawnView(actor, viewDef);
                     }
                 }
-
             }
         }
+
+        protected virtual GameObject SpawnCustomView(ViewDefinition viewDef, GameActor actor, ActorFilter filter) { return null; }
+        protected virtual void DestroyCustomView(ISimulationView view) { }
 
         protected void RemoveActor(GameActor actor)
         {
@@ -119,6 +125,19 @@ namespace Dirt.Systems
 
         public override void Update()
         {
+            if (!QueueRequests && m_QueuedActors.Count > 0 )
+            {
+                Console.Message($"{m_QueuedActors.Count} queued view detected, spawning...");
+                for(int i = 0; i < m_QueuedActors.Count; ++i)
+                {
+                    // check actor still valid
+                    if ( m_Simulation.Simulation.Filter.TryGetActor(m_QueuedActors[i].ActorID, out GameActor actor))
+                    {
+                        SpawnView(actor, m_QueuedActors[i].View);
+                    }
+                }
+                m_QueuedActors.Clear();
+            }
             UpdateViews();
         }
 
@@ -139,7 +158,7 @@ namespace Dirt.Systems
             }
         }
 
-        public void SetupView(ISimulationView view)
+        public void SetupView(ISimulationView view, GameActor actor)
         {
             if (view is IContextReader)
                 ((IContextReader)view).SetContext(m_Simulation.Context);
@@ -149,6 +168,10 @@ namespace Dirt.Systems
                 ((IDirtAccess)view).SetMode(m_Mode);
             if (view is IEventReader)
                 m_Simulation.RegisterEventReader(((IEventReader)view));
+
+            view.SetActor(actor, m_Simulation.Simulation.Filter);
+
+            m_Views.Add(view);
         }
 
 
@@ -182,10 +205,37 @@ namespace Dirt.Systems
 
                 }
             }
-
             return res;
         }
 
+        private void SpawnView(GameActor actor, ViewDefinition viewDef)
+        {
+            GameObject inst = null;
+
+            if (viewDef.Loader != ViewDefinition.ViewLoader.Custom)
+            {
+                string prefabName = GetPrefabName(viewDef, actor);
+
+                if (m_Prefabs.TryGetPrefab(prefabName, out GameObject prefab))
+                {
+                    inst = GetInstance(prefab);
+                }
+                else
+                {
+                    Console.Warning($"Prefab {prefabName} not found or referenced");
+                }
+            }
+            else
+            {
+
+                inst = SpawnCustomView(viewDef, actor, m_Simulation.Simulation.Filter);
+                if (inst == null)
+                    throw new System.Exception("Custom Spawner did not return a valid GameObject");
+            }
+
+            ISimulationView simView = inst.GetComponent<ISimulationView>();
+            SetupView(simView, actor);
+        }
 
         private string GetPrefabName(ViewDefinition view, GameActor actor)
         {
@@ -215,17 +265,36 @@ namespace Dirt.Systems
             ISimulationView view = m_Views[idx];
             view.CleanView();
             m_Views.Remove(view);
-            Component comp = (Component)view;
 
-            if (comp != null)
+            if ( view.UseCustomLoader )
             {
-                PoolManager.Free(comp.gameObject);
+                DestroyCustomView(view);
+            }
+            else
+            {
+                Component comp = (Component)view;
+
+                if (comp != null)
+                {
+                    PoolManager.Free(comp.gameObject);
+                }
             }
 
             if (view is IEventReader)
             {
                 m_Simulation.RemoveEventReader((IEventReader)view);
             }
+        }
+
+
+        private struct ViewBinding
+        {
+            public int ActorID;
+            public ViewDefinition View;
+            public static ViewBinding Create(GameActor actor, ViewDefinition viewDef)
+                => new ViewBinding() { ActorID = actor.ID, View = viewDef };
+            public static ViewBinding Create(int actorID, ViewDefinition viewDef)
+                => new ViewBinding() { ActorID = actorID, View = viewDef };
         }
     }
 }

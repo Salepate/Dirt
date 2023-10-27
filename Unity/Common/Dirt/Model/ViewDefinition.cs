@@ -42,8 +42,9 @@ namespace Dirt.Model
 
         public enum ViewLoader
         {
-            Fixed,
-            Generic
+            Fixed,  // use prefab name directly
+            Generic, // compose prefab name from component field
+            Custom // use custom loader
         };
     }
 }
