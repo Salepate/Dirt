@@ -6,7 +6,7 @@ namespace Mud.Server
     /// <summary>
     /// Holds connected client network information
     /// </summary>
-    internal class GameClient
+    public class GameClient
     {
         public string ID { get; private set; }
         public int Number { get; private set; }
@@ -18,7 +18,7 @@ namespace Mud.Server
         private MudAddress m_Address;
         private Random m_AnonID;
 
-        public GameClient(MudAddress clientAddress, ClientSocket socket, int number)
+        internal GameClient(MudAddress clientAddress, ClientSocket socket, int number)
         {
             m_Auth = false;
             m_Address = clientAddress;
