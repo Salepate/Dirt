@@ -88,7 +88,7 @@ namespace Mud
                 MessageReference msg = m_ReliableMessages[i];
                 if (msg.AckID == ackID)
                 {
-                    Console.Message($"Client Confirm {ackID}");
+                    //Console.Message($"Client Confirm {ackID}");
                     msg.Received = true;
                     m_ReliableMessages[i] = msg;
                     break;

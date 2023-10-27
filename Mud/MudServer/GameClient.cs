@@ -1,29 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Console = Dirt.Log.Console;
 
 namespace Mud.Server
 {
-    public class GameClient
+    using Console = Dirt.Log.Console;
+    /// <summary>
+    /// Holds connected client network information
+    /// </summary>
+    internal class GameClient
     {
         public string ID { get; private set; }
         public int Number { get; private set; }
         public bool RequestDisconnection { get; private set; }
-
         public float RTT { get; private set; }
         public float LastPing { get; set; }
-
         private ClientSocket m_Socket;
         private bool m_Auth;
         private MudAddress m_Address;
-        // large packet progress
-        //private int m_MultipacketOperation;
-        //private int m_MultipacketExpected;
-        //private int m_MultipacketReceived;
-        //private List<byte> m_MultipacketBuffer;
-
         private Random m_AnonID;
 
         public GameClient(MudAddress clientAddress, ClientSocket socket, int number)
@@ -37,14 +29,34 @@ namespace Mud.Server
             RTT = 80f / 1000f;
         }
 
-        public void Send(MudMessage message, bool reliable = false)
+        /// <summary>
+        /// Send a message to client (only support byte array)
+        /// </summary>
+        /// <see cref="MudMessage.Create"/>
+        /// <param name="message">mud message</param>
+        public void Send(MudMessage message) => Send(message, false);
+
+        /// <summary>
+        /// Send a message to client (only support byte array)
+        /// </summary>
+        /// <see cref="MudMessage.Create"/>
+        /// <param name="message">mud message</param>
+        /// <param name="reliable">if true, require the client to confirm message</param>
+        public void Send(MudMessage message, bool reliable)
         {
             if (message.buffer.Length <= MudSocket.BufferSize)
+            {
                 m_Socket.Send(message, reliable);
+            }
             else
+            {
                 SendLargeMessage(message.opCode, message.buffer);
+            }
         }
 
+        /// <summary>
+        /// If invoked, player will get disconnected
+        /// </summary>
         public void ForceDisconnect()
         {
             RequestDisconnection = true;
@@ -52,16 +64,15 @@ namespace Mud.Server
 
         public void ChangeClientName(string newName)
         {
-            Console.Message($"Client {Number} name changed to {newName}");
             ID = newName;
         }
 
-        public void UpdateSocket(float deltaTime)
+        internal void UpdateSocket(float deltaTime)
         {
             m_Socket.SendReliables(deltaTime, RTT);
         }
 
-        public void SendLargeMessage(int op, byte[] message)
+        internal void SendLargeMessage(int op, byte[] message)
         {
             int packetCount = message.Length / MudSocket.BufferSize;
             int rest = message.Length - packetCount * MudSocket.BufferSize;
@@ -90,6 +101,7 @@ namespace Mud.Server
         {
             return $"{(m_Auth ? ID : "Anon")} ({m_Address.IP})";
         }
+
         public ClientOperation OnMessage(MudOperation op, byte[] buffer)
         {
             switch (op)
@@ -112,28 +124,6 @@ namespace Mud.Server
                     return ClientOperation.Idle;
                 case MudOperation.MultiPackets:
                     throw new Exception("Client multipacket not supported");
-                //case MudOperation.MultiPackets:
-                //    {
-                //        if (buffer.Length == 2 && m_MultipacketOperation == -1)
-                //        {
-                //            m_MultipacketOperation = buffer[0];
-                //            m_MultipacketExpected = buffer[1];
-                //            m_MultipacketBuffer = new List<byte>(MudSocket.BufferSize * m_MultipacketExpected);
-                //            m_MultipacketReceived = 0;
-                //        } 
-                //        else if (m_MultipacketReceived < m_MultipacketExpected) {
-                //            ++m_MultipacketReceived;
-                //            m_MultipacketBuffer.AddRange(buffer);
-                //            if ( m_MultipacketReceived == m_MultipacketExpected)
-                //            {
-                //                int multiOp = m_MultipacketOperation;
-                //                Console.Message("Large Message Op: " + multiOp);
-                //                m_MultipacketOperation = -1;
-                //                OnMessage((MudOperation)multiOp, m_MultipacketBuffer.ToArray());
-                //            }
-                //        }
-                //        return ClientEvent.Idle;
-                //    }
                 case MudOperation.ReliableConfirm:
                     m_Socket.ConfirmReliableMessage(buffer[0]);
                     return ClientOperation.Idle;
@@ -150,12 +140,10 @@ namespace Mud.Server
                 default:
                     if ( !m_Auth )
                     {
-                        //Console.Message($"Ignored Operation {op.ToString()}: Client is not authed ({m_Address.IP})");
                         m_Socket.Send(MudMessage.Error("Client is not authed"));
                     } else
                     {
                         return ClientOperation.PassThrough; // custom message
-                        //Console.Message($"Client {m_Address.IP} [{op.ToString()}]: {Encoding.ASCII.GetString(buffer)}");
                     }
                     return ClientOperation.Idle;
             }

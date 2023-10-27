@@ -47,11 +47,11 @@ namespace Mud.Server.Stream
             });
         }
 
-        public void Broadcast(MudMessage message)
+        public void Broadcast(MudMessage message, bool reliable)
         {
             Clients.ForEach(client =>
             {
-                client.Send(message);
+                client.Send(message, reliable);
             });
         }
     }

@@ -65,7 +65,7 @@ namespace Dirt.GameServer.Managers
             MudMessage message = MudMessage.Create((int)NetworkOperation.GameEvent, eventBuffer);
             foreach(KeyValuePair<int, PlayerProxy> kvp in m_PlayerMap)
             {
-                kvp.Value.Client.Send(message);
+                kvp.Value.Client.Send(message, true);
             }
         }
 
@@ -78,7 +78,7 @@ namespace Dirt.GameServer.Managers
                 eventBuffer = st.ToArray();
             }
             MudMessage message = MudMessage.Create((int)NetworkOperation.GameEvent, eventBuffer);
-            group.Broadcast(message);
+            group.Broadcast(message, true);
         }
 
         public void SendEventTo<T>(T gameEvent, GamePlayer player) where T : NetworkEvent
@@ -93,7 +93,7 @@ namespace Dirt.GameServer.Managers
                     eventBuffer = st.ToArray();
                 }
                 MudMessage message = MudMessage.Create((int)NetworkOperation.GameEvent, eventBuffer);
-                client.Send(message);
+                client.Send(message, true);
             }
         }
 
