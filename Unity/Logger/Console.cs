@@ -8,7 +8,7 @@ namespace Dirt
     using Debug = UnityEngine.Debug;
     public class UnityLogger : IConsoleLogger
     {
-        private const int s_IgnoreFrameCount = 2; // public + internal
+        private const int s_IgnoreFrameCount = 3; // public + internal
 
         public void Message(string tag, string message, string color)
         {

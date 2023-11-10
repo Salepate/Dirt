@@ -5,7 +5,7 @@ namespace Dirt.Log
 {
     public class BasicLogger : IConsoleLogger
     {
-        private const int s_IgnoreFrameCount = 2; // public + internal
+        private const int s_IgnoreFrameCount = 3; // public + internal
 
         public void Message(string tag, string message, string uniqueColor)
         {
