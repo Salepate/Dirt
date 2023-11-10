@@ -38,6 +38,14 @@ namespace Dirt.Game
             }
         }
 
+        /// <summary>
+        /// Will ensure all content are reloaded again in memory next time
+        /// </summary>
+        public void ClearBuffer()
+        {
+            m_ContentBufferMap.Clear();
+        }
+
         public bool HasContent(string contentName)
         {
             return m_ContentMap.ContainsKey(contentName);
