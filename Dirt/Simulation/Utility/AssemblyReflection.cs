@@ -2,12 +2,13 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Dirt.Simulation.Utility
 {
     public static class AssemblyReflection
     { 
-        public static Dictionary<string, Type> BuildTypeMap<I>(string[] assemblies)
+        public static Dictionary<string, Type> BuildTypeMap<I>(string[] assemblies, Func<Type, bool> filter = null)
         {
             Dictionary<string, Type> map = new Dictionary<string, Type>();
             IEnumerable<Assembly> loadedAsses = AppDomain.CurrentDomain.GetAssemblies();
@@ -30,7 +31,10 @@ namespace Dirt.Simulation.Utility
 
             systemTypes.ForEach(t =>
             {
-                map.Add(t.Name, t);
+                if (filter == null || filter(t))
+                {
+                    map.Add(t.Name, t);
+                }
             });
 
             return map;
