@@ -209,15 +209,15 @@ namespace Dirt.GameServer.PlayerStore
         /// Load a persistent data tied to a connected player
         /// </summary>
         /// <typeparam name="T">data type (explicit)</typeparam>
-        /// <param name="playerIndex">Player index (in server)</param>
+        /// <param name="playerNumber">Player index (in server)</param>
         /// <param name="key">unique data identifier</param>
         /// <param name="data">output data</param>
         /// <returns>false on failure, true otherwise</returns>
-        public bool TryGetPlayerData<T>(int playerIndex, string key, out T data)
+        public bool TryGetPlayerData<T>(int playerNumber, string key, out T data)
         {
             data = default(T);
 
-            if (Table.TryGetCredentials(playerIndex, out PlayerCredential credential))
+            if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
             {
                 if (Store.TryRead(GetDataPath(key, credential), out data))
                 {
