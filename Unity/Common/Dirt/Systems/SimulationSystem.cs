@@ -61,6 +61,8 @@ namespace Dirt.Systems
             RegisterManager<IContentProvider>(m_Content);
             RegisterManager(new MetricsManager());
             Simulation = new GameSimulation(0, 0, 0);
+            //TODO: reload available components when simulation has limited components
+            //Simulation.Archetype.LimitComponents = true;
             Simulation.Builder.LoadAssemblies(ValidAssemblies);
             Simulation.Builder.SetGameContent(m_Content);
             Simulation.Resize(1000, 10);

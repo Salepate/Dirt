@@ -18,9 +18,9 @@ namespace Dirt.Simulation.Builder
         public int ActorPoolSize { get; private set; }
         private GameActor[] m_AvailableActor;
         private GameActor[] m_ActorCollection;
+        private HashSet<string> m_AvailableComponents;
 
         private int m_LastFreeIndex;
-
         private Dictionary<Type, ComponentInjector> m_Injectors;
 
         private Dictionary<string, Type> m_ValidComponents;
@@ -38,6 +38,7 @@ namespace Dirt.Simulation.Builder
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
             m_Components = null;
+            m_AvailableComponents = null;
         }
 
         public ActorBuilder()
@@ -47,6 +48,7 @@ namespace Dirt.Simulation.Builder
             m_LastFreeIndex = 0;
             m_ValidComponents = new Dictionary<string, Type>();
             m_Components = null;
+            m_AvailableComponents = null;
         }
 
         public void SetGameContent(IContentProvider content)
@@ -86,7 +88,11 @@ namespace Dirt.Simulation.Builder
         }
         public void LoadAssemblies(AssemblyCollection collection)
         {
-            m_ValidComponents = AssemblyReflection.BuildTypeMap<IComponent>(collection.Assemblies);
+            m_ValidComponents = AssemblyReflection.BuildTypeMap<IComponent>(collection.Assemblies, (compType) =>
+            {
+                return m_AvailableComponents == null || m_AvailableComponents.Contains(compType.Name);
+            });
+
             foreach (KeyValuePair<string, Type> kvp in m_ValidComponents)
             {
                 Console.Message($"Register Comp Pool {kvp.Key}");
@@ -275,6 +281,21 @@ namespace Dirt.Simulation.Builder
                 throw new ActorBuilderException("Builder not initialized");
             }
             return m_Components;
+        }
+
+        public void SetAllowedComponents(string[] limitedComponents)
+        {
+            m_AvailableComponents = new HashSet<string>();
+
+            if ( limitedComponents.Length == 0)
+            {
+                Console.Warning("The simulation has no component pool!");
+            }
+            else
+            {
+                for(int i = 0; i < limitedComponents.Length; ++i)
+                    m_AvailableComponents.Add(limitedComponents[i]);
+            }
         }
     }
 }

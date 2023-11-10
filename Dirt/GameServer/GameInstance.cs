@@ -300,6 +300,11 @@ namespace Dirt.GameServer
 
             if (!Simulations.IsReady(simID))
             {
+                if ( simulation.Archetype.LimitComponents )
+                {
+                    simulation.Builder.SetAllowedComponents(simulation.Archetype.LimitedComponents);
+                }
+
                 simulation.Builder.LoadAssemblies(ValidAssemblies);
                 simulation.Resize(simulation.Archetype.MaximumActors, simulation.Archetype.MaximumQueries);
 
