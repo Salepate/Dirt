@@ -58,7 +58,7 @@ namespace Dirt.GameServer.Managers
                 {
                     string relative_uri = string.Concat(req.Url.Segments).Substring(1);
                     if (relative_uri.EndsWith("/"))
-                        relative_uri = relative_uri.Substring(0, -1);
+                        relative_uri = relative_uri.Substring(0, relative_uri.Length- 1);
 
                     //string mainRoute = req.Url.Segments[1].Replace("/", "");
                     if (!m_Routes.TryGetValue(relative_uri, out responseDelegate))
