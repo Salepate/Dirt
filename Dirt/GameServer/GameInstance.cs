@@ -1,7 +1,6 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
 using Dirt.Game.Managers;
-using Dirt.Game.Metrics;
 using Dirt.Game.Model;
 using Dirt.GameServer.GameCommand;
 using Dirt.GameServer.Managers;
@@ -14,7 +13,6 @@ using Dirt.Network.Model;
 using Dirt.Network.Simulation.Components;
 using Dirt.Network.Simulation.Events;
 using Dirt.Simulation;
-using Dirt.Simulation.Actor;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
@@ -27,16 +25,15 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Reflection;
-using System.Security.AccessControl;
-using Console = Dirt.Log.Console;
 
 namespace Dirt.GameServer
 {
+    using Console = Log.Console;
+
     public class GameInstance : IClientConsumer, IManagerProvider
     {
+        public const string AssemblyCollection = "assemblies.server";
         private const int DefaultSimulation = 0;
-        private const string AssemblyCollection = "assemblies.server";
         private const string DefaultSimulationName = "lobby";
         private const string SettingsContentName = "settings.netserial";
 

@@ -1,32 +1,50 @@
 ﻿using Dirt.Game;
+using Dirt.Game.Content;
 using Dirt.GameServer;
 using Dirt.GameServer.Managers;
+using Dirt.GameServer.Simulation;
 using Dirt.GameServer.Simulation.Components;
-using Dirt.Log;
 using Dirt.Network.Managers;
 using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Components;
+using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
+using Dirt.Simulation.Utility;
 using Mud;
 using Mud.Server;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Dirt.Network.Simulations.Systems
 {
-    using Array = System.Array;
-    public class NetworkCulling : ISimulationSystem, IManagerAccess
+    public class NetworkCulling : ISimulationSystem, IManagerAccess, IContentReader
     {
         private NetworkSerializer m_Serializer;
         private PlayerManager m_Players;
-
         private GameSimulation m_Simulation;
+        private HashSet<Type> m_SkippedTypes;
+        private List<IComponent> m_ComponentBuffer;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
+            m_ComponentBuffer = new List<IComponent>(10);
+        }
+
+        public void SetContent(IContentProvider content)
+        {
+            var asms = content.LoadContent<AssemblyCollection>(GameInstance.AssemblyCollection);
+            Dictionary<string, Type> disabledSync = AssemblyReflection.BuildTypeMap<IComponent>(asms.Assemblies, (t) => t.GetCustomAttribute<DisableSyncAttribute>() != null);
+            m_SkippedTypes = new HashSet<Type>();
+
+            foreach (Type t in disabledSync.Values)
+            {
+                m_SkippedTypes.Add(t);
+            }
         }
 
         public void SetManagers(IManagerProvider provider)
@@ -105,28 +123,26 @@ namespace Dirt.Network.Simulations.Systems
 
         private void SendActorState(GameClient client, GameActor actor)
         {
-            //BinaryFormatter bf = new BinaryFormatter();
             byte[] serializedData;
             SimulationPool compPool = m_Simulation.Builder.Components;
+            m_ComponentBuffer.Clear();
 
             using (MemoryStream ms = new MemoryStream())
             {
-                //m_Serializer.Serialize(ms, actor);
-                ActorState actorState = new ActorState()
-                {
-                    Components = new IComponent[actor.ComponentCount]
-                };
-
-                int compId = 0;
-
                 for(int i = 0; i < actor.Components.Length; ++i)
                 {
-                    if ( actor.Components[i] != -1 )
+                    if ( actor.Components[i] != -1 && !m_SkippedTypes.Contains(actor.ComponentTypes[i]))
                     {
                         GenericArray compArray = compPool.GetPool(actor.ComponentTypes[i]);
-                        actorState.Components[compId++] = (IComponent) compArray.Get(actor.Components[i]);
+                        m_ComponentBuffer.Add((IComponent)compArray.Get(actor.Components[i]));
                     }
                 }
+
+                ActorState actorState = new ActorState()
+                {
+                    Components = m_ComponentBuffer.ToArray()
+                };
+
                 m_Serializer.Serialize(ms, actorState);
                 serializedData = ms.ToArray();
             }
