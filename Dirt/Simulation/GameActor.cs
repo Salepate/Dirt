@@ -32,6 +32,11 @@ namespace Dirt.Simulation
                 Components[i] = -1;
         }
 
+        public override string ToString()
+        {
+            return $"{InternalID}.{Version}";
+        }
+
         internal void SetVersion(int version)
         {
             Version = version;
