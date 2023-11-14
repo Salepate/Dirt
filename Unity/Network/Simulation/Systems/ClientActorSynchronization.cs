@@ -44,10 +44,6 @@ namespace Dirt.Network.Simulation.Systems
 
         [SimulationListener(typeof(RemoteActionRequestEvent), 0)]
         private void OnRemoteActionRequested(RemoteActionRequestEvent requestEvent)
-            => OnRemoteActionRequested(new ActorActionEvent(requestEvent.SourceActor, requestEvent.ActionIndex, requestEvent.Parameters));
-
-        [SimulationListener(typeof(ActorActionEvent), 0)]
-        private void OnRemoteActionRequested(ActorActionEvent requestEvent)
         {
             GameActor actor;
             ActorAction action = null;
