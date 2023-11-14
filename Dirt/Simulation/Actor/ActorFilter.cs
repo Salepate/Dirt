@@ -1,13 +1,15 @@
 ﻿using Dirt.Simulation.Builder;
 using Dirt.Simulation.Exceptions;
 using System.Collections.Generic;
+using static Dirt.Simulation.Actor.ActorFilter;
 
 namespace Dirt.Simulation.Actor
 {
     public class ActorFilter
     {
         public List<GameActor> Actors { get;  private set; }
-        public SimulationPool m_Components;
+        public SimulationPool Components { get; private set; }
+
         private ActorBuilder m_Builder;
         public ActorFilter(ActorBuilder builder, List<GameActor> activeActors, int querySize, int maxQueries)
         {
@@ -18,7 +20,7 @@ namespace Dirt.Simulation.Actor
 
         public void SetComponentPool(SimulationPool pool)
         {
-            m_Components = pool;
+            Components = pool;
         }
 
         public delegate bool ActorMatch<T>(T data) where T : struct;
@@ -28,7 +30,7 @@ namespace Dirt.Simulation.Actor
             int compIdx = actor.GetComponentIndex<C>();
             if (compIdx != -1)
             {
-                ComponentArray<C> pool = m_Components.GetPool<C>();
+                ComponentArray<C> pool = Components.GetPool<C>();
                 return ref pool.Components[compIdx];
             }
 
@@ -52,7 +54,7 @@ namespace Dirt.Simulation.Actor
         public List<ActorTuple<C1>> GetAll<C1>() where C1 : struct
         {
             List<ActorTuple<C1>> res = new List<ActorTuple<C1>>();
-            ComponentArray<C1> pool = m_Components.GetPool<C1>();
+            ComponentArray<C1> pool = Components.GetPool<C1>();
             for(int i = 0; i < Actors.Count; ++i)
             {
                 int compIndex = Actors[i].GetComponentIndex<C1>();
@@ -81,7 +83,7 @@ namespace Dirt.Simulation.Actor
                     if (matchCondition(comp))
                     {
                         ActorTuple<C1> tuple = new ActorTuple<C1>(actor);
-                        tuple.SetC1(m_Components.GetPool<C1>(), compIdx);
+                        tuple.SetC1(Components.GetPool<C1>(), compIdx);
                         results.Add(tuple);
 
                     }
@@ -107,7 +109,7 @@ namespace Dirt.Simulation.Actor
             where C2 : struct
         {
             List<ActorTuple<C1, C2>> res = new List<ActorTuple<C1, C2>>();
-            ComponentArray<C1> pool = m_Components.GetPool<C1>();
+            ComponentArray<C1> pool = Components.GetPool<C1>();
             for (int i = 0; i < Actors.Count; ++i)
             {
                 GameActor actor = Actors[i];
@@ -119,7 +121,7 @@ namespace Dirt.Simulation.Actor
                     {
                         var actorTuple = new ActorTuple<C1, C2>(actor);
                         actorTuple.SetC1(pool, c1Idx);
-                        actorTuple.SetC2(m_Components.GetPool<C2>(), c2Idx);
+                        actorTuple.SetC2(Components.GetPool<C2>(), c2Idx);
                         res.Add(actorTuple);
                     }
                 }
@@ -142,9 +144,9 @@ namespace Dirt.Simulation.Actor
                 if (c1Idx != -1 && c2Idx != -1 && c3Idx != -1)
                 {
                     var actorTuple = new ActorTuple<C1, C2, C3>(actor);
-                    actorTuple.SetC1(m_Components.GetPool<C1>(), c1Idx);
-                    actorTuple.SetC2(m_Components.GetPool<C2>(), c2Idx);
-                    actorTuple.SetC3(m_Components.GetPool<C3>(), c3Idx);
+                    actorTuple.SetC1(Components.GetPool<C1>(), c1Idx);
+                    actorTuple.SetC2(Components.GetPool<C2>(), c2Idx);
+                    actorTuple.SetC3(Components.GetPool<C3>(), c3Idx);
                     res.Add(actorTuple);
                 }
             }
@@ -157,7 +159,7 @@ namespace Dirt.Simulation.Actor
 
         public GameActor GetSingle<C1>(ActorMatch<C1> matchCondition) where C1: struct, IComponent
         {
-            ComponentArray<C1> pool = m_Components.GetPool<C1>();
+            ComponentArray<C1> pool = Components.GetPool<C1>();
             for (int i = 0; i < pool.Actors.Length; ++i)
             {
                 if (pool.Actors[i] != -1 && matchCondition(pool.Components[i]) )
@@ -171,7 +173,7 @@ namespace Dirt.Simulation.Actor
         {
             ActorQuery query = GetQuery();
             ActorQuery queryc1 = GetQuery();
-            ActorList<C1> value = new ActorList<C1>(Actors, query, queryc1, m_Components.GetPool<C1>());
+            ActorList<C1> value = new ActorList<C1>(Actors, query, queryc1, Components.GetPool<C1>());
 
             for (int i = 0; i < Actors.Count; ++i)
             {
@@ -193,8 +195,8 @@ namespace Dirt.Simulation.Actor
             ActorQuery queryc1 = GetQuery();
             ActorQuery queryc2 = GetQuery();
             ActorList<C1, C2> value = new ActorList<C1, C2>(Actors, query,
-                queryc1, m_Components.GetPool<C1>(),
-                queryc2, m_Components.GetPool<C2>());
+                queryc1, Components.GetPool<C1>(),
+                queryc2, Components.GetPool<C2>());
 
             for (int i = 0; i < Actors.Count; ++i)
             {
@@ -224,9 +226,9 @@ namespace Dirt.Simulation.Actor
             ActorQuery queryc2 = GetQuery();
             ActorQuery queryc3 = GetQuery();
             ActorList<C1, C2, C3> value = new ActorList<C1, C2, C3>(Actors, query,
-                queryc1, m_Components.GetPool<C1>(),
-                queryc2, m_Components.GetPool<C2>(),
-                queryc3, m_Components.GetPool<C3>());
+                queryc1, Components.GetPool<C1>(),
+                queryc2, Components.GetPool<C2>(),
+                queryc3, Components.GetPool<C3>());
 
             for (int i = 0; i < Actors.Count; ++i)
             {
