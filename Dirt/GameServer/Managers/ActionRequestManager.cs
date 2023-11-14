@@ -38,7 +38,13 @@ namespace Dirt.GameServer.Managers
 
                     PlayerProxy player = m_Players.FindPlayer(client.Number);
                     GameSimulation sim = m_Sims.GetSimulation(player.Simulation);
+                    ActorActionContext actionContext = m_Sims.GetSimulationProxy(player.Simulation).Systems.Context.GetContext<ActorActionContext>();
                     var validActors = sim.Filter.GetActorsMatching<NetInfo>(n => n.ID == netID);
+                    bool replicateOwner = false;
+
+                    if ( actionContext.TryGetAction(actionIndex, out ActorAction action))
+                        replicateOwner = action.ReplicateSelf;
+
                     if (validActors.Count > 0 && validActors[0].Get().Owner == client.Number)
                     {
                         GameActor actor = validActors[0].Actor;
@@ -49,7 +55,7 @@ namespace Dirt.GameServer.Managers
                         foreach (Dirt.Simulation.Actor.ActorTuple<CullArea> cullArea in cullAreas)
                         {
                             int targetClient = cullArea.Get().Client;
-                            if (targetClient != client.Number)
+                            if (replicateOwner || targetClient != client.Number)
                             {
                                 m_Players.FindPlayer(targetClient).Client.Send(actionMessage, true);
                             }

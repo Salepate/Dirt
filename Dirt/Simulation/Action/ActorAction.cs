@@ -6,6 +6,7 @@ namespace Dirt.Simulation.Action
 {
     public class ActorAction
     {
+        public bool ReplicateSelf; // if true, this action will be sent to all clients including self player
         public int Index { get; private set; }
 
         public virtual void Initialize(GameSimulation simulation, SimulationContext simContext, IContentProvider contentProvider) { }
