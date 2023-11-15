@@ -26,7 +26,7 @@ namespace Dirt.Systems
             m_Filter = simSys.Simulation.Filter;
         }
 
-        protected override bool SpawnView(ViewDefinition viewDef, GameActor targetActor)
+        protected override bool ValidateView(GameActor targetActor, ViewDefinition viewDef)
         {
             int netInfoIdx = targetActor.GetComponentIndex<NetInfo>();
 
@@ -48,7 +48,7 @@ namespace Dirt.Systems
                 return showActor;
             }
 
-            return base.SpawnView(viewDef, targetActor);
+            return base.ValidateView(targetActor, viewDef);
         }
     }
 }

@@ -87,7 +87,7 @@ namespace Dirt.Systems
             return m_Views.Find(view => view.ActorID == actorID);
         }
 
-        protected virtual bool SpawnView(ViewDefinition viewDef, GameActor targetActor) { return true; }
+        protected virtual bool ValidateView(GameActor targetActor, ViewDefinition viewDef) { return true; }
 
         protected void AddActor(GameActor actor)
         {
@@ -109,7 +109,7 @@ namespace Dirt.Systems
                 {
                     ViewDefinition viewDef = views[i];
 
-                    if (!SpawnView(viewDef, actor))
+                    if (!ValidateView(actor, viewDef))
                     {
                         continue;
                     }
