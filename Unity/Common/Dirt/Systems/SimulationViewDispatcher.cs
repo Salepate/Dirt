@@ -13,6 +13,7 @@ using UnityEngine;
 
 namespace Dirt.Systems
 {
+    using ViewLoader = ViewDefinition.ViewLoader;
     public abstract class SimulationViewDispatcher : DirtSystem, IContentSystem
     {
         protected virtual bool IsDebug => false;
@@ -43,9 +44,31 @@ namespace Dirt.Systems
             m_Simulation = mode.FindSystem<SimulationSystem>();
             Dictionary<string, System.Type> compMap = AssemblyReflection.BuildTypeMap<IComponent>(m_Simulation.ValidAssemblies.Assemblies);
 
+            GameObject root = new GameObject("Views");
             for (int i = 0; i < ViewDefinitions.Length; ++i)
             {
-                ViewDefinitions[i].CacheViews(compMap);
+                ViewDefinition def = ViewDefinitions[i];
+                def.CacheViews(compMap);
+                if ( def.Loader == ViewDefinition.ViewLoader.Fixed)
+                {
+                    if ( !m_Prefabs.TryGetPrefab(def.Prefab, out GameObject pfb))
+                    {
+                        Console.Error($"Prefab {def.Prefab} not found");
+                        continue;
+                    }
+
+                    def.CachedPrefab = pfb;
+                    
+                    if (def.InitialPoolSize > 0)
+                    {
+                        PoolManager.InitializePool(pfb, root.transform, def.InitialPoolSize);
+
+                    }
+                    else
+                    {
+                        Console.Warning($"Prefab {pfb.name} was not initialized, pool size not specified");
+                    }
+                }
             }
 
             QueueRequests = false;
@@ -212,7 +235,11 @@ namespace Dirt.Systems
         {
             GameObject inst = null;
 
-            if (viewDef.Loader != ViewDefinition.ViewLoader.Custom)
+            if (viewDef.Loader == ViewLoader.Fixed)
+            {
+                inst = GetInstance(viewDef.CachedPrefab);
+            }
+            else if (viewDef.Loader == ViewLoader.Generic)
             {
                 string prefabName = GetPrefabName(viewDef, actor);
 

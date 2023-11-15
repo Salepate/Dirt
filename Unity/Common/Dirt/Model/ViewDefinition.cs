@@ -1,5 +1,6 @@
 ﻿using Dirt.Log;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Dirt.Model
 {
@@ -14,6 +15,8 @@ namespace Dirt.Model
         }
 
         public string Prefab;
+        [Tooltip("Applicable if prefab is fixed")]
+        public int InitialPoolSize;
         public string[] Components;
         public ViewLoader Loader;
         public ViewDisplay Display;
@@ -23,6 +26,7 @@ namespace Dirt.Model
         public string Component;
         public string Field;
 
+        public GameObject CachedPrefab { get; set; }
         public System.Type CachedType { get; private set; }
         public System.Reflection.FieldInfo CachedField { get; private set; }
 
