@@ -16,6 +16,7 @@ namespace Dirt.Simulation.Systems
         private ActorActionContext m_ActionContext;
         private List<ActionParameter> m_ParamsBuffer;
         private IContentProvider m_Provider;
+        private IManagerProvider m_Managers;
         public ActorActionContext ActionContext => m_ActionContext;
         public void Initialize(GameSimulation sim)
         {
@@ -28,7 +29,7 @@ namespace Dirt.Simulation.Systems
             }
             else
             {
-                m_ActionContext.CreateActionMap(sim, m_SimulationContext, m_Provider);
+                m_ActionContext.CreateActionMap(sim, m_SimulationContext, m_Managers, m_Provider);
             }
         }
 
@@ -41,6 +42,7 @@ namespace Dirt.Simulation.Systems
 
         public void SetManagers(IManagerProvider provider)
         {
+            m_Managers = provider;
             m_Provider = provider.GetManager<IContentProvider>();
         }
 

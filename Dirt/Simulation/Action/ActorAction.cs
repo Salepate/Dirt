@@ -1,4 +1,5 @@
-﻿using Dirt.Game.Content;
+﻿using Dirt.Game;
+using Dirt.Game.Content;
 using Dirt.Simulation.Context;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ namespace Dirt.Simulation.Action
         public bool ReplicateSelf; // if true, this action will be sent to all clients including self player
         public int Index { get; private set; }
 
-        public virtual void Initialize(GameSimulation simulation, SimulationContext simContext, IContentProvider contentProvider) { }
+        public virtual void Initialize(GameSimulation simulation, SimulationContext simContext, IManagerProvider managers, IContentProvider contentProvider) { }
         /// <summary>
         /// lookup data from context and simulation before performing action
         /// </summary>

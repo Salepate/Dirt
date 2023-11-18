@@ -39,6 +39,7 @@ namespace Dirt.Simulation.Action
                         convertedParameters[i] = new ActionParameter() { floatValue = (float)parameters[i] };
                     }
                 }
+                Parameters = convertedParameters;
             }
             else
             {
