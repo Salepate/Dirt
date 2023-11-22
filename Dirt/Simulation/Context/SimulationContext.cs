@@ -33,6 +33,13 @@ namespace Dirt.Simulation.Context
             }
         }
 
+        public T CreateContext<T>() where T: IContextItem, new()
+        {
+            T ctx = new T();
+            m_Context.Add(typeof(T), ctx);
+            return ctx;
+        }
+
         public void SetContext(object contextObject)
         {
             Type contextType = contextObject.GetType();
