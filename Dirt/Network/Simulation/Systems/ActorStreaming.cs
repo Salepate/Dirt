@@ -27,7 +27,7 @@ namespace Dirt.Network.Systems
 
         protected virtual bool ShouldSerialize(bool isOwner) => true;
         protected virtual bool ShouldDeserialize(bool serverAuthor, bool isOwner) => isOwner;
-        protected virtual bool ShouldDeserialize(ref NetInfo info) => !info.ServerControl;
+        protected virtual bool ShouldDeserialize(ref NetInfo info) => !info.ServerControl && info.Owner != -1;
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
@@ -66,14 +66,6 @@ namespace Dirt.Network.Systems
                         if (netBhv.LastState == null) // first buffer
                         {
                             netBhv.LastState = stateToSerialize;
-                        }
-                        else
-                        {
-                            for (int j = 0; j < stateToSerialize.FieldIndex.Length; ++j)
-                            {
-                                int indexInFullState = GetIndexInState(netBhv.LastState, stateToSerialize.FieldIndex[j]);
-                                netBhv.LastState.FieldValue[indexInFullState] = stateToSerialize.FieldValue[j];
-                            }
                         }
                     }
                 }
@@ -141,7 +133,7 @@ namespace Dirt.Network.Systems
                     {
                         int oldStateIndex = GetIndexInState(oldState, i);
                         object oldValue = oldState.FieldValue[oldStateIndex];
-
+                        oldState.FieldValue[oldStateIndex] = newValue;
                         Console.Assert(newValue != null, "Cannot send null values");
 
                         changed = !newValue.Equals(oldValue);
