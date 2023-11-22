@@ -25,7 +25,9 @@ namespace Dirt.Network.Systems
             m_IDGenerator = 0;
         }
 
-        protected virtual bool ShouldSerialize(bool isOwner) => true;
+
+        protected virtual bool ShouldSerializeActor(ref NetInfo info) => true;
+        protected virtual bool ShouldSerializeField(bool isOwner) => true;
         protected virtual bool ShouldDeserialize(bool serverAuthor, bool isOwner) => isOwner;
         protected virtual bool ShouldDeserialize(ref NetInfo info) => !info.ServerControl && info.Owner != -1;
 
@@ -48,7 +50,7 @@ namespace Dirt.Network.Systems
                     DeserializeActor(actor, ref netBhv);
                 }
 
-                if (ShouldSerialize(netBhv.Owned))
+                if (ShouldSerializeActor(ref netBhv))
                 {
                     MessageHeader stateToSerialize = SerializeActor(actor, netBhv);
 
@@ -124,7 +126,7 @@ namespace Dirt.Network.Systems
                 Type compType = actor.ComponentTypes[field.Component];
                 IComponent component = (IComponent) pool.GetPool(compType).Get(actor.Components[field.Component]);
 
-                if (ShouldSerialize(field.Owner) && NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessor))
+                if (ShouldSerializeField(field.Owner) && NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessor))
                 {
                     bool changed = true;
                     Func<IComponent, object> getter = accessor[field.Accessor].Getter;

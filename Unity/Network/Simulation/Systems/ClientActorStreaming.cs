@@ -5,9 +5,14 @@ namespace Dirt.Network.Simulations.Systems
 {
     public class ClientActorStreaming : ActorStreaming
     {
-        protected override bool ShouldSerialize(bool isOwner)
+        protected override bool ShouldSerializeField(bool isOwner)
         {
             return isOwner;
+        }
+
+        protected override bool ShouldSerializeActor(ref NetInfo info)
+        {
+            return info.Owned;
         }
 
         protected override bool ShouldDeserialize(bool serverAuthor, bool isOwner)

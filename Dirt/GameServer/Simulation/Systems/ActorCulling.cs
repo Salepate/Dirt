@@ -64,14 +64,6 @@ namespace Dirt.Network.Simulations.Systems
             var cullAreas = filter.GetAll<CullArea, Position>();
             List<int> inRange = new List<int>();
 
-            m_SyncClock += deltaTime;
-
-            if (m_SyncClock < m_NetTickDeltaTime)
-            {
-                return;
-            }
-            m_SyncClock -= m_NetTickDeltaTime;
-
             foreach (ActorTuple<CullArea, Position> cullActor in cullAreas)
             {
                 ref CullArea cull = ref cullActor.GetC1();
@@ -129,7 +121,16 @@ namespace Dirt.Network.Simulations.Systems
             foreach(var syncActor in syncable)
             {
                 ref NetInfo netinfo = ref syncActor.GetC1();
-                netinfo.LastOutBuffer = null;
+
+                if ( netinfo.LastOutBuffer != null )
+                {
+                    netinfo.LastOutBuffer = null;
+                    netinfo.SyncClock = m_NetTickDeltaTime;
+                }
+                else if ( netinfo.SyncClock > 0f )
+                {
+                    netinfo.SyncClock -= deltaTime;
+                }
             }
         }
 

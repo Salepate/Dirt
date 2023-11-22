@@ -12,6 +12,8 @@ namespace Dirt.Network.Simulation.Components
         public int Owner;
         public bool ServerControl;
         [DisableSync]
+        public float SyncClock;
+        [DisableSync]
         public List<ComponentFieldInfo> Fields;
         [NonSerialized]
         public MessageHeader LastInBuffer;
