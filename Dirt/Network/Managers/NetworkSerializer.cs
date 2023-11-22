@@ -1,19 +1,17 @@
 using Dirt.Game;
-using Dirt.Log;
 using Dirt.Network.Internal;
 using Dirt.Network.Model;
+using Dirt.Network.Simulation;
 using Dirt.Simulation;
+using Dirt.Simulation.Actor;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System;
 using System.Linq;
 using System.Reflection;
-using Dirt.Network.Simulation;
-using Dirt.Simulation.Actor;
 
 namespace Dirt.Network.Managers
 {
-    using Console = Dirt.Log.Console;
     public class NetworkSerializer : IGameManager
     {
         private NetSerializer.Serializer m_Serializer;
