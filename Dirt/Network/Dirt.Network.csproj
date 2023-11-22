@@ -66,6 +66,7 @@
     <Compile Include="Simulation\Action\ActionHelper.cs" />
     <Compile Include="Simulation\ActorState.cs" />
     <Compile Include="Simulation\Components\NetInfo.cs" />
+    <Compile Include="Simulation\DisableSyncAttribute.cs" />
     <Compile Include="Simulation\Events\ActorNetCullEvent.cs" />
     <Compile Include="Simulation\Events\ActorSyncEvent.cs" />
     <Compile Include="Simulation\Events\PlayerEvent.cs" />

@@ -91,7 +91,7 @@ namespace Dirt.Network.Managers
             List<ObjectFieldAccessor> accessors = new List<ObjectFieldAccessor>();
             for (int i = 0; i < pubFields.Length; ++i)
             {
-                if (!pubFields[i].IsNotSerialized)
+                if (!pubFields[i].IsNotSerialized && pubFields[i].GetCustomAttribute<DisableSyncAttribute>() == null)
                 {
                     FastInvoke.SetterAction<T> specializedSetter = FastInvoke.BuildUntypedSetter<T>(pubFields[i]);
                     Func<T, object> specializedGetter = FastInvoke.BuildUntypedGetter<T>(pubFields[i]);
