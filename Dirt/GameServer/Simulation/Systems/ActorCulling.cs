@@ -29,10 +29,13 @@ namespace Dirt.Network.Simulations.Systems
         private GameSimulation m_Simulation;
         private HashSet<Type> m_SkippedTypes;
         private List<IComponent> m_ComponentBuffer;
+        private float m_NetTickDeltaTime;
+        private float m_SyncClock;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
             m_ComponentBuffer = new List<IComponent>(10);
+            m_SyncClock = 0f;
         }
 
         public void SetContent(IContentProvider content)
@@ -51,6 +54,7 @@ namespace Dirt.Network.Simulations.Systems
         {
             m_Players = provider.GetManager<PlayerManager>();
             m_Serializer = provider.GetManager<NetworkSerializer>();
+            m_NetTickDeltaTime = 1f / provider.GetManager<RealTimeServerManager>().NetTickrate;
         }
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
@@ -59,6 +63,14 @@ namespace Dirt.Network.Simulations.Systems
             var syncable = filter.GetAll<NetInfo, Position>();
             var cullAreas = filter.GetAll<CullArea, Position>();
             List<int> inRange = new List<int>();
+
+            m_SyncClock += deltaTime;
+
+            if (m_SyncClock < m_NetTickDeltaTime)
+            {
+                return;
+            }
+            m_SyncClock -= m_NetTickDeltaTime;
 
             foreach (ActorTuple<CullArea, Position> cullActor in cullAreas)
             {

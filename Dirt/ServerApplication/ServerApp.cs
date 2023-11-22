@@ -28,6 +28,16 @@ namespace Dirt.ServerApplication
             ServerConfig config = new ServerConfig();
 
             m_Server = new RealTimeServer(config);
+            int netTickrate = config.GetInt("NetTickRate");
+            if ( netTickrate <= 0 )
+            {
+                netTickrate = config.GetInt("TickRate");
+                Console.Warning($"Net tickrate not specified, defaulting to regular tickrate ({netTickrate}/s)");
+            }
+            else
+            {
+                Console.Message($"Net Tickrate set to {netTickrate}/s");
+            }
 
             string contentPath = config.GetString("ContentRoot");
             string contentVersion = config.GetString("ContentVersion");
@@ -60,7 +70,7 @@ namespace Dirt.ServerApplication
             }
 
             m_Game = new GameInstance(m_Server.StreamGroups, contentPath, contentVersion, plugin);
-            m_Game.RegisterManager(new RealTimeServerManager(m_Server));
+            m_Game.RegisterManager(new RealTimeServerManager(m_Server, netTickrate));
             m_Game.InitializePlugin();
             Metrics = m_Game.GetManager<MetricsManager>();
             m_Clock = new GameClock();

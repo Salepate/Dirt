@@ -7,9 +7,12 @@ namespace Dirt.GameServer.Managers
     {
         public RealTimeServer Server { get; private set; }
 
-        public RealTimeServerManager(RealTimeServer server)
+        public int NetTickrate { get; private set; }
+
+        public RealTimeServerManager(RealTimeServer server, int netTickrate)
         {
             Server = server;
+            NetTickrate = netTickrate;
         }
         public void Update(float deltaTime) {}
     }
