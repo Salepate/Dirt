@@ -37,11 +37,11 @@ namespace Dirt.Network.Systems
                 GameActor actor = netActors.GetActor(i);
                 ref NetInfo netBhv = ref netActors.GetC1(i);
 
-                //@TODO Server exclusive
+                // Only performed server side (assuming negative id are never serialized)
                 if (netBhv.ID == -1)
                     netBhv.ID = GetID();
 
-                //@TODO Add timed state deserial/serial to control net throughput
+                //TODO: Add timed state deserial/serial to control net throughput (use net tickrate)
 
                 if (ShouldDeserialize(ref netBhv))
                 {

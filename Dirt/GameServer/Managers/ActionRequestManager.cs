@@ -31,7 +31,7 @@ namespace Dirt.GameServer.Managers
             switch ((NetworkOperation)mudMessage.opCode)
             {
                 case NetworkOperation.ActionRequest:
-                    if (mudMessage.buffer.Length < 5) // @TODO: explicit check
+                    if (mudMessage.buffer.Length < 5) //TODO: explicit check
                         return;
 
                     NetworkActionHelper.ExtractAction(mudMessage.buffer, out int netID, out int actionIndex, out ActionParameter[] actionParams);
