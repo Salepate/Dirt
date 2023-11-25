@@ -110,7 +110,7 @@ namespace Dirt.Network.Simulations.Systems
                     {
                         if (!inRange.Contains(old))
                         {
-                            player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorRemove, new byte[] { (byte)old }));
+                            player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorRemove, new byte[] { (byte)old }), true);
                         }
                     }
 
@@ -160,7 +160,7 @@ namespace Dirt.Network.Simulations.Systems
                 serializedData = ms.ToArray();
             }
 
-            client.Send(MudMessage.Create((int)NetworkOperation.ActorState, serializedData));
+            client.Send(MudMessage.Create((int)NetworkOperation.ActorState, serializedData), true);
         }
     }
 }
