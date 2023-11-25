@@ -5,36 +5,39 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-using Console = Dirt.Log.Console;
-using GameClientOperation = System.Tuple<Mud.Server.GameClient, Mud.ClientOperation>;
-using NetworkMessage = System.Tuple<Mud.MudAddress, Mud.MudMessage>;
 
 namespace Mud.Server
 {
+    using Console = Dirt.Log.Console;
+    using GameClientOperation = Tuple<GameClient, ClientOperation>;
+    using NetworkMessage = Tuple<MudAddress, MudMessage>;
+
     public class RealTimeServer
     {
         public const string CONF_CLIENT_TIMEOUT = "ClientTimeout";
         public const string CONF_MAX_CLIENT = "MaxClient";
         public const string CONF_UDP_PORT = "ServerPort";
         public const string CONF_ACK_ROTATION = "ClientAckRotation";
+        public const int SIO_UDP_CONNRESET = -1744830452;
+
+        private const float PING_CYCLE = 120f;
+        public int MaximumClients => m_Server.MaxClients;
 
         public Queue<GameClientOperation> ClientOperations;
         public StreamGroupManager StreamGroups;
 
         private MudServer m_Server;
         private GameClient[] m_Clients;
-        private int m_ServerPort;
-        private object m_QueueLock = new object();
         private Queue<NetworkMessage> m_MessageQueue;
         private UdpClient m_Socket;
         private Thread m_ReceiveThread;
         private IClientConsumer m_ClientConsumer;
+        private int m_ServerPort;
+        private object m_QueueLock = new object();
         private float m_Clock;
-        private const float PING_CYCLE = 120f;
-        private const int PING_TIMEOUT = 30;
-        public const int SIO_UDP_CONNRESET = -1744830452;
         private int m_ClientTimeout;
         private byte m_PacketRotationSize;
+
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
             m_ClientConsumer = clientConsumer;
