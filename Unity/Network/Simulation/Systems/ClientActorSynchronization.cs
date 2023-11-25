@@ -47,28 +47,18 @@ namespace Dirt.Network.Simulation.Systems
         {
             GameActor actor;
             ActorAction action = null;
-            //Dirt.Log.Console.Message("Net Action Request");
             if ( Filter.TryGetActor(requestEvent.SourceActor, out actor) &&
                 m_ActionContext.TryGetAction(requestEvent.ActionIndex, out action))
             {
                 m_ParameterBuffer.Clear();
                 m_ParameterBuffer.AddRange(requestEvent.Parameters);
-                action.FetchGameData(m_Simulation, m_Context, actor, m_ParameterBuffer);
                 int netID = Filter.Get<NetInfo>(actor).ID;
-                m_BufferStream.Flush();
-                m_BufferWriter.Seek(0, SeekOrigin.Begin);
-                m_BufferWriter.Write(netID);
-                m_BufferWriter.Write((byte)requestEvent.ActionIndex);
-                for (int i = 0; i < m_ParameterBuffer.Count; ++i)
-                {
-                    m_BufferWriter.Write(m_ParameterBuffer[i].intValue);
-                }
-                MudMessage mudMessage = MudMessage.Create((int)NetworkOperation.ActionRequest, m_BufferStream.ToArray());
-                m_Server.Send(mudMessage);
+                MudMessage msg = NetworkActionHelper.CreateNetworkMessage(true, netID, requestEvent.ActionIndex, m_ParameterBuffer, m_BufferStream, m_BufferWriter);
+                m_Server.Send(msg);
             }
             else
             {
-                Dirt.Log.Console.Warning($"Could not send action (Actor: {actor != null}, Action: {action != null})");
+                Log.Console.Warning($"Could not send action (Actor: {actor != null}, Action: {action != null})");
             }
         }
 

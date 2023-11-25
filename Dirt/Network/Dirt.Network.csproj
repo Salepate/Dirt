@@ -76,6 +76,10 @@
     <Compile Include="SyncHelper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Mud\Mud\Mud.csproj">
+      <Project>{36B3FDB3-9B80-4546-AC7A-6DBA68E7CFF3}</Project>
+      <Name>Mud</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Mud\NetSerializer\NetSerializer.csproj">
       <Project>{edb160e4-1d9a-4478-85d7-97759123402f}</Project>
       <Name>NetSerializer</Name>
