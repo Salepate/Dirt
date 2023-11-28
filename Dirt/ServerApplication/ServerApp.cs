@@ -22,9 +22,9 @@ namespace Dirt.ServerApplication
 
         private TimeSpan m_TickPeriod;
         private int m_LastTick;
-        public ServerApp()
+        public ServerApp(IConsoleLogger logger = null)
         {
-            Console.Logger = new BasicLogger();
+            Console.Logger = logger ?? new BasicLogger();
             ServerConfig config = new ServerConfig();
 
             m_Server = new RealTimeServer(config);
