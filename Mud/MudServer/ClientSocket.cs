@@ -77,7 +77,7 @@ namespace Mud
 
             if (retries > 0 )
             {
-                Console.Warning($"Resending {retries} messages");
+                //Console.Warning($"Resending {retries} messages");
             }
         }
 

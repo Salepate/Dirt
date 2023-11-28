@@ -123,6 +123,7 @@ namespace Mud.DirtSystems
             switch ((MudOperation)operation)
             {
                 case MudOperation.Ping:
+                    Socket.Send(MudMessage.Create(MudOperation.Ping, null));
                     break;
                 case MudOperation.ClientAuth:
                     break;

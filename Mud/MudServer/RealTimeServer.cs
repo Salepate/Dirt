@@ -18,6 +18,7 @@ namespace Mud.Server
         public const string CONF_MAX_CLIENT = "MaxClient";
         public const string CONF_UDP_PORT = "ServerPort";
         public const string CONF_ACK_ROTATION = "ClientAckRotation";
+        public const string CONF_MIN_CLIENT_RTT = "MinRTT";
         public const int SIO_UDP_CONNRESET = -1744830452;
 
         private const float PING_CYCLE = 120f;
@@ -37,6 +38,7 @@ namespace Mud.Server
         private float m_Clock;
         private int m_ClientTimeout;
         private byte m_PacketRotationSize;
+        private readonly float m_ClientMinRTT;
 
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
@@ -50,6 +52,11 @@ namespace Mud.Server
             m_ClientTimeout = config.GetInt(CONF_CLIENT_TIMEOUT);
             m_Server = new MudServer(maxClient);
             m_Clients = new GameClient[maxClient];
+            m_ClientMinRTT = config.GetInt(CONF_MIN_CLIENT_RTT) / 1000f;
+            if ( m_ClientMinRTT <= 0f )
+            {
+                m_ClientMinRTT = 80f / 1000f; // 80ms if nothing specified
+            }
             m_ServerPort = config.GetInt(CONF_UDP_PORT);
             m_PacketRotationSize = (byte)config.GetInt(CONF_ACK_ROTATION);
             m_MessageQueue = new Queue<NetworkMessage>();
@@ -126,7 +133,7 @@ namespace Mud.Server
                     if (newSlot >= 0 && m_Server.SetConnectedClient(newSlot, clientAddr))
                     {
                         ClientSocket clientSocket = new ClientSocket(m_Socket, clientAddr, m_PacketRotationSize);
-                        m_Clients[newSlot] = new GameClient(clientAddr, clientSocket, newSlot + 1);
+                        m_Clients[newSlot] = new GameClient(clientAddr, clientSocket, newSlot + 1, m_ClientMinRTT);
                         clientIdx = newSlot;
                         Console.Message($"Client connected: {m_Clients[newSlot]}");
                     }

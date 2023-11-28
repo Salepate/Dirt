@@ -8,6 +8,7 @@ namespace Mud.Server
     /// </summary>
     public class GameClient
     {
+        public const float CLIENT_PING = 15f;
         public string ID { get; private set; }
         public int Number { get; private set; }
         public bool RequestDisconnection { get; private set; }
@@ -17,8 +18,15 @@ namespace Mud.Server
         private bool m_Auth;
         private MudAddress m_Address;
         private Random m_AnonID;
+        private float m_PingClock;
+        private readonly float m_MinimumRTT;
+        private bool m_RTTUpdate;
+        private float m_RTTWatch; // measure rtt during ping
+        private CircularBuffer<float> m_RTTMeasures;
+        private float m_LowestRTT;
+        private float m_HighestRTT;
 
-        internal GameClient(MudAddress clientAddress, ClientSocket socket, int number)
+        internal GameClient(MudAddress clientAddress, ClientSocket socket, int number, float minRTT = 80f / 1000f)
         {
             m_Auth = false;
             m_Address = clientAddress;
@@ -26,7 +34,11 @@ namespace Mud.Server
             Number = number;
             RequestDisconnection = false;
             m_AnonID = new Random();
-            RTT = 80f / 1000f;
+            m_RTTMeasures = new CircularBuffer<float>(4);
+            RTT = minRTT;
+            m_MinimumRTT = minRTT;
+            m_LowestRTT = float.MaxValue;
+            m_HighestRTT = float.MinValue;
         }
 
         /// <summary>
@@ -69,6 +81,20 @@ namespace Mud.Server
 
         internal void UpdateSocket(float deltaTime)
         {
+            m_PingClock += deltaTime;
+
+            if ( m_RTTUpdate )
+            {
+                m_RTTWatch += deltaTime;
+            }
+
+            if (m_PingClock >= CLIENT_PING )
+            {
+                m_PingClock = 0f;
+                m_Socket.Send(MudMessage.Create((int)MudOperation.Ping, null));
+                m_RTTUpdate = true;
+                m_RTTWatch = 0f;
+            }
             m_Socket.SendReliables(deltaTime, RTT);
         }
 
@@ -107,8 +133,14 @@ namespace Mud.Server
             switch (op)
             {
                 case MudOperation.Ping:
-                    Console.Message($"Client {ToString()}: Ping");
-                    m_Socket.Send(MudMessage.Create(MudOperation.Ping, null));
+                    //Console.Message($"Client {ToString()}: Ping");
+                    if ( m_RTTUpdate )
+                    {
+                        m_RTTMeasures.Add(m_RTTWatch);
+                        m_RTTUpdate = false;
+                    }
+                    UpdateRTT();
+                    //m_Socket.Send(MudMessage.Create(MudOperation.Ping, null));
                     return ClientOperation.Idle;
                 case MudOperation.ClientAuth:
                     if ( !m_Auth )
@@ -146,6 +178,30 @@ namespace Mud.Server
                         return ClientOperation.PassThrough; // custom message
                     }
                     return ClientOperation.Idle;
+            }
+        }
+
+        private void UpdateRTT()
+        {
+            if ( m_RTTMeasures.Count > 0 )
+            {
+                float sum = 0f;
+                for (int i = 0; i < m_RTTMeasures.Count; ++i)
+                {
+                    sum += m_RTTMeasures[i];
+                }
+
+                float newRTT = Math.Max(m_MinimumRTT, sum / m_RTTMeasures.Count);
+                RTT = newRTT;
+
+                if (newRTT < m_LowestRTT)
+                {
+                    m_LowestRTT = newRTT;
+                }
+                if (newRTT > m_HighestRTT)
+                {
+                    m_HighestRTT = newRTT;
+                }
             }
         }
     }
