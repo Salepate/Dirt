@@ -12,7 +12,7 @@ namespace Dirt.Simulation.View
 
         private float m_DecayClock;
         protected bool Destroyed { get; private set; }
-        public bool UseCustomLoader => false;
+        public virtual bool UseCustomLoader => false;
         bool ISimulationView.Destroy => Destroyed && DestroyClock <= 0f;
 
         public int ActorID => Actor.ID;
