@@ -1,7 +1,7 @@
 ﻿using Dirt.Simulation.Builder;
 using Dirt.Simulation.Exceptions;
+using System;
 using System.Collections.Generic;
-using static Dirt.Simulation.Actor.ActorFilter;
 
 namespace Dirt.Simulation.Actor
 {
@@ -25,6 +25,20 @@ namespace Dirt.Simulation.Actor
 
         public delegate bool ActorMatch<T>(T data) where T : struct;
 
+
+        public ref C Get<C>(int actorID) where C: struct
+        {
+            GameActor actor = m_Builder.GetActorByID(actorID);
+            ComponentArray<C> pool = Components.GetPool<C>();
+
+            if ( actor != null )
+            {
+                return ref Get<C>(actor);
+            }
+            Log.Console.Error($"Invalid actor ID {actorID}");
+            return ref pool.Fallback;
+        } 
+
         public ref C Get<C>(GameActor actor) where C: struct
         {
             int compIdx = actor.GetComponentIndex<C>();
@@ -37,19 +51,7 @@ namespace Dirt.Simulation.Actor
             throw new ComponentNotFoundException(typeof(C));
         }
 
-        public bool TryGetActor(int actorID, out GameActor actor)
-        {
-            actor = null;
-            for (int i = 0; i < Actors.Count; ++i)
-            {
-                if (Actors[i].ID == actorID)
-                {
-                    actor = Actors[i];
-                    return true;
-                }
-            }
-            return false;
-        }
+        public bool TryGetActor(int actorID, out GameActor actor) => (actor = m_Builder.GetActorByID(actorID)) != null;
 
         public List<ActorTuple<C1>> GetAll<C1>() where C1 : struct
         {

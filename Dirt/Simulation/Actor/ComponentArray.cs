@@ -23,9 +23,12 @@ namespace Dirt.Simulation.Actor
 
         public int[] Actors;
         public T[] Components;
+        public T Fallback;
 
         public ComponentArray()
         {
+            Fallback = default;
+
             if ( typeof(T).GetInterface(nameof(IComponentAssign)) != null )
             {
                 AssignComponent = AssignableComponent;

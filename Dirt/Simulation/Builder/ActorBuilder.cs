@@ -4,6 +4,7 @@ using Dirt.Simulation.Utility;
 using Dirt.Game.Content;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Exceptions;
+using System;
 
 namespace Dirt.Simulation.Builder
 {
@@ -102,7 +103,7 @@ namespace Dirt.Simulation.Builder
 
         public GameActor CreateActor()
         {
-            GameActor actor = GetActor();
+            GameActor actor = PopActor();
             ActorCreateAction?.Invoke(actor);
             return actor;
         }
@@ -155,7 +156,7 @@ namespace Dirt.Simulation.Builder
 
         public virtual GameActor BuildActor(ActorArchetype archetype)
         {
-            GameActor actor = GetActor();
+            GameActor actor = PopActor();
             InternalBuild(actor, archetype);
             ActorCreateAction?.Invoke(actor);
             return actor;
@@ -202,9 +203,8 @@ namespace Dirt.Simulation.Builder
             m_ValidComponents.TryGetValue(compName, out Type compType);
             return compType;
         }
-
         // internal
-        private GameActor GetActor()
+        private GameActor PopActor()
         {
             if (m_LastFreeIndex >= m_AvailableActor.Length || m_LastFreeIndex == -1)
                 throw new System.Exception($"Actor Limit exceeded {m_LastFreeIndex}");
