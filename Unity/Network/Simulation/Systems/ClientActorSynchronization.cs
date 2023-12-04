@@ -54,6 +54,7 @@ namespace Dirt.Network.Simulation.Systems
                 m_ParameterBuffer.AddRange(requestEvent.Parameters);
                 int netID = Filter.Get<NetInfo>(actor).ID;
                 MudMessage msg = NetworkActionHelper.CreateNetworkMessage(true, netID, requestEvent.ActionIndex, m_ParameterBuffer, m_BufferStream, m_BufferWriter);
+                m_BufferStream.SetLength(0);
                 m_Server.Send(msg);
             }
             else
