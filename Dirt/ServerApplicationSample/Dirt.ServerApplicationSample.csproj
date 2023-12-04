@@ -59,6 +59,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Log\Dirt.Log.csproj">
+      <Project>{2D2BB064-885C-45A5-AA6C-FFCE1747477D}</Project>
+      <Name>Dirt.Log</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServerApplication\Dirt.ServerApplication.csproj">
       <Project>{2B0F5AB7-2FA4-4E3E-9157-247C24830F00}</Project>
       <Name>Dirt.ServerApplication</Name>

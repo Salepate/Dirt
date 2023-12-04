@@ -10,7 +10,14 @@ namespace Dirt.Simulation.Action
         //=====================================================================
         //= Server Only
         //=====================================================================
-        public bool ReplicateSelf; // if true, this action will be sent to all clients including self player
+        public enum ReplicationType
+        {
+            All,    // every player
+            Others, // every other player (useful for self simulated action)
+            Self, // self only
+        }
+
+        public ReplicationType Replication = ReplicationType.All;
         public virtual bool ValidateAction(GameSimulation simulation, SimulationContext simContext, in ActionExecutionData data) => true;
 
         //=====================================================================
