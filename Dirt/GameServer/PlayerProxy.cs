@@ -1,5 +1,6 @@
 ﻿using Dirt.Game.Model;
 using Mud.Server;
+using Mud.Server.Stream;
 
 namespace Dirt.GameServer
 {
@@ -8,7 +9,8 @@ namespace Dirt.GameServer
         public GameClient Client { get; private set; }
         public GamePlayer Player { get; private set; }
 
-        public int Simulation { get; set; }
+        public int Simulation { get; internal set; }
+        public StreamGroup Group { get; internal set; }
 
         public PlayerProxy(GamePlayer player, GameClient client)
         {

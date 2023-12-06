@@ -171,6 +171,7 @@ namespace Dirt.GameServer
 
             }
             proxy.Simulation = simID;
+            proxy.Group = m_Groups[simID];
 
             // Notify previous simulation
             if ( oldSimIndex != -1 )
