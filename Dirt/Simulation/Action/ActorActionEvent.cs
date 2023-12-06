@@ -26,20 +26,8 @@ namespace Dirt.Simulation.Action
 
             if ( parameters.Length > 0 )
             {
-                ActionParameter[] convertedParameters = new ActionParameter[parameters.Length];
-                for(int i = 0; i < convertedParameters.Length; ++i)
-                {
-                    System.Type objType = parameters[i].GetType();
-                    if ( objType == typeof(int) )
-                    {
-                        convertedParameters[i] = new ActionParameter() { intValue = (int)parameters[i] };
-                    }
-                    else if (objType == typeof(float) )
-                    {
-                        convertedParameters[i] = new ActionParameter() { floatValue = (float)parameters[i] };
-                    }
-                }
-                Parameters = convertedParameters;
+                Parameters = new ActionParameter[parameters.Length];
+                ActionHelper.ConvertParameters(Parameters, parameters);
             }
             else
             {

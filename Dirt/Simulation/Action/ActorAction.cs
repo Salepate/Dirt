@@ -5,17 +5,18 @@ using System.Collections.Generic;
 
 namespace Dirt.Simulation.Action
 {
+    public enum ReplicationType
+    {
+        All,    // every player
+        Others, // every other player (useful for self simulated action)
+        Self, // self only
+    }
+
     public class ActorAction
     {
         //=====================================================================
         //= Server Only
         //=====================================================================
-        public enum ReplicationType
-        {
-            All,    // every player
-            Others, // every other player (useful for self simulated action)
-            Self, // self only
-        }
 
         public ReplicationType Replication = ReplicationType.All;
         public virtual bool ValidateAction(GameSimulation simulation, SimulationContext simContext, in ActionExecutionData data) => true;
