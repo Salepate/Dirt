@@ -97,6 +97,18 @@ namespace Dirt.GameServer.Managers
             }
         }
 
+        public void SendEventTo<T>(T gameEvent, GameClient client) where T : NetworkEvent
+        {
+            byte[] eventBuffer;
+            using (MemoryStream st = new MemoryStream())
+            {
+                m_NetSerializer.Serialize(st, gameEvent);
+                eventBuffer = st.ToArray();
+            }
+            MudMessage message = MudMessage.Create((int)NetworkOperation.GameEvent, eventBuffer);
+            client.Send(message, true);
+        }
+
         public PlayerProxy FindPlayer(int playerNumber)
         {
             if ( m_PlayerMap.TryGetValue(playerNumber, out PlayerProxy proxy) )
