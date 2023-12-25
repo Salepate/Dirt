@@ -164,11 +164,12 @@ namespace Dirt.Simulation
             m_MetricsOverTime.Clear();
             Systems.Clear();
 
-            for(int i = simulation.World.Actors.Count - 1; i >= 0; --i)
+            for(int i = simulation.Filter.Actors.Count - 1; i >= 0; --i)
             {
-                simulation.Builder.DestroyActor(simulation.World.Actors[i]);
+                simulation.Builder.DestroyActor(simulation.Filter.Actors[i]);
             }
 
+            simulation.Filter.Actors.Clear();
             DispatchQueuedEvents(simulation);
         }
 

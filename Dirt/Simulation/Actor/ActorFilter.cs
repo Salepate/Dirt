@@ -11,9 +11,9 @@ namespace Dirt.Simulation.Actor
         public SimulationPool Components { get; private set; }
 
         private ActorBuilder m_Builder;
-        public ActorFilter(ActorBuilder builder, List<GameActor> activeActors, int querySize, int maxQueries)
+        public ActorFilter(ActorBuilder builder, int querySize, int maxQueries)
         {
-            Actors = activeActors;
+            Actors = new List<GameActor>(builder.ActorPoolSize);
             m_Builder = builder;
             Resize(querySize, maxQueries);
         }

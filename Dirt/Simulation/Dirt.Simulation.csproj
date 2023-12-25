@@ -75,7 +75,6 @@
     <Compile Include="Events\ActorEvent.cs" />
     <Compile Include="Exceptions\ComponentExceptions.cs" />
     <Compile Include="GameSimulation.cs" />
-    <Compile Include="GameWorld.cs" />
     <Compile Include="GameActor.cs" />
     <Compile Include="IComponent.cs" />
     <Compile Include="Model\ActorArchetype.cs" />
