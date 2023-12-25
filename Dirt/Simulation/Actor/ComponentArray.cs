@@ -17,6 +17,7 @@ namespace Dirt.Simulation.Actor
         public delegate T AssignComponentDelegate(T comp);
 
         public AssignComponentDelegate AssignComponent;
+        public int Allocated { get; private set; }
         public int NextIndex { get; private set; }
 
         public Type ComponentType => typeof(T);
@@ -38,6 +39,7 @@ namespace Dirt.Simulation.Actor
         public void SetSize(int size)
         {
             NextIndex = 0;
+            Allocated = 0;
             Components = new T[size];
             Actors = new int[size];
             for (int i = 0; i < size; ++i)
@@ -65,6 +67,7 @@ namespace Dirt.Simulation.Actor
             {
                 Components[idx] = new T();
             }
+            ++Allocated;
             return idx;
         }
 
@@ -72,6 +75,7 @@ namespace Dirt.Simulation.Actor
         {
             if ( Actors[idx] != -1 )
             {
+                --Allocated;
                 Actors[idx] = -1;
 
                 if (idx < NextIndex)

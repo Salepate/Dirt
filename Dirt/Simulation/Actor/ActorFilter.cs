@@ -175,9 +175,10 @@ namespace Dirt.Simulation.Actor
         {
             ActorQuery query = GetQuery();
             ActorQuery queryc1 = GetQuery();
-            ActorList<C1> value = new ActorList<C1>(Actors, query, queryc1, Components.GetPool<C1>());
+            ComponentArray<C1> compPool = Components.GetPool<C1>();
+            ActorList<C1> value = new ActorList<C1>(Actors, query, queryc1, compPool);
 
-            for (int i = 0; i < Actors.Count; ++i)
+            for (int i = 0; compPool.Allocated > value.Count && i < Actors.Count; ++i)
             {
                 int compIndex = Actors[i].GetComponentIndex<C1>();
                 if (compIndex != -1)
@@ -200,7 +201,9 @@ namespace Dirt.Simulation.Actor
                 queryc1, Components.GetPool<C1>(),
                 queryc2, Components.GetPool<C2>());
 
-            for (int i = 0; i < Actors.Count; ++i)
+            for (int i = 0; value.C1Components.Allocated > value.Count
+                && value.C2Components.Allocated > value.Count
+                && i < Actors.Count; ++i)
             {
                 GameActor actor = Actors[i];
                 int compIndex = actor.GetComponentIndex<C1>();
@@ -232,7 +235,11 @@ namespace Dirt.Simulation.Actor
                 queryc2, Components.GetPool<C2>(),
                 queryc3, Components.GetPool<C3>());
 
-            for (int i = 0; i < Actors.Count; ++i)
+
+            for (int i = 0; value.C1Components.Allocated > value.Count
+                && value.C2Components.Allocated > value.Count
+                && value.C3Components.Allocated > value.Count
+                && i < Actors.Count; ++i)
             {
                 GameActor actor = Actors[i];
                 int c1Idx = actor.GetComponentIndex<C1>();
