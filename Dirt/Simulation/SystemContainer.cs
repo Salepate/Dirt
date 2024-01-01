@@ -1,13 +1,13 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
 using Dirt.Game.Managers;
-using Dirt.Log;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Actor.Components;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
@@ -18,17 +18,18 @@ namespace Dirt.Simulation
 {
     public class SystemContainer
     {
+        public static readonly double TICK_TO_SECOND = 1.0 / Stopwatch.Frequency;
+        public static readonly double TICK_TO_MICRO = TICK_TO_SECOND * 1000000;
+
         private delegate void EventDelegate(SimulationEvent gameEvent, int eventID);
         private Dictionary<Type, EventDelegate> m_EventListenerMap;
         private Dictionary<IEventReader, LambdaReference[]> m_ReaderReferences;
-        public List<ISimulationSystem> Systems { get; private set; }
-
-        private List<SystemMetric> m_MetricsOverTime;
+        private List<ISimulationSystem> m_Systems;
+        private List<SystemMetric> m_SystemMetrics;
         private List<bool> m_SystemStatus;
-
         private IContentProvider m_Content;
         private IManagerProvider m_Managers;
-        private Stopwatch m_SystemStopWatch;
+        private Stopwatch m_MetricsWatch;
         private MetricsManager m_Metrics;
         private int m_Frame;
 
@@ -42,10 +43,10 @@ namespace Dirt.Simulation
             m_Frame = 0;
             m_EventListenerMap = new Dictionary<Type, EventDelegate>();
             m_ReaderReferences = new Dictionary<IEventReader, LambdaReference[]>();
-            Systems = new List<ISimulationSystem>();
-            m_MetricsOverTime = new List<SystemMetric>();
+            m_Systems = new List<ISimulationSystem>();
+            m_SystemMetrics = new List<SystemMetric>();
             m_SystemStatus = new List<bool>();
-            m_SystemStopWatch = new Stopwatch();
+            m_MetricsWatch = new Stopwatch();
             m_Metrics = manager.GetManager<MetricsManager>();
         }
 
@@ -77,17 +78,22 @@ namespace Dirt.Simulation
             {
                 InjectEventDispatchers(sys as IEventReader);
             }
-            Systems.Add(sys);
-            m_MetricsOverTime.Add(new SystemMetric());
+            m_Systems.Add(sys);
+
+            m_SystemMetrics.Add(new SystemMetric()
+            {
+                Name = sys.GetType().Name
+            });
+
             m_SystemStatus.Add(true);
         }
 
         public void InitializeSystems(GameSimulation simulation)
         {
-            Systems.ForEach(sys =>
+            for(int i = 0; i < m_Systems.Count; ++i)
             {
-                sys.Initialize(simulation);
-            });
+                m_Systems[i].Initialize(simulation);
+            }
         }
 
         public void SetSystemStatus(int systemIndex, bool enabled)
@@ -97,27 +103,27 @@ namespace Dirt.Simulation
 
         public void UpdateSystems(GameSimulation simulation, float deltaTime)
         {
-            float tickToSec = 1f / Stopwatch.Frequency;
-            long totalTicks = 0;
-            int sysCount = Systems.Count;
-
-            for(int i = 0; i < sysCount; ++i)
+            long accTicks = 0;
+            int sysCount = m_Systems.Count;
+            for (int i = 0; i < sysCount; ++i)
             {
                 int microTime = 0;
 
                 if ( m_SystemStatus[i] )
                 {
-                    ISimulationSystem sys = Systems[i];
-                    m_SystemStopWatch.Restart();
+                    ISimulationSystem sys = m_Systems[i];
+                    m_MetricsWatch.Restart();
                     simulation.Filter.ResetQueries();
                     sys.UpdateActors(simulation, deltaTime);
-                    m_SystemStopWatch.Stop();
-                    totalTicks += m_SystemStopWatch.ElapsedMilliseconds;
-                    microTime = (int) (m_SystemStopWatch.ElapsedTicks * tickToSec * 1000000);
+                    m_MetricsWatch.Stop();
+                    accTicks += m_MetricsWatch.ElapsedTicks;
+                    microTime = (int) (m_MetricsWatch.ElapsedTicks * TICK_TO_SECOND * 1000000);
                 }
 
                 ProcessMetrics(simulation.ID, i, microTime);
             }
+
+            m_Metrics.Record($"sim.{simulation.ID}.total", (int) (accTicks * TICK_TO_SECOND * 1000000));
 
             DispatchQueuedEvents(simulation);
 
@@ -151,18 +157,20 @@ namespace Dirt.Simulation
 
         public void ClearSimulation(GameSimulation simulation)
         {
-            Systems.ForEach(sys =>
+            for(int i = 0; i < m_Systems.Count; ++i)
             {
-                if (sys is ISystemDispose)
-                    ((ISystemDispose)sys).DisposeSystem();
+                ISimulationSystem sys = m_Systems[i];
 
-                if (sys is IEventReader)
-                    RemoveEventDispatchers((IEventReader)sys);
-            });
+                if (sys is IDisposable disposable)
+                    disposable.Dispose();
+
+                if (sys is IEventReader reader)
+                    RemoveEventDispatchers(reader);
+            }
 
 
-            m_MetricsOverTime.Clear();
-            Systems.Clear();
+            m_SystemMetrics.Clear();
+            m_Systems.Clear();
 
             for(int i = simulation.Filter.Actors.Count - 1; i >= 0; --i)
             {
@@ -170,6 +178,7 @@ namespace Dirt.Simulation
             }
 
             simulation.Filter.Actors.Clear();
+
             DispatchQueuedEvents(simulation);
         }
 
@@ -237,18 +246,19 @@ namespace Dirt.Simulation
         [Conditional(MetricsManager.CONDITIONAL_METRICS)]
         private void ProcessMetrics(int simID, int systemIndex, int microTime)
         {
-            SystemMetric metric = m_MetricsOverTime[systemIndex];
+            SystemMetric metric = m_SystemMetrics[systemIndex];
 
             if (m_Frame % 60 == 0)
             {
                 metric.AveragedCost /= 60; // send true metric
-                m_Metrics.Record($"{simID}.{Systems[systemIndex].GetType().Name}", metric);
+                m_Metrics.Record($"{simID}.{metric.Name}", metric);
 
                 metric = new SystemMetric()
                 {
                     AveragedCost = 0,
                     AveragedMax = 0,
-                    AveragedMin = float.MaxValue
+                    AveragedMin = float.MaxValue,
+                    Name = metric.Name
                 };
             }
             else
@@ -256,7 +266,7 @@ namespace Dirt.Simulation
                 UpdateMetrics(microTime, ref metric);
             }
 
-            m_MetricsOverTime[systemIndex] = metric;
+            m_SystemMetrics[systemIndex] = metric;
         }
 
         private class LambdaReference
