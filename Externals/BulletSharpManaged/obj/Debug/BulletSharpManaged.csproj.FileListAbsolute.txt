@@ -1,0 +1,2 @@
+E:\dev\Dirt\Bullet\BulletSharpManaged\obj\Debug\BulletSharpManaged.csproj.AssemblyReference.cache
+E:\dev\Dirt\Bullet\BulletSharpManaged\obj\Debug\BulletSharpManaged.csproj.CoreCompileInputs.cache

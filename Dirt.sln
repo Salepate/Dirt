@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mud", "Mud\Mud\Mud.csproj",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mud.Tests", "Mud\Tests\Mud.Tests.csproj", "{1CD767F7-51AA-4B8B-B9F1-D6883A7AA85A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BulletSharpManaged", "Bullet\BulletSharpManaged\BulletSharpManaged.csproj", "{7D89006B-5468-438D-96AF-80E41098EA38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BulletSharpManaged", "Externals\BulletSharpManaged\BulletSharpManaged.csproj", "{7D89006B-5468-438D-96AF-80E41098EA38}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Physic", "Physic", "{C7A0F1CA-7931-4A2D-9F2A-E0EE417DDE3E}"
 EndProject
