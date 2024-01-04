@@ -67,6 +67,7 @@ namespace Dirt.Systems
             Simulation.Builder.SetGameContent(m_Content);
             Simulation.Resize(1000, 10);
             m_Systems = new SystemContainer(m_Content, this);
+            m_Systems.InitializeSystems(Simulation);
         }
 
         public override void Unload()
