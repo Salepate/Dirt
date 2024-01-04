@@ -6,8 +6,8 @@ Mud/*/bin
 Mud/*/obj
 Unity/*/bin
 Unity/*/obj
-Bullet/*/bin
-Bullet/*/obj
+Externals/*/bin
+Externals/*/obj
 packages/
 
 # Tests
