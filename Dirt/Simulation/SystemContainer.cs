@@ -1,6 +1,7 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
 using Dirt.Game.Managers;
+using Dirt.Log;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Actor.Components;
 using Dirt.Simulation.Context;
@@ -9,7 +10,6 @@ using Dirt.Simulation.SystemHelper;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using Stopwatch = System.Diagnostics.Stopwatch;
 using Type = System.Type;
@@ -31,16 +31,20 @@ namespace Dirt.Simulation
         private IManagerProvider m_Managers;
         private Stopwatch m_MetricsWatch;
         private MetricsManager m_Metrics;
-        private int m_Frame;
+        public int Frame { get; private set; }
 
         public SimulationContext Context { get; private set; }
+        private string m_FrameLabel;
+        private string m_FrameSec;
+        private long m_Ticks;
+        private int m_LastSecondFrames;
 
         public SystemContainer(IContentProvider content, IManagerProvider manager)
         {
             Context = new SimulationContext();
             m_Content = content;
             m_Managers = manager;
-            m_Frame = 0;
+            Frame = 0;
             m_EventListenerMap = new Dictionary<Type, EventDelegate>();
             m_ReaderReferences = new Dictionary<IEventReader, LambdaReference[]>();
             m_Systems = new List<ISimulationSystem>();
@@ -94,6 +98,12 @@ namespace Dirt.Simulation
             {
                 m_Systems[i].Initialize(simulation);
             }
+
+            m_FrameLabel = $"sim.{simulation.ID}.frame";
+            m_FrameSec = $"sim.{simulation.ID}.fps";
+            m_Ticks = DateTime.Now.Ticks;
+            Frame = 0;
+            m_LastSecondFrames = 0;
         }
 
         public void SetSystemStatus(int systemIndex, bool enabled)
@@ -137,7 +147,17 @@ namespace Dirt.Simulation
 
             DispatchQueuedEvents(simulation);
 
-            m_Frame++;
+            Frame++;
+
+            TimeSpan dt = TimeSpan.FromTicks(DateTime.Now.Ticks - m_Ticks);
+            if (dt.Seconds >= 1)
+            {
+                m_Ticks = DateTime.Now.Ticks;
+                m_Metrics.Record(m_FrameSec, Frame - m_LastSecondFrames);
+                m_LastSecondFrames = Frame;
+            }
+            m_Metrics.Record(m_FrameLabel, Frame, false);
+
         }
 
         private void UpdateMetrics(int microtime, ref SystemMetric metric)
@@ -243,12 +263,11 @@ namespace Dirt.Simulation
             }
         }
 
-        [Conditional(MetricsManager.CONDITIONAL_METRICS)]
         private void ProcessMetrics(int simID, int systemIndex, int microTime)
         {
             SystemMetric metric = m_SystemMetrics[systemIndex];
 
-            if (m_Frame % 60 == 0)
+            if (Frame % 60 == 0)
             {
                 metric.AveragedCost /= 60; // send true metric
                 m_Metrics.Record($"{simID}.{metric.Name}", metric);
@@ -273,9 +292,6 @@ namespace Dirt.Simulation
         {
             public EventDelegate Lambda;
             public Type EventType;
-        }
-        private class EventReaderReferences : Dictionary<IEventReader, LambdaReference[]>
-        {
         }
     }
 }
