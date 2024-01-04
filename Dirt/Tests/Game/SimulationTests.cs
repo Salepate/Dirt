@@ -31,7 +31,7 @@ namespace Dirt.Tests.Simulation
         public void TestCreateActor()
         {
             Builder.CreateActor();
-            Assert.AreEqual(1, Simulation.World.Actors.Count, "1 Actor expected in simulation");
+            Assert.AreEqual(1, Simulation.Filter.Actors.Count, "1 Actor expected in simulation");
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace Dirt.Tests.Simulation
         {
             GameActor actor = Simulation.Builder.CreateActor();
             Builder.DestroyActor(actor);
-            Assert.AreEqual(0, Simulation.World.Actors.Count, "0 Actor expected in simulation");
+            Assert.AreEqual(0, Simulation.Filter.Actors.Count, "0 Actor expected in simulation");
         }
 
         [TestMethod]
@@ -49,9 +49,9 @@ namespace Dirt.Tests.Simulation
 
             var actor = Builder.CreateActor();
             Builder.AddComponent<Destroy>(actor);
-            Assert.AreEqual(1, Simulation.World.Actors.Count, "1 Actor expected in simulation");
+            Assert.AreEqual(1, Simulation.Filter.Actors.Count, "1 Actor expected in simulation");
             Container.UpdateSystems(Simulation, 1f);
-            Assert.AreEqual(0, Simulation.World.Actors.Count, "0 Actor expected in simulation");
+            Assert.AreEqual(0, Simulation.Filter.Actors.Count, "0 Actor expected in simulation");
         }
 
         [TestMethod]

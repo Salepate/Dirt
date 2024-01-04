@@ -30,7 +30,10 @@ namespace Dirt.Simulation
         private IContentProvider m_Content;
         private IManagerProvider m_Managers;
         private Stopwatch m_MetricsWatch;
+
+#if GAME_METRICS
         private MetricsManager m_Metrics;
+#endif
         public int Frame { get; private set; }
 
         public SimulationContext Context { get; private set; }
@@ -51,7 +54,10 @@ namespace Dirt.Simulation
             m_SystemMetrics = new List<SystemMetric>();
             m_SystemStatus = new List<bool>();
             m_MetricsWatch = new Stopwatch();
+
+#if GAME_METRICS
             m_Metrics = manager.GetManager<MetricsManager>();
+#endif
         }
 
         public void LoadContext(string contextName)
@@ -133,7 +139,9 @@ namespace Dirt.Simulation
                 ProcessMetrics(simulation.ID, i, microTime);
             }
 
+#if GAME_METRICS
             m_Metrics.Record($"sim.{simulation.ID}.total", (int) (accTicks * TICK_TO_SECOND * 1000000));
+#endif
 
             DispatchQueuedEvents(simulation);
 
@@ -149,6 +157,7 @@ namespace Dirt.Simulation
 
             Frame++;
 
+#if GAME_METRICS
             TimeSpan dt = TimeSpan.FromTicks(DateTime.Now.Ticks - m_Ticks);
             if (dt.Seconds >= 1)
             {
@@ -157,6 +166,7 @@ namespace Dirt.Simulation
                 m_LastSecondFrames = Frame;
             }
             m_Metrics.Record(m_FrameLabel, Frame, false);
+#endif
 
         }
 
@@ -265,6 +275,7 @@ namespace Dirt.Simulation
 
         private void ProcessMetrics(int simID, int systemIndex, int microTime)
         {
+#if GAME_METRICS
             SystemMetric metric = m_SystemMetrics[systemIndex];
 
             if (Frame % 60 == 0)
@@ -286,6 +297,7 @@ namespace Dirt.Simulation
             }
 
             m_SystemMetrics[systemIndex] = metric;
+#endif
         }
 
         private class LambdaReference
