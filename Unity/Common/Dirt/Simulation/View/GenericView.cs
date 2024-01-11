@@ -20,7 +20,7 @@ namespace Dirt.Simulation.View
         protected ref Position ActorPosition => ref m_Filter.Get<Position>(Actor);
         private ActorFilter m_Filter;
         protected GameActor Actor { get; private set; }
-        public virtual bool NotifyActorDestroyed()
+        public virtual bool NotifyActorDestroyed(int reason)
         {
             Destroyed = true;
             m_DecayClock = DestroyClock;

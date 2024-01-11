@@ -129,13 +129,13 @@ namespace Dirt.Systems
         protected virtual GameObject SpawnCustomView(ViewDefinition viewDef, GameActor actor, ActorFilter filter) { return null; }
         protected virtual void DestroyCustomView(ISimulationView view) { }
 
-        protected void RemoveActor(GameActor actor)
+        protected void RemoveActor(GameActor actor, int reason = 0)
         {
             var views = m_Views.FindAll(v => v.ActorID == actor.ID);
 
             for (int i = m_Views.Count - 1; i >= 0; --i)
             {
-                if (m_Views[i].ActorID == actor.ID && m_Views[i].NotifyActorDestroyed())
+                if (m_Views[i].ActorID == actor.ID && m_Views[i].NotifyActorDestroyed(reason))
                     FreeView(i);
             }
         }

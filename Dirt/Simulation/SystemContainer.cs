@@ -204,6 +204,7 @@ namespace Dirt.Simulation
 
             for(int i = simulation.Filter.Actors.Count - 1; i >= 0; --i)
             {
+                simulation.Builder.AddComponent<Destroy>(simulation.Filter.Actors[i]);
                 simulation.Builder.DestroyActor(simulation.Filter.Actors[i]);
             }
 

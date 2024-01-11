@@ -17,7 +17,7 @@ namespace Dirt.Simulation.View
 
         bool ISimulationView.Destroy => m_Clock <= 0f;
 
-        public override bool NotifyActorDestroyed()
+        public override bool NotifyActorDestroyed(int reason)
         {
             return false;
         }

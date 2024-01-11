@@ -10,10 +10,12 @@ namespace Dirt.GameServer.Simulation.Components
         public float Radius;
         public float Threshold;
         public List<int> ProximityActors;
+        public List<int> LocalIDs;
 
         public void Assign()
         {
             ProximityActors = new List<int>(16);
+            LocalIDs = new List<int>(16);
         }
     }
 }

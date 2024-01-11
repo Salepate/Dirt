@@ -101,7 +101,10 @@ namespace Mud.DirtSystems
                     m_Simulation.DispatchEvent(new ActorSyncEvent(message[0], syncBuffer));
                     break;
                 case NetworkOperation.ActorRemove:
-                    m_Simulation.DispatchEvent(new ActorNetCullEvent(message[0]));
+                    int reason = ActorNetCullEvent.Destroyed;
+                    if (message.Length > 1)
+                        reason = message[message.Length - 1];
+                    m_Simulation.DispatchEvent(new ActorNetCullEvent(message[0], reason));
                     break;
                 case NetworkOperation.ActorAction:
                     NetworkActionHelper.ExtractAction(message, out int netID, out int actionIndex, out ActionParameter[] parameters);

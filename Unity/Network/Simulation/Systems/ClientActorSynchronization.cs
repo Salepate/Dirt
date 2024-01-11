@@ -36,10 +36,23 @@ namespace Dirt.Network.Simulation.Systems
             m_ParameterBuffer = new List<ActionParameter>();
         }
 
+        private int m_MatchNetID;
+
+        private bool MatchActor(NetInfo netinfo)
+        {
+            return netinfo.ID == m_MatchNetID;
+        }
+
         [SimulationListener(typeof(ActorNetCullEvent), 0)]
         private void OnActorRemoved(ActorNetCullEvent removeEvent)
         {
-            m_ToDestroy.Add(removeEvent.NetID);
+            m_MatchNetID = removeEvent.NetID;
+            GameActor actor = m_Simulation.Filter.GetSingle<NetInfo>(MatchActor);
+            if (actor != null)
+            {
+                ref Destroy destroy = ref m_Simulation.Builder.AddComponent<Destroy>(actor);
+                destroy.Reason = removeEvent.Reason;
+            }
         }
 
         [SimulationListener(typeof(RemoteActionRequestEvent), 0)]
@@ -72,26 +85,17 @@ namespace Dirt.Network.Simulation.Systems
             foreach(var t in sim.Filter.GetAll<NetInfo>())
             {
                 ref NetInfo netBhv = ref t.Get();
-
-                if (m_ToDestroy.Contains(netBhv.ID))
+                if (netBhv.Owner == m_Server.LocalPlayer) // has some ownership
                 {
-                    sim.Builder.AddComponent<Destroy>(t.Actor);
-                    m_ToDestroy.Remove(netBhv.ID);
-                }
-                else
-                {
-                    if (netBhv.Owner == m_Server.LocalPlayer) // has some ownership
+                    if (netBhv.LastOutBuffer != null && netBhv.LastOutBuffer.Length > 0)
                     {
-                        if (netBhv.LastOutBuffer != null && netBhv.LastOutBuffer.Length > 0)
+                        using (MemoryStream st = new MemoryStream())
                         {
-                            using (MemoryStream st = new MemoryStream())
-                            {
-                                st.WriteByte((byte)netBhv.ID);
-                                st.Write(netBhv.LastOutBuffer, 0, netBhv.LastOutBuffer.Length);
-                                m_Server.Send(MudMessage.Create((byte)NetworkOperation.ActorSync, st.ToArray()));
-                            }
-                            netBhv.LastOutBuffer = null;
+                            st.WriteByte((byte)netBhv.ID);
+                            st.Write(netBhv.LastOutBuffer, 0, netBhv.LastOutBuffer.Length);
+                            m_Server.Send(MudMessage.Create((byte)NetworkOperation.ActorSync, st.ToArray()));
                         }
+                        netBhv.LastOutBuffer = null;
                     }
                 }
             }
