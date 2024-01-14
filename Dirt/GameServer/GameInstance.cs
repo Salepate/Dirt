@@ -232,14 +232,17 @@ namespace Dirt.GameServer
 
         public void ProcessMessage(GameClient client, MudMessage message)
         {
+
+            PlayerProxy proxy;
+            GameSimulation sim;
             NetworkOperation mudOp = (NetworkOperation)message.opCode;
             switch (mudOp)
             {
                 case NetworkOperation.ActorSync:
                     
-                    PlayerProxy proxy = m_Players.FindPlayer(client.Number);
+                    proxy = m_Players.FindPlayer(client.Number);
                     Console.Assert(proxy != null, $"Unknown Player {client.Number}");
-                    GameSimulation sim = Simulations.GetSimulation(proxy.Simulation);
+                    sim = Simulations.GetSimulation(proxy.Simulation);
 
                     int syncID = message.buffer[0];
                     bool isOwner = sim.Filter.GetActorsMatching<NetInfo>(a => a.ID == syncID && proxy.Player.Number == a.Owner).Count == 1;
@@ -249,6 +252,12 @@ namespace Dirt.GameServer
                         Array.Copy(message.buffer, 1, syncBuffer, 0, message.buffer.Length - 1);
                         sim.Events.Enqueue(new ActorSyncEvent(message.buffer[0], syncBuffer));
                     }
+                    break;
+                case NetworkOperation.ClientReady:
+                    proxy = m_Players.FindPlayer(client.Number);
+                    Console.Assert(proxy != null, $"Unknown Player {client.Number}");
+                    sim = Simulations.GetSimulation(proxy.Simulation);
+                    sim.Events.Enqueue(new PlayerEvent(client.Number, PlayerEvent.LoadedSimulation));
                     break;
                 default:
                     CustomMessage?.Invoke(client, message);

@@ -54,6 +54,7 @@ namespace Mud.DirtSystems
                     string sim = System.Text.Encoding.ASCII.GetString(message);
                     Console.Message($"Load simulation {sim}");
                     m_Simulation.ChangeSimulation(sim);
+                    m_Proxy.Send(MudMessage.Create((byte)NetworkOperation.ClientReady, null));
                     break;
                 case NetworkOperation.SetSession:
                     int sessionID = BitConverter.ToInt32(message, 0);

@@ -9,6 +9,7 @@
         ActorRemove     = 104,
         ActorSync       = 105,
         ActorAction     = 106,
-        ActionRequest   = 107
+        ActionRequest   = 107,
+        ClientReady     = 108,
     }
 }
