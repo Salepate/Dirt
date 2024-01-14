@@ -9,6 +9,7 @@ using Dirt.Simulation.SystemHelper;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 
 namespace Dirt.Network.Systems
@@ -118,7 +119,18 @@ namespace Dirt.Network.Systems
 
             for (int i = 0; i < header.FieldIndex.Length; ++i)
             {
-                ComponentFieldInfo field = sync.Fields[header.FieldIndex[i]];
+                int fieldIndex = header.FieldIndex[i];
+                if ( fieldIndex < 0 || fieldIndex >= sync.Fields.Count)
+                {
+                    Console.Error($"Actor {actor} Failed to deserialize field {header.FieldIndex[i]}");
+                    for(int j = 0; j < actor.ComponentCount; ++j)
+                    {
+                        if (actor.ComponentTypes[j] != null)
+                            Console.Message(actor.ComponentTypes[j].Name);
+                    }
+                    continue;
+                }
+                ComponentFieldInfo field = sync.Fields[fieldIndex];
                 if (ShouldDeserialize(sync.ServerControl, field.Owner))
                 {
                     Type compType = actor.ComponentTypes[field.Component];

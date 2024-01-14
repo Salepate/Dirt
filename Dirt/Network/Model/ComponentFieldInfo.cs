@@ -11,5 +11,6 @@ namespace Dirt.Network.Model
         public int Component; // local index
         public int Accessor; 
         public bool Owner; // grants owner permission to write
+        public string Debug;
     }
 }

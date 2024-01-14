@@ -45,7 +45,8 @@ namespace Dirt.Network
                         {
                             Component = compIndex,
                             Accessor = j,
-                            Owner = CanWrite(compType.Name, accessors[j].Name, syncDesc)
+                            Owner = CanWrite(compType.Name, accessors[j].Name, syncDesc),
+                            Debug = $"{compType.Name}.{accessors[j].Name}"
                         };
                         //Console.Message($"Component Sync {compType.Name}: [Owner:{fieldSync.Owner}] [Accessor:{accessors[j].Name}]");
                         fields.Add(fieldSync);
