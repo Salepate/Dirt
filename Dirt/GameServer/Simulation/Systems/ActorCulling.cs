@@ -130,6 +130,17 @@ namespace Dirt.Network.Simulations.Systems
 
                             if (isOld)
                             {
+                                if (syncInfo.LastState != null)
+                                {
+                                    byte[] message = null;
+                                    using (MemoryStream messageStream = new MemoryStream())
+                                    {
+                                        m_Serializer.Serialize(messageStream, syncInfo.LastState);
+                                        message = messageStream.ToArray();
+                                    }
+                                    syncInfo.LastOutBuffer = message;
+                                    syncInfo.LastState = null;
+                                }
                                 if (syncInfo.LastOutBuffer != null)
                                 {
                                     List<byte> message = new List<byte>(syncInfo.LastOutBuffer.Length + 1);

@@ -21,18 +21,17 @@ namespace Dirt.Network.Systems
     /// </summary>
     public class ActorStreaming : ISimulationSystem, IManagerAccess
     {
+        protected bool IgnoreMemorySerialization { get; set; }
+
         private int m_IDGenerator;
         private NetworkSerializer m_Serializer;
         private ActorFilter Filter => m_Simulation.Filter;
-
         private GameSimulation m_Simulation;
         private Stopwatch m_Watch;
         public ActorStreaming()
         {
             m_IDGenerator = 0;
             m_Watch = new Stopwatch();
-            
-
         }
 
         protected virtual void DoRecord(string id, int value) { }
@@ -75,15 +74,19 @@ namespace Dirt.Network.Systems
 
                     if (stateToSerialize != null && stateToSerialize.FieldIndex != null)
                     {
-                        byte[] message = null;
-
-                        using (MemoryStream messageStream = new MemoryStream())
+                        if(!IgnoreMemorySerialization)
                         {
-                            m_Serializer.Serialize(messageStream, stateToSerialize);
-                            message = messageStream.ToArray();
+                            byte[] message = null;
+
+                            using (MemoryStream messageStream = new MemoryStream())
+                            {
+                                m_Serializer.Serialize(messageStream, stateToSerialize);
+                                message = messageStream.ToArray();
+                            }
+
+                            netBhv.LastOutBuffer = message;
                         }
 
-                        netBhv.LastOutBuffer = message;
                         if (netBhv.LastState == null) // first buffer
                         {
                             netBhv.LastState = stateToSerialize;
@@ -200,7 +203,7 @@ namespace Dirt.Network.Systems
             return -1;
         }
 
-        public void Initialize(GameSimulation sim)
+        public virtual void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
         }
