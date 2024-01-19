@@ -82,6 +82,7 @@
     <Compile Include="SimulationSpan.cs" />
     <Compile Include="Simulation\Components\CullArea.cs" />
     <Compile Include="Simulation\Components\GlobalSyncInfo.cs" />
+    <Compile Include="Simulation\Events\SimulationPausedEvent.cs" />
     <Compile Include="Simulation\Helpers\PlayerActors.cs" />
     <Compile Include="Simulation\Systems\ActorCulling.cs" />
     <Compile Include="Simulation\Systems\GlobalActorSynchronization.cs" />

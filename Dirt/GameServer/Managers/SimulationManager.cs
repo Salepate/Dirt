@@ -1,5 +1,6 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
+using Dirt.GameServer.Simulation.Events;
 using Dirt.Simulation;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Context;
@@ -20,6 +21,7 @@ namespace Dirt.GameServer.Managers
         private List<int> m_Terminated;
         public IEnumerable<int> ActiveSimulations => m_SimulationMap.Keys;
         public Action<int> NotifySimulationDestroyed;
+        private float m_Time;
         public SimulationManager(IContentProvider content)
         {
             m_SimulationMap = new Dictionary<int, SimulationProxy>();
@@ -27,6 +29,7 @@ namespace Dirt.GameServer.Managers
             m_IDGenerator = 0;
             m_ActiveSimulations = new List<SimulationProxy>();
             m_Terminated = new List<int>();
+            m_Time = 0f;
         }
 
         public GameSimulation GetSimulation(int id)
@@ -59,6 +62,46 @@ namespace Dirt.GameServer.Managers
             return false;
         }
 
+        public void PauseSimulation(int id)
+        {
+            if ( m_SimulationMap.TryGetValue(id, out SimulationProxy sim)  )
+            {
+                if ( !sim.Paused )
+                {
+                    sim.Paused = true;
+                    sim.PauseTime = m_Time;
+                }
+                else
+                {
+                    Console.Warning($"Cannot pause Simulation {id}: Already paused");
+                }
+            }
+            else
+            {
+                Console.Error($"Cannot pause Simulation {id}: Not found");
+            }
+        }
+
+        public void ResumeSimulation(int id)
+        {
+            if (m_SimulationMap.TryGetValue(id, out SimulationProxy sim))
+            {
+                if (!sim.Paused)
+                {
+                    Console.Warning($"Cannot resume Simulation {id}: Not paused");
+                }
+                else
+                {
+                    sim.Paused = false;
+                    sim.Simulation.Events.Enqueue(new SimulationPausedEvent(m_Time - sim.PauseTime));
+                }
+            }
+            else
+            {
+                Console.Error($"Cannot pause Simulation {id}: Not found");
+            }
+        }
+
         public void AttachSystems(int id, SystemContainer systems)
         {
             if (m_SimulationMap.TryGetValue(id, out SimulationProxy proxy))
@@ -71,6 +114,7 @@ namespace Dirt.GameServer.Managers
                 Console.Error($"Simulation {id} is already running");
             }
         }
+
         public SimulationSpan GetSpan(int id)
         {
             if( !m_SimulationMap.TryGetValue(id, out SimulationProxy proxy) )
@@ -111,14 +155,16 @@ namespace Dirt.GameServer.Managers
 
         public void Update(float deltaTime)
         {
+            m_Time += deltaTime;
             int simCount = m_ActiveSimulations.Count;
             for (int i = 0; i < simCount; ++i)
             {
-                if (m_ActiveSimulations[i].Terminated )
+                SimulationProxy simProxy = m_ActiveSimulations[i];
+                if (simProxy.Terminated)
                 {
                     m_Terminated.Add(i);
                 }
-                else
+                else if (!simProxy.Paused)
                 {
                     m_ActiveSimulations[i].Systems.UpdateSystems(m_ActiveSimulations[i].Simulation, deltaTime);
                 }

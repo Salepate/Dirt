@@ -13,6 +13,8 @@ namespace Dirt.GameServer
         public IContextItem[] BaseContext { get; private set; }
         public StreamGroup Group { get; private set; }
         public bool Terminated { get; private set; }
+        public bool Paused { get; internal set; }
+        public float PauseTime { get; internal set; }
 
         public SimulationProxy(GameSimulation simulation, SimulationSpan span, IContextItem[] contextItems)
         {
