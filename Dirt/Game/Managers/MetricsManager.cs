@@ -1,6 +1,6 @@
 ﻿using Dirt.Game.Metrics;
 using System.Collections.Generic;
-
+using System.Diagnostics;
 using Type = System.Type;
 
 namespace Dirt.Game.Managers
@@ -8,6 +8,12 @@ namespace Dirt.Game.Managers
     public class MetricsManager : IGameManager
     {
         public const string CONDITIONAL_METRICS = "GAME_METRICS";
+
+#if GAME_METRICS
+        public const bool Recording = true;
+#else
+        public const bool Recording = false;
+#endif
 
         public System.Action<string, int> MetricEvent;
         public delegate void MetricObjectEventDelegate(string hash, MetricObject obj);
@@ -48,6 +54,28 @@ namespace Dirt.Game.Managers
             }
         }
 
+        public int GetIntegerMetric(string hash)
+        {
+            if (IntegerMetrics.TryGetValue(hash, out int value))
+            {
+                return value;
+            }
+            return 0;
+        }
+
+        public bool TryGetObjectMetric<T>(string hash, out T metricObj) where T : MetricObject
+        {
+            if (ObjectMetrics.TryGetValue(hash, out MetricObject value))
+            {
+                metricObj = (T)value;
+                return false;
+            }
+
+            metricObj = default;
+            return true;
+        }
+
+        [Conditional(MetricsManager.CONDITIONAL_METRICS)]
         public void Record(string hash, MetricObject data)
         {
             ObjectMetrics[hash] = data;
@@ -57,6 +85,7 @@ namespace Dirt.Game.Managers
             }
         }
 
+        [Conditional(MetricsManager.CONDITIONAL_METRICS)]
         public void Record<T>(string hash, T data) where T : MetricObject
         {
             ObjectMetrics[hash] = data;
@@ -66,6 +95,7 @@ namespace Dirt.Game.Managers
             }
         }
 
+        [Conditional(MetricsManager.CONDITIONAL_METRICS)]
         public void Record(string hash, int value, bool deltaOnly = true)
         {
             if (!IntegerMetrics.TryGetValue(hash, out int oldValue) || oldValue != value || !deltaOnly)

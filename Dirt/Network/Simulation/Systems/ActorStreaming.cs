@@ -8,23 +8,33 @@ using Dirt.Simulation.Actor;
 using Dirt.Simulation.SystemHelper;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 
 namespace Dirt.Network.Systems
 {
     using Console = Dirt.Log.Console;
+
+    /// <summary>
+    /// Transform actors into memory streams suited for network transmission.
+    /// </summary>
     public class ActorStreaming : ISimulationSystem, IManagerAccess
     {
+        protected bool IgnoreMemorySerialization { get; set; }
+
         private int m_IDGenerator;
         private NetworkSerializer m_Serializer;
         private ActorFilter Filter => m_Simulation.Filter;
-
         private GameSimulation m_Simulation;
+        private Stopwatch m_Watch;
         public ActorStreaming()
         {
             m_IDGenerator = 0;
+            m_Watch = new Stopwatch();
         }
 
+        protected virtual void DoRecord(string id, int value) { }
 
         protected virtual bool ShouldSerializeActor(ref NetInfo info) => true;
         protected virtual bool ShouldSerializeField(bool isOwner) => true;
@@ -33,8 +43,13 @@ namespace Dirt.Network.Systems
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
+            m_Watch.Restart();
             ActorList<NetInfo> netActors = Filter.GetActors<NetInfo>();
-            for(int i = 0; i < netActors.Count; ++i)
+            long ticks = m_Watch.Elapsed.Ticks;
+            long serialTicks = 0;
+            long deserialTicks = 0;
+            DoRecord("ActorStreaming.Filter", (int) (ticks * SystemContainer.TICK_TO_MICRO));
+            for (int i = 0; i < netActors.Count; ++i)
             {
                 GameActor actor = netActors.GetActor(i);
                 ref NetInfo netBhv = ref netActors.GetC1(i);
@@ -45,10 +60,13 @@ namespace Dirt.Network.Systems
 
                 //TODO: Add timed state deserial/serial to control net throughput (use net tickrate)
 
+
                 if (ShouldDeserialize(ref netBhv))
                 {
                     DeserializeActor(actor, ref netBhv);
                 }
+                deserialTicks += m_Watch.Elapsed.Ticks - ticks;
+                ticks = m_Watch.Elapsed.Ticks;
 
                 if (ShouldSerializeActor(ref netBhv))
                 {
@@ -56,22 +74,31 @@ namespace Dirt.Network.Systems
 
                     if (stateToSerialize != null && stateToSerialize.FieldIndex != null)
                     {
-                        byte[] message = null;
-
-                        using (MemoryStream messageStream = new MemoryStream())
+                        if(!IgnoreMemorySerialization)
                         {
-                            m_Serializer.Serialize(messageStream, stateToSerialize);
-                            message = messageStream.ToArray();
+                            byte[] message = null;
+
+                            using (MemoryStream messageStream = new MemoryStream())
+                            {
+                                m_Serializer.Serialize(messageStream, stateToSerialize);
+                                message = messageStream.ToArray();
+                            }
+
+                            netBhv.LastOutBuffer = message;
                         }
 
-                        netBhv.LastOutBuffer = message;
                         if (netBhv.LastState == null) // first buffer
                         {
                             netBhv.LastState = stateToSerialize;
                         }
                     }
                 }
+                serialTicks += m_Watch.Elapsed.Ticks - ticks;
+                ticks = m_Watch.Elapsed.Ticks;
             }
+            DoRecord("ActorStreaming.DeserializeAll", (int) (deserialTicks * SystemContainer.TICK_TO_MICRO));
+            DoRecord("ActorStreaming.SerializeAll", (int) (serialTicks * SystemContainer.TICK_TO_MICRO));
+            DoRecord("ActorStreaming.Actors", netActors.Count);
         }
 
         public static string ByteArrayToString(byte[] ba)
@@ -95,7 +122,18 @@ namespace Dirt.Network.Systems
 
             for (int i = 0; i < header.FieldIndex.Length; ++i)
             {
-                ComponentFieldInfo field = sync.Fields[header.FieldIndex[i]];
+                int fieldIndex = header.FieldIndex[i];
+                if ( fieldIndex < 0 || fieldIndex >= sync.Fields.Count)
+                {
+                    Console.Error($"Actor {actor} Failed to deserialize field {header.FieldIndex[i]}");
+                    for(int j = 0; j < actor.ComponentCount; ++j)
+                    {
+                        if (actor.ComponentTypes[j] != null)
+                            Console.Message(actor.ComponentTypes[j].Name);
+                    }
+                    continue;
+                }
+                ComponentFieldInfo field = sync.Fields[fieldIndex];
                 if (ShouldDeserialize(sync.ServerControl, field.Owner))
                 {
                     Type compType = actor.ComponentTypes[field.Component];
@@ -109,7 +147,7 @@ namespace Dirt.Network.Systems
             }
         }
 
-        private MessageHeader SerializeActor(GameActor actor, NetInfo sync)
+        private MessageHeader SerializeActor(GameActor actor, in NetInfo sync)
         {
             if (sync.Fields.Count < 1)
                 return null;
@@ -165,12 +203,12 @@ namespace Dirt.Network.Systems
             return -1;
         }
 
-        public void Initialize(GameSimulation sim)
+        public virtual void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
         }
 
-        public void SetManagers(IManagerProvider provider)
+        public virtual void SetManagers(IManagerProvider provider)
         {
             m_Serializer = provider.GetManager<NetworkSerializer>();
         }

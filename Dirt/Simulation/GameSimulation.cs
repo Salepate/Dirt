@@ -8,7 +8,6 @@ namespace Dirt.Simulation
 {
     public class GameSimulation
     {
-        public GameWorld World;
         public int ID { get; private set; }
 
         public SimulationArchetype Archetype;
@@ -20,24 +19,22 @@ namespace Dirt.Simulation
         {
             ID = id;
             Builder = new ActorBuilder();
-            World = new GameWorld();
             Events = new Queue<SimulationEvent>();
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
-            Filter = new ActorFilter(Builder, World.Actors, maxActor, maxQueries);
+            Filter = new ActorFilter(Builder, maxActor, maxQueries);
         }
 
         public GameSimulation(ActorBuilder builder, int id, int maxQueries)
         {
             ID = id;
             Builder = builder;
-            World = new GameWorld();
             Events = new Queue<SimulationEvent>();
 
             Builder.ActorCreateAction += OnActorBuilt;
             Builder.ActorDestroyAction += OnActorDestroyed;
-            Filter = new ActorFilter(Builder, World.Actors, Builder.ActorPoolSize, maxQueries);
+            Filter = new ActorFilter(Builder, Builder.ActorPoolSize, maxQueries);
         }
 
         public void Resize(int maximumActor, int maximumQueries)
@@ -49,13 +46,13 @@ namespace Dirt.Simulation
 
         private void OnActorBuilt(GameActor actor)
         {
-            World.Actors.Add(actor);
+            Filter.Actors.Add(actor);
             Events.Enqueue(new ActorEvent(actor, ActorEvent.Created));
         }
 
         private void OnActorDestroyed(GameActor actor)
         {
-            World.Actors.Remove(actor);
+            Filter.Actors.Remove(actor);
             Events.Enqueue(new ActorEvent(actor, ActorEvent.Removed));
         }
     }

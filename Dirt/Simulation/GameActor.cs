@@ -22,6 +22,8 @@ namespace Dirt.Simulation
         [NonSerialized]
         private Type[] m_Types;
 
+        public static int GetInternalID(int actorID) => actorID >> 8;
+
         internal GameActor(int id)
         {
             InternalID = id;
@@ -31,6 +33,7 @@ namespace Dirt.Simulation
             for (int i = 0; i < MaxComponents; ++i)
                 Components[i] = -1;
         }
+
 
         public override string ToString()
         {

@@ -24,7 +24,7 @@ namespace Dirt.Simulation.View
         /// Called when Actor is destroyed
         /// </summary>
         /// <returns>true if view is to be removed immediately</returns>
-        bool NotifyActorDestroyed();
+        bool NotifyActorDestroyed(int reason);
 
         /// <summary>
         /// Called when view is cleaned (will be invoked after actor is destroyed)

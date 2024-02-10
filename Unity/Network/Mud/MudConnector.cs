@@ -15,6 +15,7 @@ namespace Mud.DirtSystems
         public const int ReliableMessageBuffer = 20;
 
         public System.Action<bool> AuthAction;
+        public System.Action DisconnectAction;
         public const int DefaultPort = 11000;
         public ServerSocket Socket { get; private set; }
         public override bool HasUpdate => true;
@@ -89,6 +90,7 @@ namespace Mud.DirtSystems
                 if (!m_SocketThread.IsAlive)
                 {
                     m_SocketThread = null;
+                    DisconnectAction?.Invoke();
                 }
 
             }

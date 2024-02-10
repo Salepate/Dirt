@@ -114,8 +114,8 @@ namespace Dirt.ServerApplication
             TimeSpan diff = new TimeSpan(now - m_LastTick);
             if (diff >= m_TickPeriod)
             {
-                Update((float)diff.TotalMilliseconds);
-                m_LastTick += (int)diff.Ticks;
+                Update((float)m_TickPeriod.TotalMilliseconds);
+                m_LastTick += (int)m_TickPeriod.Ticks;
             }
         }
 

@@ -9,7 +9,8 @@ namespace Dirt.GameServer.Simulation.Helpers
 {
     public static class ActorSpawnHelper
     {
-        public static GameActor SpawnPlayerCharacter(this GameSimulation simulation, int playerNumber, string archetypeName, float3 atPosition)
+        // addCullingActor should be set to fast (set to true for legacy) and spawned when the player is ready
+        public static GameActor SpawnPlayerCharacter(this GameSimulation simulation, int playerNumber, string archetypeName, float3 atPosition, bool addCullingActor = true)
         {
             ServerActorBuilder builder = (ServerActorBuilder)simulation.Builder;
             GameActor playerChar = builder.BuildRemoteActor(archetypeName, playerNumber);
@@ -17,6 +18,16 @@ namespace Dirt.GameServer.Simulation.Helpers
             pos.Origin = atPosition;
 
 
+            if ( addCullingActor )
+            {
+                AddCullingActor(simulation, playerNumber, playerChar);
+            }
+            return playerChar;
+        }
+
+        public static void AddCullingActor(this GameSimulation simulation, int playerNumber, GameActor playerChar)
+        {
+            ServerActorBuilder builder = (ServerActorBuilder)simulation.Builder;
             var existCullReq = simulation.Filter.GetActorsMatching<CullArea>(cull => cull.Client == playerNumber);
             if (existCullReq.Count > 0)
             {
@@ -31,9 +42,6 @@ namespace Dirt.GameServer.Simulation.Helpers
                 cullData.Client = playerNumber;
                 trackerData.TargetActor = playerChar.ID;
             }
-
-
-            return playerChar;
         }
 
         public static void RemovePlayerActors(this GameSimulation simulation, int playerNumber, bool keepPlayerCull = false)

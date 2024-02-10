@@ -1,5 +1,6 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
+using Dirt.Game.Managers;
 using Dirt.Simulation;
 using Dirt.Simulation.Builder;
 using Dirt.Simulation.Model;
@@ -20,6 +21,12 @@ namespace Dirt.Tests.Framework
             base.Initialize();
             m_Content = new MockContentProvider();
             m_Managers = new MockManagerProvider();
+
+            if ( MetricsManager.Recording )
+            {
+               ((MockManagerProvider) m_Managers).AddManager(new MetricsManager());
+            }
+
             Container = new SystemContainer(m_Content, m_Managers);
             Simulation = new GameSimulation(0, 1000, 10);
             Builder.LoadAssemblies(new AssemblyCollection() { Assemblies = new string[] {

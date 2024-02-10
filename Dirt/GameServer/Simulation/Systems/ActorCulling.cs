@@ -7,8 +7,10 @@ using Dirt.GameServer.Simulation.Components;
 using Dirt.Network.Managers;
 using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
+using Dirt.Network.Simulation.Events;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
+using Dirt.Simulation.Actor.Components;
 using Dirt.Simulation.Components;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
@@ -31,11 +33,42 @@ namespace Dirt.Network.Simulations.Systems
         private List<IComponent> m_ComponentBuffer;
         private float m_NetTickDeltaTime;
         private float m_SyncClock;
+
+        private List<int> m_NetIDs;
+        private List<int> m_LocalIDS;
+
+        private byte[] m_DestroyTable;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
             m_ComponentBuffer = new List<IComponent>(10);
             m_SyncClock = 0f;
+            m_NetIDs = new List<int>(50);
+            m_LocalIDS = new List<int>(50);
+
+            m_DestroyTable = new byte[sim.Builder.ActorPoolSize];
+
+            for (int i = 0; i < m_DestroyTable.Length; ++i)
+            {
+                m_DestroyTable[i] = ActorNetCullEvent.Destroyed;
+            }
+
+            sim.Builder.ActorCreateAction += OnActorCreated;
+            sim.Builder.ActorDestroyAction += OnActorDestroyed;
+        }
+
+        private void OnActorCreated(GameActor actor)
+        {
+            m_DestroyTable[actor.InternalID] = ActorNetCullEvent.Destroyed;
+        }
+
+        private void OnActorDestroyed(GameActor actor)
+        {
+            Destroy destroy = m_Simulation.Filter.Get<Destroy>(actor);
+            if (destroy.Reason > 0 && destroy.Reason < ActorNetCullEvent.Culled)
+            {
+                m_DestroyTable[actor.InternalID] = (byte)destroy.Reason;
+            }
         }
 
         public void SetContent(IContentProvider content)
@@ -60,23 +93,28 @@ namespace Dirt.Network.Simulations.Systems
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
             ActorFilter filter = sim.Filter;
-            var syncable = filter.GetAll<NetInfo, Position>();
-            var cullAreas = filter.GetAll<CullArea, Position>();
-            List<int> inRange = new List<int>();
-
-            foreach (ActorTuple<CullArea, Position> cullActor in cullAreas)
+            var cullAreas = filter.GetActors<CullArea, Position>();
+            ActorList<NetInfo, Position> syncable = default;
+            if ( cullAreas.Count > 0 )
             {
-                ref CullArea cull = ref cullActor.GetC1();
-                ref Position cullPos = ref cullActor.GetC2();
-                inRange.Clear();
+                syncable = filter.GetActors<NetInfo, Position>();
+            }
+
+            for(int i = 0; i < cullAreas.Count; ++i)
+            {
+                ref CullArea cull = ref cullAreas.GetC1(i);
+                ref Position cullPos = ref cullAreas.GetC2(i);
+
+                m_NetIDs.Clear();
+                m_LocalIDS.Clear();
 
                 PlayerProxy player = m_Players.FindPlayer(cull.Client);
                 if (player != null)
                 {
-                    foreach(ActorTuple<NetInfo, Position> syncActor in syncable)
+                    for(int j = 0; j < syncable.Count; ++j)
                     {
-                        ref Position syncPos = ref syncActor.GetC2();
-                        ref NetInfo syncInfo = ref syncActor.GetC1();
+                        ref NetInfo syncInfo = ref syncable.GetC1(j);
+                        ref Position syncPos = ref syncable.GetC2(j);
                         if (syncInfo.ID == -1)
                             return;
 
@@ -87,10 +125,22 @@ namespace Dirt.Network.Simulations.Systems
 
                         if (sqrMag <= sqrRad || isOld && sqrMag < sqrRadOut)
                         {
-                            inRange.Add(syncInfo.ID);
+                            m_NetIDs.Add(syncInfo.ID);
+                            m_LocalIDS.Add(syncable.GetActor(j).ID);
 
                             if (isOld)
                             {
+                                if (syncInfo.LastState != null)
+                                {
+                                    byte[] message = null;
+                                    using (MemoryStream messageStream = new MemoryStream())
+                                    {
+                                        m_Serializer.Serialize(messageStream, syncInfo.LastState);
+                                        message = messageStream.ToArray();
+                                    }
+                                    syncInfo.LastOutBuffer = message;
+                                    syncInfo.LastState = null;
+                                }
                                 if (syncInfo.LastOutBuffer != null)
                                 {
                                     List<byte> message = new List<byte>(syncInfo.LastOutBuffer.Length + 1);
@@ -101,26 +151,35 @@ namespace Dirt.Network.Simulations.Systems
                             }
                             else
                             {
-                                SendActorState(player.Client, syncActor.Actor);
+                                SendActorState(player.Client, syncable.GetActor(j));
                             }
                         }
                     }
 
-                    foreach(int old in cull.ProximityActors)
+                    for(int j = 0; j < cull.ProximityActors.Count; ++j)
                     {
-                        if (!inRange.Contains(old))
+                        byte netID = (byte) cull.ProximityActors[j];
+                        if (!m_NetIDs.Contains(netID))
                         {
-                            player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorRemove, new byte[] { (byte)old }), true);
+                            byte reason = ActorNetCullEvent.Culled;
+                            if ( !filter.TryGetActor(cull.LocalIDs[j], out _))
+                            {
+                                reason = m_DestroyTable[GameActor.GetInternalID(cull.LocalIDs[j])];
+                            }
+                            player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorRemove, new byte[] {netID, reason}), true);
                         }
                     }
 
                     cull.ProximityActors.Clear();
-                    cull.ProximityActors.AddRange(inRange);
+                    cull.ProximityActors.AddRange(m_NetIDs);
+                    cull.LocalIDs.Clear();
+                    cull.LocalIDs.AddRange(m_LocalIDS);
                 }
             }
-            foreach(var syncActor in syncable)
+
+            for(int i = 0; cullAreas.Count > 0 && i < syncable.Count; ++i)
             {
-                ref NetInfo netinfo = ref syncActor.GetC1();
+                ref NetInfo netinfo = ref syncable.GetC1(i);
 
                 if ( netinfo.LastOutBuffer != null )
                 {

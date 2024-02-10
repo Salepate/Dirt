@@ -60,9 +60,10 @@ namespace Dirt.Network.Simulation.Systems
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            foreach(ActorTuple<NetInfo> netActor in m_Filter.GetAll<NetInfo>())
+            ActorList<NetInfo> netActors = m_Filter.GetActors<NetInfo>();
+            for(int i = 0; i < netActors.Count; ++i)
             {
-                ref NetInfo netBhv = ref netActor.Get();
+                ref NetInfo netBhv = ref netActors.GetC1(i);
                 if (m_LastInState.ContainsKey(netBhv.ID))
                 {
                     netBhv.LastInBuffer = m_LastInState[netBhv.ID];

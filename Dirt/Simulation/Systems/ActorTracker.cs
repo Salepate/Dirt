@@ -13,12 +13,12 @@ namespace Dirt.Simulation.Systems
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            var trackers = sim.Filter.GetAll<Position, Tracker>();
+            ActorList<Position, Tracker> trackers = sim.Filter.GetActors<Position, Tracker>();
 
-            foreach(ActorTuple<Position, Tracker> tracker in trackers)
+            for(int i = 0; i < trackers.Count; ++i)
             {
-                ref Tracker trackerData = ref tracker.GetC2();
-                ref Position trackerPos = ref tracker.GetC1();
+                ref Tracker trackerData = ref trackers.GetC2(i);
+                ref Position trackerPos = ref trackers.GetC1(i);
                 if (trackerData.TargetActor != -1)
                 {
                     if ( sim.Filter.TryGetActor(trackerData.TargetActor, out GameActor targetActor))

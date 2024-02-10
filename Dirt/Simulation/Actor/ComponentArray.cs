@@ -14,16 +14,16 @@ namespace Dirt.Simulation.Actor
     }
     public class ComponentArray<T> : GenericArray where T: struct
     {
-        public delegate T AssignComponentDelegate(T comp);
-
-        public AssignComponentDelegate AssignComponent;
+        public int Allocated { get; private set; }
         public int NextIndex { get; private set; }
-
         public Type ComponentType => typeof(T);
 
         public int[] Actors;
         public T[] Components;
         public T Fallback;
+
+        private delegate void ComponentAllocator(int idx);
+        private ComponentAllocator m_Allocator;
 
         public ComponentArray()
         {
@@ -31,13 +31,18 @@ namespace Dirt.Simulation.Actor
 
             if ( typeof(T).GetInterface(nameof(IComponentAssign)) != null )
             {
-                AssignComponent = AssignableComponent;
+                m_Allocator = AssignAllocate;
+            }
+            else
+            {
+                m_Allocator = DefaultAllocate;
             }
         }
 
         public void SetSize(int size)
         {
             NextIndex = 0;
+            Allocated = 0;
             Components = new T[size];
             Actors = new int[size];
             for (int i = 0; i < size; ++i)
@@ -56,15 +61,8 @@ namespace Dirt.Simulation.Actor
                 ++NextIndex;
 
             Actors[idx] = actorIndex;
-            Components[idx] = new T();
-            if (AssignComponent != null)
-            {
-                Components[idx] = AssignComponent(new T());
-            }
-            else
-            {
-                Components[idx] = new T();
-            }
+            m_Allocator(idx);
+            ++Allocated;
             return idx;
         }
 
@@ -72,6 +70,7 @@ namespace Dirt.Simulation.Actor
         {
             if ( Actors[idx] != -1 )
             {
+                --Allocated;
                 Actors[idx] = -1;
 
                 if (idx < NextIndex)
@@ -81,15 +80,17 @@ namespace Dirt.Simulation.Actor
             }
         }
 
-        private T AssignableComponent(T comp)
+        private void DefaultAllocate(int idx)
         {
-            IComponentAssign assignComp = (IComponentAssign)comp;
-            assignComp.Assign();
-            return (T) assignComp;
+            Components[idx] = new T();
         }
-
+        private void AssignAllocate(int idx)
+        {
+            IComponentAssign assignBox = (IComponentAssign)(new T());
+            assignBox.Assign();
+            Components[idx] = (T)assignBox;
+        }
         public object Get(int idx) => Components[idx];
-
         public void Set(int idx, object newValue)
         {
             T castObj = (T)newValue;

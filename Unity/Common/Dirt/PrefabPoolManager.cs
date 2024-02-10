@@ -1,5 +1,6 @@
 ﻿using Dirt.Log;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Framework
@@ -13,6 +14,8 @@ namespace Framework
 
         private Vector3 m_BaseScale;
 
+        private System.Action<GameObject> m_RuntimeInitializer;
+        private bool m_HasInitializer;
         public PrefabPoolManager(GameObject prefab, Transform root, int initialCapacity = 10, bool debug = false)
         {
             m_Reference = prefab;
@@ -25,6 +28,28 @@ namespace Framework
             for (int i = 0; i < initialCapacity; ++i)
             {
                 GameObject inst = Instantiate();
+                Free(inst);
+            }
+        }
+
+        public PrefabPoolManager(GameObject prefab, Transform root)
+        {
+            m_Reference = prefab;
+            m_Debug = false;
+            m_Root = root;
+            m_BaseScale = prefab.transform.localScale;
+        }
+
+        public void InitializePool<T>(int capacity, System.Action<T> initializer) where T : Component
+        {
+            m_Pool = new Stack<GameObject>(capacity);
+            m_HasInitializer = true;
+            m_RuntimeInitializer = (obj) => initializer(obj.GetComponent<T>());
+            Console.Message($"Creating pool {m_Reference.name} ({capacity})");
+            for (int i = 0; i < capacity; ++i)
+            {
+                GameObject inst = Instantiate();
+                initializer(inst.GetComponent<T>());
                 Free(inst);
             }
         }
@@ -60,6 +85,8 @@ namespace Framework
             else
             {
                 inst = Instantiate();
+                if ( m_HasInitializer )
+                    m_RuntimeInitializer(inst);
             }
 
             inst.SetActive(true);
