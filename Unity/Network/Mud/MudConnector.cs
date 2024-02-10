@@ -19,6 +19,7 @@ namespace Mud.DirtSystems
         public const int DefaultPort = 11000;
         public ServerSocket Socket { get; private set; }
         public override bool HasUpdate => true;
+        public int PingMS { get; private set; }
         public bool Connected { get; private set; }
         public int PlayerNumber { get; private set; }
         private Queue<MudMessage> m_Messages;
@@ -120,12 +121,18 @@ namespace Mud.DirtSystems
             }
         }
 
+        private void SendPong()
+        {
+            Socket.Send(MudMessage.Create(MudOperation.Ping, null));
+        }
+
         private void ProcessMessage(int operation, byte[] buffer)
         {
             switch ((MudOperation)operation)
             {
                 case MudOperation.Ping:
-                    Socket.Send(MudMessage.Create(MudOperation.Ping, null));
+                    PingMS = buffer[0];
+                    SendPong();
                     break;
                 case MudOperation.ClientAuth:
                     break;

@@ -13,7 +13,9 @@ namespace Mud.Server
         public int Number { get; private set; }
         public bool RequestDisconnection { get; private set; }
         public float RTT { get; private set; }
-        public float LastPing { get; set; }
+        public float LastMessageStamp { get; set; }
+        public float LastPingStamp { get; set; }
+        public int PingMS { get; set; }
         private ClientSocket m_Socket;
         private bool m_Auth;
         private MudAddress m_Address;
@@ -26,6 +28,7 @@ namespace Mud.Server
         private float m_LowestRTT;
         private float m_HighestRTT;
 
+        private byte[] m_PingBuffer;
         internal GameClient(MudAddress clientAddress, ClientSocket socket, int number, float minRTT = 80f / 1000f)
         {
             m_Auth = false;
@@ -39,6 +42,7 @@ namespace Mud.Server
             m_MinimumRTT = minRTT;
             m_LowestRTT = float.MaxValue;
             m_HighestRTT = float.MinValue;
+            m_PingBuffer = new byte[1];
         }
 
         /// <summary>
@@ -133,14 +137,7 @@ namespace Mud.Server
             switch (op)
             {
                 case MudOperation.Ping:
-                    //Console.Message($"Client {ToString()}: Ping");
-                    if ( m_RTTUpdate )
-                    {
-                        m_RTTMeasures.Add(m_RTTWatch);
-                        m_RTTUpdate = false;
-                    }
-                    UpdateRTT();
-                    //m_Socket.Send(MudMessage.Create(MudOperation.Ping, null));
+                    PingMS = (int)((LastMessageStamp - LastPingStamp) * 500);
                     return ClientOperation.Idle;
                 case MudOperation.ClientAuth:
                     if ( !m_Auth )
@@ -181,28 +178,11 @@ namespace Mud.Server
             }
         }
 
-        private void UpdateRTT()
+        internal void SendPing(float m_Clock)
         {
-            if ( m_RTTMeasures.Count > 0 )
-            {
-                float sum = 0f;
-                for (int i = 0; i < m_RTTMeasures.Count; ++i)
-                {
-                    sum += m_RTTMeasures[i];
-                }
-
-                float newRTT = Math.Max(m_MinimumRTT, sum / m_RTTMeasures.Count);
-                RTT = newRTT;
-
-                if (newRTT < m_LowestRTT)
-                {
-                    m_LowestRTT = newRTT;
-                }
-                if (newRTT > m_HighestRTT)
-                {
-                    m_HighestRTT = newRTT;
-                }
-            }
+            LastPingStamp = m_Clock;
+            m_PingBuffer[0] = (byte)PingMS;
+            m_Socket.Send(MudMessage.Create(MudOperation.Ping, m_PingBuffer));
         }
     }
 }

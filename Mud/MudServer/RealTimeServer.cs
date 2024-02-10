@@ -145,7 +145,7 @@ namespace Mud.Server
 
                 if (clientIdx != -1)
                 {
-                    m_Clients[clientIdx].LastPing = m_Clock;
+                    m_Clients[clientIdx].LastMessageStamp = m_Clock;
 
                     ClientOperation clientEvent = m_Clients[clientIdx].OnMessage((MudOperation)msg.opCode, msg.buffer);
                     if ( clientEvent == ClientOperation.Connect || clientEvent == ClientOperation.Disconnect )
@@ -172,15 +172,24 @@ namespace Mud.Server
                     continue;
 
                 GameClient client = m_Clients[i];
-                float dt;
+                float dt, dtPing;
 
-                if (client.LastPing > m_Clock)
+                if (client.LastMessageStamp > m_Clock)
                 {
-                    dt = (PING_CYCLE - client.LastPing) + m_Clock;
+                    dt = (PING_CYCLE - client.LastMessageStamp) + m_Clock;
                 }
                 else
                 {
-                    dt = m_Clock - client.LastPing;
+                    dt = m_Clock - client.LastMessageStamp;
+                }
+
+                if (client.LastPingStamp > m_Clock )
+                {
+                    dtPing = (PING_CYCLE - client.LastPingStamp) + m_Clock;
+                }
+                else
+                {
+                    dtPing = m_Clock - client.LastPingStamp;
                 }
 
                 if (dt >= m_ClientTimeout) // timed out
@@ -194,6 +203,11 @@ namespace Mud.Server
                 else
                 {
                     client.UpdateSocket(delta);
+
+                    if (dt >= 1f )
+                    {
+                        client.SendPing(m_Clock);
+                    }
                 }
             }
 
