@@ -1,6 +1,7 @@
 ﻿using Dirt.Log;
 using Framework;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,12 +38,8 @@ namespace Dirt
         }
 
         public DirtMode Mode { get; private set; }
-
-        //public Dictionary<System.Type, DirtSystem> Services { get; private set; }
         public List<DirtSystem> Services { get; private set; }
-
-        public List<DirtMode> ServiceModes;
-
+        public List<DirtMode> ServiceModes { get; private set; }
         private HashSet<DirtSystemContent> m_ServiceContent;
 
         protected virtual IConsoleLogger CreateLogger() => new UnityLogger();
@@ -177,12 +174,13 @@ namespace Dirt
             }
             catch(System.Exception e)
             {
-                Console.Error(e.Message);
-                Console.Error(e.StackTrace);
-                this.enabled = false;
                 if ( !string.IsNullOrEmpty(ErrorSceneName))
                 {
+                    this.enabled = false;
                     SceneManager.LoadScene(ErrorSceneName, LoadSceneMode.Single);
+                }
+                else
+                {
                     throw e;
                 }
             }
