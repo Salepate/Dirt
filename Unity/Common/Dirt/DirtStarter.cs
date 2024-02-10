@@ -53,16 +53,10 @@ namespace Dirt
 
             if (LockFramerate)
                 Application.targetFrameRate = TargetFramerate;
-            //#if DIRT_DEBUG
-            //            Console.Dump = true;
-            //#endif
 
             // Clear actions to prevent issue with disabled domain reload
             OnModeBeginLoad = null;
             OnModeStart = null;
-
-
-            //Services = new Dictionary<System.Type, DirtSystem>();
 
             m_ServiceContent = new HashSet<DirtSystemContent>();
             Services = new List<DirtSystem>();
@@ -150,18 +144,28 @@ namespace Dirt
             mode.ContentMap.Clear();
         }
 
-        protected virtual void OnDisable()
+        protected virtual void OnApplicationQuit()
         {
-            if ( Mode != null )
+            Terminate();
+        }
+
+        public void Terminate()
+        {
+            if (Mode != null)
+            {
                 UnloadMode(Mode);
-            for(int i = 0; i <Services.Count; ++i)
+                Mode = null;
+            }
+
+            for (int i = 0; i < Services.Count; ++i)
             {
                 Services[i].Unload();
             }
             Services.Clear();
-//#if DIRT_DEBUG
-//            Console.SaveDump();
-//#endif
+        }
+
+        protected virtual void OnDisable()
+        {
         }
 
         private void Update()
