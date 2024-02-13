@@ -6,7 +6,6 @@ using Mud.Managers;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 
 namespace Mud.DirtSystems
 {
@@ -23,11 +22,9 @@ namespace Mud.DirtSystems
         public bool Connected { get; private set; }
         public int PlayerNumber { get; private set; }
         private Queue<MudMessage> m_Messages;
-        private object _QueueLock = new object();
         private MudLargeMessage m_LargeMessage;
         private List<IMessageConsumer> m_Consumers;
         private bool m_Authed;
-        private Thread m_SocketThread;
 
         private CircularBuffer<byte> m_ReliableBuffer;
 
@@ -55,25 +52,17 @@ namespace Mud.DirtSystems
             if (!m_Authed)
             {
                 Socket = new ServerSocket(address, port);
-                m_SocketThread = new Thread(new ThreadStart(ReceiveThread));
-                m_SocketThread.IsBackground = true;
-                m_SocketThread.Start();
-
-                //if (string.IsNullOrEmpty(userName) || userName.Length < 3)
-                //{
-                //    userName = $"User{Random.Range(10000, 99999)}";
-                //}
-
                 PlayerName = userName;
-
                 Socket.Send(MudMessage.Create(MudOperation.ClientAuth, null));
                 m_Authed = true;
             }
         }
         private void TerminateSocket()
         {
-            m_SocketThread.Abort();
+            Connected = false;
+            m_Authed = false;
             Socket = null;
+            DisconnectAction?.Invoke();
         }
 
         public override void Unload()
@@ -86,36 +75,35 @@ namespace Mud.DirtSystems
 
         public override void Update()
         {
-            if (m_SocketThread != null)
+            if ( m_Authed )
             {
-                if (!m_SocketThread.IsAlive)
+                ReceiveMessages();
+                if ( !m_Authed )
                 {
-                    m_SocketThread = null;
                     DisconnectAction?.Invoke();
                 }
-
-            }
-            if (m_Messages.Count > 0)
-            {
-                while (m_Messages.Count > 0)
+                if (m_Messages.Count > 0)
                 {
-                    bool process = true;
-
-                    MudMessage msg = m_Messages.Dequeue();
-
-                    if ( msg.reliable )
+                    while (m_Messages.Count > 0)
                     {
-                        process = m_ReliableBuffer.IndexOf(msg.reliableId) == -1;
+                        bool process = true;
+
+                        MudMessage msg = m_Messages.Dequeue();
+
+                        if ( msg.reliable )
+                        {
+                            process = m_ReliableBuffer.IndexOf(msg.reliableId) == -1;
+                            if ( process )
+                            {
+                                m_ReliableBuffer.Add(msg.reliableId);
+                            }
+                            Socket.Confirm(msg.reliableId);
+                        }
+
                         if ( process )
                         {
-                            m_ReliableBuffer.Add(msg.reliableId);
+                            ProcessMessage(msg.opCode, msg.buffer);
                         }
-                        Socket.Confirm(msg.reliableId);
-                    }
-
-                    if ( process )
-                    {
-                        ProcessMessage(msg.opCode, msg.buffer);
                     }
                 }
             }
@@ -131,7 +119,10 @@ namespace Mud.DirtSystems
             switch ((MudOperation)operation)
             {
                 case MudOperation.Ping:
-                    PingMS = buffer[0];
+                    if ( buffer != null)
+                    {
+                        PingMS = buffer[0];
+                    }
                     SendPong();
                     break;
                 case MudOperation.ClientAuth:
@@ -165,6 +156,11 @@ namespace Mud.DirtSystems
                     }
                     break;
                 case MudOperation.Error:
+                    if (m_Authed)
+                    {
+                        m_Authed = false;
+                        DisconnectAction?.Invoke();
+                    }
                     Console.Error(Encoding.ASCII.GetString(buffer));
                     break;
                 default:
@@ -177,35 +173,24 @@ namespace Mud.DirtSystems
             }
         }
 
-        private void ReceiveThread()
+        private void ReceiveMessages()
         {
             Socket.Timeout = 5000;
-            bool connected = false;
             try
             {
-                while (true)
+                while (Socket.HasData)
                 {
                     byte[] data = Socket.Receive();
-
-                    if (!connected)
-                    {
-                        Socket.Timeout = 0;
-                        connected = true;
-                    }
-
-                    lock (_QueueLock)
-                    {
-                        m_Messages.Enqueue(MudMessage.FromRaw(data, data.Length));
-                    }
+                    m_Messages.Enqueue(MudMessage.FromRaw(data, data.Length));
                 }
             }
             catch (SocketException socket)
             {
                 Console.Warning($"Unable to reach host");
                 Console.Warning(socket.Message);
+                m_Messages.Clear();
+                m_Authed = false;
             }
-
-            m_Authed = false;
         }
     }
 }

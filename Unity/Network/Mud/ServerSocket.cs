@@ -22,6 +22,7 @@ namespace Mud.Framework
             m_Socket.Send(message, messageLength);
         }
 
+        public bool HasData => m_Socket.Available > 0;
         public byte[] Receive()
         {
             return m_Socket.Receive(ref m_Endpoint);
