@@ -1,6 +1,7 @@
 ﻿using Dirt.Game.Managers;
 using Dirt.GameServer;
 using Dirt.GameServer.Managers;
+using Dirt.GameServer.PlayerStore;
 using Dirt.Log;
 using Dirt.ServerApplication.Clock;
 using Mud.Server;
@@ -73,6 +74,8 @@ namespace Dirt.ServerApplication
             m_Game.RegisterManager(new RealTimeServerManager(m_Server, netTickrate));
             m_Game.InitializePlugin();
             Metrics = m_Game.GetManager<MetricsManager>();
+
+            m_Game.GetManager<PlayerStoreManager>().AllowPlayerReconnect = config.GetBool("AllowPlayerReconnect");
             m_Clock = new GameClock();
         }
 

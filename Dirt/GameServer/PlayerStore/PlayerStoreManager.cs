@@ -25,6 +25,7 @@ namespace Dirt.GameServer.PlayerStore
         private GameInstance m_Game;
         private RealTimeServerManager m_RTServer;
 
+        public bool AllowPlayerReconnect { get; set; }
         public PersistentStore Store { get; private set; }
         public OnlinePlayerTable Table { get; private set; }
         public PlayerStoreManager(GameInstance game)
@@ -39,6 +40,7 @@ namespace Dirt.GameServer.PlayerStore
             {
                 m_UniqueID = new SimpleID();
             }
+            
         }
         public void Update(float deltaTime)
         {
@@ -151,21 +153,35 @@ namespace Dirt.GameServer.PlayerStore
         /// <param name="playerTag">Player Account name tag (Saucisse#1234)</param>
         /// <param name="hashedPassword">SHA256 hash of the player password</param>
         /// <returns>false if the credentials are not valid. true if the player has been authed</returns>
-        public bool AttemptUserAuth(int playerNumber, string playerTag, string hashedPassword)
+        /// 
+        internal bool DryAuth(int playerNumber, string playerTag, string hashedPassword)
         {
-            string name;
-            uint id;
-
-            if (!PlayerName.FromTag(playerTag, out name, out id))
+            if (!TryGetUserCredentialFile(playerTag, out string credFile))
             {
                 return false;
             }
 
-            string key = $"{name}_{id}";
-            if (Store.Exists(key))
+            if (Store.Exists(credFile))
             {
                 PlayerCredential creds;
-                if (Store.TryRead(key, out creds))
+                if (Store.TryRead(credFile, out creds))
+                {
+                    return string.Compare(creds.PasswordHash, hashedPassword) == 0;
+                }
+            }
+            return false;
+        }
+        public bool AttemptUserAuth(int playerNumber, string playerTag, string hashedPassword)
+        {
+            if (!TryGetUserCredentialFile(playerTag, out string credFile))
+            {
+                return false;
+            }
+
+            if (Store.Exists(credFile))
+            {
+                PlayerCredential creds;
+                if (Store.TryRead(credFile, out creds))
                 {
                     if (string.Compare(creds.PasswordHash, hashedPassword) == 0)
                     {
@@ -175,6 +191,36 @@ namespace Dirt.GameServer.PlayerStore
                 }
             }
             return false;
+        }
+
+        internal bool TryGetUniqueID(string playerTag, out uint uid)
+        {
+            uid = 0;
+
+            if (!TryGetUserCredentialFile(playerTag, out string credFile))
+            {
+                return false;
+            }
+            if (Store.Exists(credFile) && Store.TryRead(credFile, out PlayerCredential creds))
+            {
+                uid = creds.ID;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TryGetUserCredentialFile(string playerTag, out string credentialName)
+        {
+            if (PlayerName.FromTag(playerTag, out string name, out uint id))
+            {
+                credentialName = $"{name}_{id}";
+            }
+            else
+            {
+                credentialName = string.Empty;
+            }
+
+            return !string.IsNullOrEmpty(credentialName);
         }
 
         internal void CreateSession(PlayerProxy proxy)
@@ -187,14 +233,15 @@ namespace Dirt.GameServer.PlayerStore
 
         public void ClearSession(PlayerProxy proxy)
         {
-            Table.RemoveSession(proxy.Client.Number);
+            int sessionID = Table.GetSession(proxy.Client.Number);
+            Table.RemoveSession(sessionID);
             Table.RemoveCredentials(proxy.Client.Number);
         }
 
         private bool AuthUser(int playerNumber, PlayerCredential credential)
         {
             GameClient client = m_RTServer.Server.GetClient(playerNumber);
-            if ( !Table.HasCredentials(playerNumber))
+            if (!Table.HasCredentials(credential.ID) || AllowPlayerReconnect)
             {
                 Console.Message($"Player {credential.UserName} authed");
                 client.ChangeClientName(credential.UserName);

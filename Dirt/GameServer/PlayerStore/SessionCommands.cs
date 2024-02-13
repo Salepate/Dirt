@@ -55,13 +55,34 @@ namespace Dirt.GameServer.PlayerStore
             string playerPass = parameters.PopString();
             PlayerStoreManager pStore = ctx.Instance.GetManager<PlayerStoreManager>();
             var hashedPass = pStore.GetHash(playerPass);
-            bool auth = pStore.AttemptUserAuth(ctx.PlayerNumber, playerTag, hashedPass);
 
+            bool validUser = pStore.TryGetUniqueID(playerTag, out uint id);
+
+            if (!validUser)
+                return false;
+
+            bool isLoggedIn = pStore.Table.TryGetPlayerNumber(id, out int previousPlayer);
+            bool auth = (!isLoggedIn || pStore.AllowPlayerReconnect) && pStore.DryAuth(ctx.PlayerNumber, playerTag, hashedPass);
             if ( auth )
             {
-                ctx.Player.Player.Name = ctx.Player.Client.ID;
-                PlayerManager playerMgr = ctx.Instance.GetManager<PlayerManager>();
-                playerMgr.SendEvent(new PlayerRenameEvent(ctx.PlayerNumber, ctx.Player.Player.Name));
+                if ( isLoggedIn )
+                {
+                    // kick previous owner
+                    PlayerProxy oldPlayer = ctx.Instance.GetManager<PlayerManager>().FindPlayer(previousPlayer);
+                    ctx.Instance.UnregisterPlayer(oldPlayer.Client);
+                    oldPlayer.Client.ForceDisconnect();
+                }
+
+                if (pStore.AttemptUserAuth(ctx.PlayerNumber, playerTag, hashedPass) )
+                {
+                    ctx.Player.Player.Name = ctx.Player.Client.ID;
+                    PlayerManager playerMgr = ctx.Instance.GetManager<PlayerManager>();
+                    playerMgr.SendEvent(new PlayerRenameEvent(ctx.PlayerNumber, ctx.Player.Player.Name));
+                }
+                else
+                {
+                    auth = false;
+                }
             }
 
             return auth;

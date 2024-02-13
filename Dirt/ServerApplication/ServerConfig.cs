@@ -21,5 +21,15 @@ namespace Dirt.ServerApplication
         {
             return ConfigurationManager.AppSettings[name];
         }
+
+        public bool GetBool(string name)
+        {
+            bool exist = bool.TryParse(ConfigurationManager.AppSettings[name], out bool val);
+            if (!exist)
+            {
+                Console.Message($"Unable to get {name} configuration value");
+            }
+            return val;
+        }
     }
 }
