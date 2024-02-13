@@ -181,6 +181,7 @@ namespace Dirt
                 }
                 else
                 {
+                    Console.Error(e.StackTrace);
                     throw e;
                 }
             }
