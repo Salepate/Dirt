@@ -204,7 +204,7 @@ namespace Mud.Server
                 {
                     client.UpdateSocket(delta);
 
-                    if (dt >= 1f )
+                    if (dtPing >= 1f )
                     {
                         client.SendPing(m_Clock);
                     }
