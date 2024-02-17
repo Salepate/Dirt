@@ -138,7 +138,7 @@ namespace Dirt.GameServer
             return null;
         }
 
-        public void MovePlayerToSimulation(GameClient client, int simID)
+        public void MovePlayerToSimulation(GameClient client, int simID, bool force = false)
         {
             PlayerProxy proxy = m_Players.FindPlayer(client.Number);
             if ( proxy == null)
@@ -147,10 +147,10 @@ namespace Dirt.GameServer
             }
             else
             {
-                MovePlayerToSimulation(proxy, simID);
+                MovePlayerToSimulation(proxy, simID, force);
             }
         }
-        public void MovePlayerToSimulation(PlayerProxy proxy, int simID)
+        public void MovePlayerToSimulation(PlayerProxy proxy, int simID, bool force = false)
         {
             // Ensure player can be moved
             GameSimulation newSim = Simulations.GetSimulation(simID);
@@ -164,7 +164,7 @@ namespace Dirt.GameServer
 
             int oldSimIndex = proxy.Simulation;
 
-            if ( oldSimIndex == simID )
+            if ( oldSimIndex == simID && !force )
             {
                 Console.Warning($"Player already in simulation {simID}, skipping request.");
                 return;
@@ -182,7 +182,7 @@ namespace Dirt.GameServer
                 m_Groups[oldSimIndex].UnregisterClient(client);
 
                 // destroy sim if empty
-                if ( m_Groups[oldSimIndex].Clients.Count == 0 && Simulations.GetSpan(oldSimIndex) == SimulationSpan.Temporary )
+                if ( oldSimIndex != simID && m_Groups[oldSimIndex].Clients.Count == 0 && Simulations.GetSpan(oldSimIndex) == SimulationSpan.Temporary )
                 {
                     Simulations.Terminate(oldSimIndex);
                 }
