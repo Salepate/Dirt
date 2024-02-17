@@ -7,5 +7,7 @@
         public uint UserNumber; 
         public string UserName;
         public string PasswordHash;
+
+        public string Tag { get; internal set; }
     }
 }

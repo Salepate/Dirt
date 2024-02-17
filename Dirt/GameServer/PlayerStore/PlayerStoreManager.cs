@@ -120,6 +120,21 @@ namespace Dirt.GameServer.PlayerStore
         }
 
 
+        public bool RenameUser(int playerNumber, string newUserName)
+        {
+            bool renamed = false;
+            if (Table.TryGetCredentials(playerNumber, out PlayerCredential cred))
+            {
+                cred.UserName = newUserName;
+                if(TryGetUserCredentialFile(cred.Tag, out string key))
+                {
+                    Store.Write(key, cred, true);
+                    renamed = true;
+                }   
+            }
+            return renamed;
+        }
+
         /// <summary>
         /// Register a player account
         /// </summary>
@@ -185,6 +200,7 @@ namespace Dirt.GameServer.PlayerStore
                 {
                     if (string.Compare(creds.PasswordHash, hashedPassword) == 0)
                     {
+                        creds.Tag = playerTag;
                         // login
                         return AuthUser(playerNumber, creds);
                     }
