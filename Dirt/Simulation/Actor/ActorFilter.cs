@@ -270,7 +270,7 @@ namespace Dirt.Simulation.Actor
             query.Reset();
             return query;
         }
-        internal void ResetQueries()
+        public void ResetQueries()
         {
             m_CurrentQuery = 0;
         }

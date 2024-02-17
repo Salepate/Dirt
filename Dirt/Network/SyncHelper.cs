@@ -13,13 +13,14 @@ namespace Dirt.Network
     public static class SyncHelper
     {
         public const string OwnerAuthority = "Owner";
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="syncDesc"></param>
         /// <param name="owner">-1 is server, client id otherwise</param>
-        public static void SyncActor(GameActor actor, ref NetInfo netInfo, SyncInfo syncDesc, int owner)
+        public static void GenerateActorSyncData(GameActor actor, ref NetInfo netInfo, SyncInfo syncDesc, int owner)
         {
             if (actor.GetComponentIndex<NetInfo>() == -1)
             {

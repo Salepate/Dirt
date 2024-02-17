@@ -23,12 +23,12 @@ namespace Dirt.GameServer
                 if (netInfoIdx == -1)
                 {
                     ref NetInfo netInfo = ref AddComponent<NetInfo>(builtActor);
-                    SyncHelper.SyncActor(builtActor, ref netInfo, syncInfo, owner);
+                    SyncHelper.GenerateActorSyncData(builtActor, ref netInfo, syncInfo, owner);
                 }
                 else
                 {
                     ref NetInfo netInfo = ref Components.GetPool<NetInfo>().Components[netInfoIdx];
-                    SyncHelper.SyncActor(builtActor, ref netInfo, syncInfo, owner);
+                    SyncHelper.GenerateActorSyncData(builtActor, ref netInfo, syncInfo, owner);
                 }
 
             }
