@@ -116,7 +116,7 @@ namespace Dirt.Network.Simulations.Systems
                         ref NetInfo syncInfo = ref syncable.GetC1(j);
                         ref Position syncPos = ref syncable.GetC2(j);
                         if (syncInfo.ID == -1)
-                            return;
+                            continue;
 
                         float sqrRad = cull.Radius * cull.Radius;
                         float sqrRadOut = (cull.Radius + cull.Threshold) * (cull.Radius + cull.Threshold);
