@@ -7,8 +7,10 @@ using Dirt.Network.Model;
 using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Network.Simulation.Events;
+using Dirt.Network.Systems;
 using Dirt.Simulation;
 using Dirt.Simulation.Action;
+using Dirt.Simulation.Actor.Components;
 using Dirt.Simulation.Builder;
 using Dirt.Systems;
 using Mud.Framework;
@@ -28,6 +30,9 @@ namespace Mud.DirtSystems
         private ServerProxy m_Proxy;
         private NetworkEventDispatcher m_EventDispatcher;
 
+        // translation table for net id to local id
+        private int[] m_TranslationTable;
+
         public override void Initialize(DirtMode mode)
         {
             mode.FindSystem<MudConnector>().SetConsumer(this);
@@ -37,6 +42,16 @@ namespace Mud.DirtSystems
             m_Simulation.RegisterManager(m_Serializer);
             m_EventDispatcher = mode.FindSystem<NetworkEventDispatcher>();
             m_Proxy = m_Simulation.GetManager<ServerProxy>();
+            m_TranslationTable = new int[NetInfo.MaxID+1];
+
+        }
+
+        private void ResetTranslationTable()
+        {
+            for(int i = 0; i < m_TranslationTable.Length; ++i)
+            {
+                m_TranslationTable[i] = 0;
+            }
         }
 
         public bool OnCustomMessage(byte opCode, byte[] buffer) => ProcessCustomMessage((NetworkOperation)opCode, buffer);
@@ -48,6 +63,8 @@ namespace Mud.DirtSystems
 
         private bool ProcessCustomMessage(NetworkOperation netOp, byte[] message)
         {
+            int actorID;
+
             switch (netOp)
             {
                 case NetworkOperation.LoadSimulation:
@@ -55,6 +72,7 @@ namespace Mud.DirtSystems
                     Console.Message($"Load simulation {sim}");
                     m_Simulation.ChangeSimulation(sim);
                     m_Proxy.Send(MudMessage.Create((byte)NetworkOperation.ClientReady, null));
+                    ResetTranslationTable();
                     break;
                 case NetworkOperation.SetSession:
                     int sessionID = BitConverter.ToInt32(message, 0);
@@ -76,16 +94,18 @@ namespace Mud.DirtSystems
                         state = (ActorState)m_Serializer.Deserialize(st);
                     }
                     ActorBuilder builder = m_Simulation.Simulation.Builder;
-                    GameActor copyActor = builder.CreateActor();
+                    GameActor newActor = builder.CreateActor();
                     for(int i = 0; i < state.Components.Length; ++i)
                     {
                         System.Type compType = state.Components[i].GetType();
-                        int compIdx = builder.AddComponent(copyActor, compType);
+                        int compIdx = builder.AddComponent(newActor, compType);
                         builder.Components.GetPool(compType).Set(compIdx, state.Components[i]);
                     }
-                    if ( copyActor.GetComponentIndex<NetInfo>() != -1 )
+                    if ( newActor.GetComponentIndex<NetInfo>() != -1 )
                     {
-                        ref NetInfo netBhv = ref m_Simulation.Simulation.Filter.Get<NetInfo>(copyActor);
+                        ref NetInfo netBhv = ref m_Simulation.Simulation.Filter.Get<NetInfo>(newActor);
+                        m_TranslationTable[netBhv.ID] = newActor.ID;
+
                         bool isOwner = netBhv.Owner == m_Proxy.LocalPlayer;
                         netBhv.Owned = isOwner;
                         for (int i = 0; i < netBhv.Fields.Count; ++i)
@@ -97,22 +117,20 @@ namespace Mud.DirtSystems
                     }
                     break;
                 case NetworkOperation.ActorSync:
-                    byte[] syncBuffer = new byte[message.Length - 1];
-                    System.Array.Copy(message, 1, syncBuffer, 0, message.Length - 1);
-                    m_Simulation.DispatchEvent(new ActorSyncEvent(message[0], syncBuffer));
+                    SyncActor(message[0], message);
                     break;
                 case NetworkOperation.ActorRemove:
-                    int reason = ActorNetCullEvent.Destroyed;
+                    int reason = ActorStreaming.Destroyed;
                     if (message.Length > 1)
                         reason = message[message.Length - 1];
-                    m_Simulation.DispatchEvent(new ActorNetCullEvent(message[0], reason));
+                    RemoveActor(message[0], reason);
                     break;
                 case NetworkOperation.ActorAction:
                     NetworkActionHelper.ExtractAction(message, out int netID, out int actionIndex, out ActionParameter[] parameters);
-                    var sourceActors = m_Simulation.Simulation.Filter.GetActorsMatching<NetInfo>(n => n.ID == netID);
-                    if (sourceActors.Count > 0)
-                    {
-                        ActorActionEvent actionEvent = new ActorActionEvent(sourceActors[0].Actor.ID, actionIndex, parameters);
+                    actorID = m_TranslationTable[netID];
+                    if (actorID > 0)
+                    { 
+                        ActorActionEvent actionEvent = new ActorActionEvent(actorID, actionIndex, parameters);
                         m_Simulation.DispatchEvent(actionEvent);
                     }
                     else
@@ -124,6 +142,32 @@ namespace Mud.DirtSystems
                     return false;
             }
             return true;
+        }
+
+        private void RemoveActor(int netID, int reason)
+        {
+            int actorID = m_TranslationTable[netID];
+            if (m_Simulation.Simulation.Filter.TryGetActor(actorID, out GameActor actor))
+            {
+                ref Destroy destroy = ref m_Simulation.Simulation.Builder.AddComponent<Destroy>(actor);
+                destroy.Reason = reason;
+            }
+        }
+
+        private void SyncActor(int netID, byte[] syncBuffer)
+        {
+            //actorID = m_TranslationTable[message[0]];
+            int actorID = m_TranslationTable[netID];
+            if (actorID > 0)
+            {
+                ref NetInfo netInfo = ref m_Simulation.Simulation.Filter.Get<NetInfo>(actorID);
+                using (MemoryStream ms = new MemoryStream(syncBuffer))
+                {
+                    ms.Position = 1; // skip the net id
+                    MessageHeader state = (MessageHeader)m_Serializer.Deserialize(ms);
+                    netInfo.LastInBuffer = state;
+                }
+            }
         }
     }
 }

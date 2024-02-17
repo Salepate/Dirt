@@ -21,6 +21,8 @@ namespace Dirt.Network.Systems
     /// </summary>
     public class ActorStreaming : ISimulationSystem, IManagerAccess
     {
+        public const int Destroyed = 0;
+        public const int Culled = 255;
         protected bool IgnoreMemorySerialization { get; set; }
 
         private int m_IDGenerator;

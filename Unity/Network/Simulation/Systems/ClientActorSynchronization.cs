@@ -16,7 +16,6 @@ namespace Dirt.Network.Simulation.Systems
 {
     public class ClientActorSynchronization : ISimulationSystem, IEventReader, IManagerAccess, IContextReader
     {
-        private HashSet<int> m_ToDestroy;
         private ServerProxy m_Server;
 
         // Actions
@@ -30,29 +29,9 @@ namespace Dirt.Network.Simulation.Systems
 
         public ClientActorSynchronization()
         {
-            m_ToDestroy = new HashSet<int>();
             m_BufferStream = new MemoryStream();
             m_BufferWriter = new BinaryWriter(m_BufferStream);
             m_ParameterBuffer = new List<ActionParameter>();
-        }
-
-        private int m_MatchNetID;
-
-        private bool MatchActor(NetInfo netinfo)
-        {
-            return netinfo.ID == m_MatchNetID;
-        }
-
-        [SimulationListener(typeof(ActorNetCullEvent), 0)]
-        private void OnActorRemoved(ActorNetCullEvent removeEvent)
-        {
-            m_MatchNetID = removeEvent.NetID;
-            GameActor actor = m_Simulation.Filter.GetSingle<NetInfo>(MatchActor);
-            if (actor != null)
-            {
-                ref Destroy destroy = ref m_Simulation.Builder.AddComponent<Destroy>(actor);
-                destroy.Reason = removeEvent.Reason;
-            }
         }
 
         [SimulationListener(typeof(RemoteActionRequestEvent), 0)]

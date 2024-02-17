@@ -24,6 +24,7 @@ using Mud.Server.Stream;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 
 namespace Dirt.GameServer
@@ -42,6 +43,7 @@ namespace Dirt.GameServer
         private Dictionary<Type, IGameManager> m_Managers;
         public SimulationManager Simulations { get; private set; }
         private StreamGroupManager m_GroupManager;
+        private NetworkSerializer m_Serializer;
         public ContentProvider Content { get; private set; }
         private SimulationBuilder m_SimBuilder;
 
@@ -70,15 +72,15 @@ namespace Dirt.GameServer
             NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             //@hack: Load missing assemblies before serializer 
             AssemblyReflection.BuildTypeMap<ISimulationSystem>(ValidAssemblies.Assemblies);
-            NetworkSerializer netSerializer = new NetworkSerializer(netAsses);
-            m_Players = new PlayerManager(netSerializer);
+            m_Serializer = new NetworkSerializer(netAsses);
+            m_Players = new PlayerManager(m_Serializer);
 
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             m_Plugin = plugin;
 
             RegisterManager<IContentProvider>(Content);
             RegisterManager(new MetricsManager());
-            RegisterManager(netSerializer);
+            RegisterManager(m_Serializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
             RegisterManager(new ActionRequestManager(this));
@@ -240,18 +242,10 @@ namespace Dirt.GameServer
             switch (mudOp)
             {
                 case NetworkOperation.ActorSync:
-                    
-                    proxy = m_Players.FindPlayer(client.Number);
-                    Console.Assert(proxy != null, $"Unknown Player {client.Number}");
-                    sim = Simulations.GetSimulation(proxy.Simulation);
-
-                    int syncID = message.buffer[0];
-                    bool isOwner = sim.Filter.GetActorsMatching<NetInfo>(a => a.ID == syncID && proxy.Player.Number == a.Owner).Count == 1;
-                    if (isOwner)
+                    if(message.buffer.Length > 0)
                     {
-                        byte[] syncBuffer = new byte[message.buffer.Length - 1];
-                        Array.Copy(message.buffer, 1, syncBuffer, 0, message.buffer.Length - 1);
-                        sim.Events.Enqueue(new ActorSyncEvent(message.buffer[0], syncBuffer));
+                        int syncID = message.buffer[0];
+                        SyncPlayerActor(client.Number, syncID, message.buffer);
                     }
                     break;
                 case NetworkOperation.ClientReady:
@@ -263,6 +257,24 @@ namespace Dirt.GameServer
                 default:
                     CustomMessage?.Invoke(client, message);
                     break;
+            }
+        }
+
+        private void SyncPlayerActor(int number, int netID, byte[] buffer)
+        {
+            PlayerProxy proxy = m_Players.FindPlayer(number);
+            Console.Assert(proxy != null, $"Unknown Player {number}");
+            GameSimulation sim = Simulations.GetSimulation(proxy.Simulation);
+            GameActor targetActor = sim.Filter.GetSingle<NetInfo>(a => a.ID == netID && proxy.Player.Number == a.Owner);
+            if (targetActor != null)
+            {
+                ref NetInfo netInfo = ref sim.Filter.Get<NetInfo>(targetActor);
+                using (MemoryStream ms = new MemoryStream(buffer))
+                {
+                    ms.Position = 1; // skip the net id
+                    MessageHeader state = (MessageHeader)m_Serializer.Deserialize(ms);
+                    netInfo.LastInBuffer = state;
+                }
             }
         }
 
