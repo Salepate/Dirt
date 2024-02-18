@@ -69,7 +69,7 @@
     <Compile Include="Simulation\DisableSyncAttribute.cs" />
     <Compile Include="Simulation\Events\PlayerEvent.cs" />
     <Compile Include="Simulation\Events\RemoteActionRequestEvent.cs" />
-    <Compile Include="Simulation\Systems\ActorStream.cs" />
+    <Compile Include="Simulation\ActorStream.cs" />
     <Compile Include="Simulation\Systems\ActorStreaming.cs" />
     <Compile Include="SyncHelper.cs" />
   </ItemGroup>
