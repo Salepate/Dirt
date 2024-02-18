@@ -17,10 +17,17 @@ namespace Dirt.Network.Simulation.Components
         public float SyncClock;
         [DisableSync]
         public ComponentFieldInfo[] Fields;
+        [DisableSync]
+        internal ComponentSerializer[] Serializers;
+
         [NonSerialized]
-        public MessageHeader LastInBuffer;
+        public MessageHeader LastMessageBuffer;
+        [NonSerialized]
+        public byte[] LastInBuffer;
         [NonSerialized]
         public byte[] LastOutBuffer;
+        [NonSerialized]
+        public int BufferSize;
         [NonSerialized]
         public int LastOutStamp;
 

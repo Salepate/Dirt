@@ -2,12 +2,11 @@
 using Dirt.Game.Managers;
 using Dirt.Network.Simulation.Components;
 using Dirt.Network.Systems;
-using Dirt.Simulation;
-using System;
+using Dirt.Simulation.SystemHelper;
 
 namespace Dirt.GameServer.Simulation.Systems
 {
-    public class ServerActorStreaming : ActorStreaming
+    public class ServerActorStreaming : ActorStreaming, IManagerAccess
     {
         private MetricsManager m_Metrics;
   
@@ -20,10 +19,8 @@ namespace Dirt.GameServer.Simulation.Systems
         {
             m_Metrics.Record(id, value);
         }
-        public override void SetManagers(IManagerProvider provider)
+        public void SetManagers(IManagerProvider provider)
         {
-            base.SetManagers(provider);
-
             m_Metrics = provider.GetManager<MetricsManager>();
         }
     }

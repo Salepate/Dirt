@@ -165,7 +165,7 @@ namespace Mud.DirtSystems
                 {
                     ms.Position = 1; // skip the net id
                     MessageHeader state = (MessageHeader)m_Serializer.Deserialize(ms);
-                    netInfo.LastInBuffer = state;
+                    netInfo.LastMessageBuffer = state;
                 }
             }
         }

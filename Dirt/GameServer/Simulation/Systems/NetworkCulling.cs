@@ -6,7 +6,6 @@ using Dirt.GameServer.Simulation.Components;
 using Dirt.Network.Managers;
 using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
-using Dirt.Network.Simulation.Systems;
 using Dirt.Network.Systems;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
@@ -32,12 +31,9 @@ namespace Dirt.Network.Simulations.Systems
         private HashSet<Type> m_SkippedTypes;
         private List<IComponent> m_ComponentBuffer;
         private float m_NetTickDeltaTime;
-
         private ActorStream m_Stream;
-
         private List<int> m_NetIDs;
         private List<int> m_LocalIDS;
-
         private byte[] m_DestroyTable;
         private int m_Frame;
         public void Initialize(GameSimulation sim)
@@ -47,7 +43,7 @@ namespace Dirt.Network.Simulations.Systems
             m_NetIDs = new List<int>(50);
             m_LocalIDS = new List<int>(50);
             m_Stream = new ActorStream();
-            m_Stream.Initialize(sim, m_Serializer);
+            m_Stream.Initialize(sim);
 
             m_DestroyTable = new byte[sim.Builder.ActorPoolSize];
 

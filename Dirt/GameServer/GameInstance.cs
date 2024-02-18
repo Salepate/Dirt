@@ -274,12 +274,7 @@ namespace Dirt.GameServer
             if (targetActor != null)
             {
                 ref NetInfo netInfo = ref sim.Filter.Get<NetInfo>(targetActor);
-                using (MemoryStream ms = new MemoryStream(buffer))
-                {
-                    ms.Position = 1; // skip the net id
-                    MessageHeader state = (MessageHeader)m_Serializer.Deserialize(ms);
-                    netInfo.LastInBuffer = state;
-                }
+                netInfo.LastInBuffer = buffer;
             }
         }
 

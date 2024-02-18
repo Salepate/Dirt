@@ -2,6 +2,7 @@
 using Dirt.Network.Internal;
 using Dirt.Network.Managers;
 using Dirt.Network.Model;
+using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
@@ -29,10 +30,8 @@ namespace Dirt.Network
                 throw new ComponentNotFoundException(typeof(NetInfo));
             }
 
-            List<ComponentFieldInfo> fields = new List<ComponentFieldInfo>();
+            List<ComponentSerializer> serializers = new List<ComponentSerializer>();
             netInfo.Owner = owner;
-
-            //Console.Message($"Sync actor {actor.ID}");
 
             for (int i = 0; i < syncDesc.SyncedComponents.Length; ++i)
             {
@@ -41,28 +40,18 @@ namespace Dirt.Network
                 GenericArray compPool = builder.Components.GetPool(compType);
                 int compIndex = actor.GetComponentLocalIndex(compType);
 
-                if (NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessors))
+                if (NetworkSerializer.TryGetSerializer(compType, out ComponentSerializer serializer))
                 {
-                    for (int j = 0; j < accessors.Length; ++j)
-                    {
-                        ComponentFieldInfo fieldSync = new ComponentFieldInfo()
-                        {
-                            PoolIndex = compPool.Index,
-                            Component = compIndex,
-                            Accessor = j,
-                            Owner = CanWrite(compType.Name, accessors[j].Name, syncDesc),
-                            Debug = $"{compType.Name}.{accessors[j].Name}"
-                        };
-                        //Console.Message($"Component Sync {compType.Name}: [Owner:{fieldSync.Owner}] [Accessor:{accessors[j].Name}]");
-                        fields.Add(fieldSync);
-                    }
+                    serializer.PoolIndex = compPool.Index;
+                    serializer.ComponentIndex = compIndex;
+                    serializers.Add(serializer);
                 }
                 else
                 {
                     Console.Message($"Unable to sync component {compType.Name}: Component not registered");
                 }
             }
-            netInfo.Fields = fields.ToArray();
+            netInfo.Serializers = serializers.ToArray();
         }
 
         private static bool CanWrite(string comp, string fieldName, SyncInfo sync)

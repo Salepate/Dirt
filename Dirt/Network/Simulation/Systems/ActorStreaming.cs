@@ -2,6 +2,7 @@
 using Dirt.Network.Internal;
 using Dirt.Network.Managers;
 using Dirt.Network.Model;
+using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Dirt.Network.Systems
 {
@@ -20,20 +22,16 @@ namespace Dirt.Network.Systems
     /// <summary>
     /// Transform actors into memory streams suited for network transmission.
     /// </summary>
-    public class ActorStreaming : ISimulationSystem, IManagerAccess
+    public class ActorStreaming : ISimulationSystem
     {
         public const int Destroyed = 0;
         public const int Culled = 255;
-        protected bool IgnoreMemorySerialization { get; set; }
 
-        private NetworkSerializer m_Serializer;
+        private ActorStream m_Stream;
         private ActorFilter Filter => m_Simulation.Filter;
         private GameSimulation m_Simulation;
         private Stopwatch m_Watch;
-        public ActorStreaming()
-        {
-            m_Watch = new Stopwatch();
-        }
+        private int m_Frame;
 
         protected virtual void DoRecord(string id, int value) { }
 
@@ -44,6 +42,7 @@ namespace Dirt.Network.Systems
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
+            m_Frame++;
             m_Watch.Restart();
             ActorList<NetInfo> netActors = Filter.GetActors<NetInfo>();
             long ticks = m_Watch.Elapsed.Ticks;
@@ -56,35 +55,14 @@ namespace Dirt.Network.Systems
                 ref NetInfo netBhv = ref netActors.GetC1(i);
                 if (ShouldDeserialize(ref netBhv))
                 {
-                    DeserializeActor(actor, ref netBhv);
+                    m_Stream.DeserializeActor(actor, ref netBhv);
                 }
                 deserialTicks += m_Watch.Elapsed.Ticks - ticks;
                 ticks = m_Watch.Elapsed.Ticks;
 
                 if (ShouldSerializeActor(ref netBhv))
                 {
-                    MessageHeader stateToSerialize = SerializeActor(actor, netBhv);
-
-                    if (stateToSerialize != null && stateToSerialize.FieldIndex != null)
-                    {
-                        if(!IgnoreMemorySerialization)
-                        {
-                            byte[] message = null;
-
-                            using (MemoryStream messageStream = new MemoryStream())
-                            {
-                                m_Serializer.Serialize(messageStream, stateToSerialize);
-                                message = messageStream.ToArray();
-                            }
-
-                            netBhv.LastOutBuffer = message;
-                        }
-
-                        if (netBhv.LastState == null) // first buffer
-                        {
-                            netBhv.LastState = stateToSerialize;
-                        }
-                    }
+                    m_Stream.SerializeActor(actor, ref netBhv, m_Frame);
                 }
                 serialTicks += m_Watch.Elapsed.Ticks - ticks;
                 ticks = m_Watch.Elapsed.Ticks;
@@ -94,110 +72,13 @@ namespace Dirt.Network.Systems
             DoRecord("ActorStreaming.Actors", netActors.Count);
         }
 
-        public static string ByteArrayToString(byte[] ba)
-        {
-            return BitConverter.ToString(ba).Replace("-", "");
-        }
-
-        private void DeserializeActor(GameActor actor, ref NetInfo sync)
-        {
-            if (sync.Fields.Length < 1 || sync.LastInBuffer == null)
-                return;
-
-            MessageHeader header = sync.LastInBuffer;
-            sync.LastInBuffer = null;
-            SimulationPool pool = m_Simulation.Builder.Components;
-
-            for (int i = 0; i < header.FieldIndex.Length; ++i)
-            {
-                int fieldIndex = header.FieldIndex[i];
-                if ( fieldIndex < 0 || fieldIndex >= sync.Fields.Length)
-                {
-                    Console.Error($"Actor {actor} Failed to deserialize field {header.FieldIndex[i]}");
-                    for(int j = 0; j < actor.ComponentCount; ++j)
-                    {
-                        if (actor.ComponentTypes[j] != null)
-                            Console.Message(actor.ComponentTypes[j].Name);
-                    }
-                    continue;
-                }
-                ComponentFieldInfo field = sync.Fields[fieldIndex];
-                if (ShouldDeserialize(sync.ServerControl, field.Owner))
-                {
-                    Type compType = actor.ComponentTypes[field.Component];
-                    if (NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessors))
-                    {
-                        int compIdx = actor.Components[field.Component];
-                        GenericArray genArr = pool.GetPool(compType);
-                        accessors[field.Accessor].Setter(genArr, compIdx, header.FieldValue[i]);
-                    }
-                }
-            }
-        }
-
-        private MessageHeader SerializeActor(GameActor actor, in NetInfo sync)
-        {
-            if (sync.Fields.Length < 1)
-                return null;
-
-            MessageHeader header = new MessageHeader();
-            SimulationPool pool = m_Simulation.Builder.Components;
-            List<int> fields = new List<int>();
-            List<object> values = new List<object>();
-            MessageHeader oldState = sync.LastState;
-
-            for (int i = 0; i < sync.Fields.Length; ++i)
-            {
-                ComponentFieldInfo field = sync.Fields[i];
-                Type compType = actor.ComponentTypes[field.Component];
-                IComponent component = (IComponent) pool.GetPool(compType).Get(actor.Components[field.Component]);
-
-                if (ShouldSerializeField(field.Owner) && NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessor))
-                {
-                    bool changed = true;
-                    Func<IComponent, object> getter = accessor[field.Accessor].Getter;
-                    object newValue = getter(component);
-                    if (oldState != null)
-                    {
-                        int oldStateIndex = GetIndexInState(oldState, i);
-                        object oldValue = oldState.FieldValue[oldStateIndex];
-                        oldState.FieldValue[oldStateIndex] = newValue;
-                        Console.Assert(newValue != null, "Cannot send null values");
-                        changed = !newValue.Equals(oldValue);
-                    }
-
-                    if (changed)
-                    {
-                        fields.Add(i);
-                        values.Add(newValue);
-                    }
-                }
-            }
-
-            if (fields.Count > 0)
-            {
-                header.FieldIndex = fields.ToArray();
-                header.FieldValue = values.ToArray();
-            }
-            return header;
-        }
-
-        private int GetIndexInState(MessageHeader state, int fieldIndex)
-        {
-            for (int i = 0; i < state.FieldIndex.Length; ++i)
-                if (state.FieldIndex[i] == fieldIndex)
-                    return i;
-            return -1;
-        }
-
         public virtual void Initialize(GameSimulation sim)
         {
+            m_Watch = new Stopwatch();
+            m_Frame = 0;
             m_Simulation = sim;
-        }
-
-        public virtual void SetManagers(IManagerProvider provider)
-        {
-            m_Serializer = provider.GetManager<NetworkSerializer>();
+            m_Stream = new ActorStream();
+            m_Stream.Initialize(m_Simulation);
         }
     }
 }
