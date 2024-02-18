@@ -6,6 +6,7 @@ namespace Dirt.Simulation.Actor
     public interface GenericArray 
     {
         System.Type ComponentType { get; }
+        int Index { get; set; }
         void SetSize(int size);
         int Allocate(int actorIndex);
         void Free(int actorIndex);
@@ -16,6 +17,7 @@ namespace Dirt.Simulation.Actor
     {
         public int Allocated { get; private set; }
         public int NextIndex { get; private set; }
+        public int Index { get; set; }
         public Type ComponentType => typeof(T);
 
         public int[] Actors;

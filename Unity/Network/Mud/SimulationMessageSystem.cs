@@ -108,7 +108,7 @@ namespace Mud.DirtSystems
 
                         bool isOwner = netBhv.Owner == m_Proxy.LocalPlayer;
                         netBhv.Owned = isOwner;
-                        for (int i = 0; i < netBhv.Fields.Count; ++i)
+                        for (int i = 0; i < netBhv.Fields.Length; ++i)
                         {
                             ComponentFieldInfo field = netBhv.Fields[i];
                             field.Owner = field.Owner && isOwner;

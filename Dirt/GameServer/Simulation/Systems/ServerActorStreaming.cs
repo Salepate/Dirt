@@ -3,19 +3,14 @@ using Dirt.Game.Managers;
 using Dirt.Network.Simulation.Components;
 using Dirt.Network.Systems;
 using Dirt.Simulation;
+using System;
 
 namespace Dirt.GameServer.Simulation.Systems
 {
     public class ServerActorStreaming : ActorStreaming
     {
         private MetricsManager m_Metrics;
-
-        public override void Initialize(GameSimulation sim)
-        {
-            base.Initialize(sim);
-            IgnoreMemorySerialization = true;
-        }
-
+  
         protected override bool ShouldSerializeActor(ref NetInfo info)
         {
             return info.SyncClock <= 0f && base.ShouldSerializeActor(ref info);

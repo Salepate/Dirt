@@ -195,6 +195,7 @@ namespace Dirt.GameServer
             client.Send(MudMessage.Create((int)NetworkOperation.LoadSimulation, System.Text.Encoding.ASCII.GetBytes(newSim.ArchetypeName)));
             PlayerEvent playerEvent = new PlayerEvent(client.Number, PlayerEvent.JoinedSimulation);
             newSim.Events.Enqueue(playerEvent);
+            proxy.AwaitingLoad = true;
         }
 
         internal void AuthPlayer(int playerNumber, PlayerCredential credential)
@@ -250,9 +251,13 @@ namespace Dirt.GameServer
                     break;
                 case NetworkOperation.ClientReady:
                     proxy = m_Players.FindPlayer(client.Number);
-                    Console.Assert(proxy != null, $"Unknown Player {client.Number}");
-                    sim = Simulations.GetSimulation(proxy.Simulation);
-                    sim.Events.Enqueue(new PlayerEvent(client.Number, PlayerEvent.LoadedSimulation));
+                    if (proxy.AwaitingLoad)
+                    {
+                        Console.Assert(proxy != null, $"Unknown Player {client.Number}");
+                        sim = Simulations.GetSimulation(proxy.Simulation);
+                        sim.Events.Enqueue(new PlayerEvent(client.Number, PlayerEvent.LoadedSimulation));
+                        proxy.AwaitingLoad = false;
+                    }
                     break;
                 default:
                     CustomMessage?.Invoke(client, message);

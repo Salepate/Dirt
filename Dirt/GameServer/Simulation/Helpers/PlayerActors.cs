@@ -20,28 +20,20 @@ namespace Dirt.GameServer.Simulation.Helpers
 
             if ( addCullingActor )
             {
-                AddCullingActor(simulation, playerNumber, playerChar);
+                AddCullingArea(simulation, playerNumber, playerChar);
             }
             return playerChar;
         }
 
-        public static void AddCullingActor(this GameSimulation simulation, int playerNumber, GameActor playerChar)
+        public static void AddCullingArea(this GameSimulation simulation, int playerNumber, GameActor playerChar)
         {
             ServerActorBuilder builder = (ServerActorBuilder)simulation.Builder;
-            var existCullReq = simulation.Filter.GetActorsMatching<CullArea>(cull => cull.Client == playerNumber);
-            if (existCullReq.Count > 0)
-            {
-                ref Tracker tracker = ref simulation.Filter.Get<Tracker>(existCullReq[0].Actor);
-                tracker.TargetActor = playerChar.ID;
-            }
-            else
-            {
-                GameActor cullArea = builder.BuildActor("playerculling");
-                ref CullArea cullData = ref simulation.Filter.Get<CullArea>(cullArea);
-                ref Tracker trackerData = ref simulation.Filter.Get<Tracker>(cullArea);
-                cullData.Client = playerNumber;
-                trackerData.TargetActor = playerChar.ID;
-            }
+
+            if (playerChar.GetComponentIndex<CullArea>() == -1)
+                simulation.Builder.AddComponent<CullArea>(playerChar);
+
+            ref CullArea cullArea = ref simulation.Filter.Get<CullArea>(playerChar);
+            cullArea.Client = playerNumber;
         }
 
         public static void RemovePlayerActors(this GameSimulation simulation, int playerNumber, bool keepPlayerCull = false)

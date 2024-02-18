@@ -5,6 +5,7 @@ using Dirt.Network.Model;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
+using Dirt.Simulation.Components;
 using Dirt.Simulation.SystemHelper;
 using System;
 using System.Collections.Generic;
@@ -25,20 +26,18 @@ namespace Dirt.Network.Systems
         public const int Culled = 255;
         protected bool IgnoreMemorySerialization { get; set; }
 
-        private int m_IDGenerator;
         private NetworkSerializer m_Serializer;
         private ActorFilter Filter => m_Simulation.Filter;
         private GameSimulation m_Simulation;
         private Stopwatch m_Watch;
         public ActorStreaming()
         {
-            m_IDGenerator = 0;
             m_Watch = new Stopwatch();
         }
 
         protected virtual void DoRecord(string id, int value) { }
 
-        protected virtual bool ShouldSerializeActor(ref NetInfo info) => true;
+        protected virtual bool ShouldSerializeActor(ref NetInfo info) => false;
         protected virtual bool ShouldSerializeField(bool isOwner) => true;
         protected virtual bool ShouldDeserialize(bool serverAuthor, bool isOwner) => isOwner;
         protected virtual bool ShouldDeserialize(ref NetInfo info) => !info.ServerControl && info.Owner != -1;
@@ -55,14 +54,6 @@ namespace Dirt.Network.Systems
             {
                 GameActor actor = netActors.GetActor(i);
                 ref NetInfo netBhv = ref netActors.GetC1(i);
-
-                // Only performed server side (assuming negative id are never serialized)
-                if (netBhv.ID == -1)
-                    netBhv.ID = GetID();
-
-                //TODO: Add timed state deserial/serial to control net throughput (use net tickrate)
-
-
                 if (ShouldDeserialize(ref netBhv))
                 {
                     DeserializeActor(actor, ref netBhv);
@@ -108,14 +99,9 @@ namespace Dirt.Network.Systems
             return BitConverter.ToString(ba).Replace("-", "");
         }
 
-        private int GetID()
-        {
-            return m_IDGenerator++;
-        }
-
         private void DeserializeActor(GameActor actor, ref NetInfo sync)
         {
-            if (sync.Fields.Count < 1 || sync.LastInBuffer == null)
+            if (sync.Fields.Length < 1 || sync.LastInBuffer == null)
                 return;
 
             MessageHeader header = sync.LastInBuffer;
@@ -125,7 +111,7 @@ namespace Dirt.Network.Systems
             for (int i = 0; i < header.FieldIndex.Length; ++i)
             {
                 int fieldIndex = header.FieldIndex[i];
-                if ( fieldIndex < 0 || fieldIndex >= sync.Fields.Count)
+                if ( fieldIndex < 0 || fieldIndex >= sync.Fields.Length)
                 {
                     Console.Error($"Actor {actor} Failed to deserialize field {header.FieldIndex[i]}");
                     for(int j = 0; j < actor.ComponentCount; ++j)
@@ -151,7 +137,7 @@ namespace Dirt.Network.Systems
 
         private MessageHeader SerializeActor(GameActor actor, in NetInfo sync)
         {
-            if (sync.Fields.Count < 1)
+            if (sync.Fields.Length < 1)
                 return null;
 
             MessageHeader header = new MessageHeader();
@@ -160,7 +146,7 @@ namespace Dirt.Network.Systems
             List<object> values = new List<object>();
             MessageHeader oldState = sync.LastState;
 
-            for (int i = 0; i < sync.Fields.Count; ++i)
+            for (int i = 0; i < sync.Fields.Length; ++i)
             {
                 ComponentFieldInfo field = sync.Fields[i];
                 Type compType = actor.ComponentTypes[field.Component];
@@ -177,7 +163,6 @@ namespace Dirt.Network.Systems
                         object oldValue = oldState.FieldValue[oldStateIndex];
                         oldState.FieldValue[oldStateIndex] = newValue;
                         Console.Assert(newValue != null, "Cannot send null values");
-
                         changed = !newValue.Equals(oldValue);
                     }
 

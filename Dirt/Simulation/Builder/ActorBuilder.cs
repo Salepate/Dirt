@@ -57,7 +57,7 @@ namespace Dirt.Simulation.Builder
             Content = content;
         }
 
-        public void InitializePool(int poolSize)
+        public virtual void InitializePool(int poolSize)
         {
             ActorPoolSize = poolSize;
             m_AvailableActor = new GameActor[poolSize];
@@ -96,7 +96,7 @@ namespace Dirt.Simulation.Builder
 
             foreach (KeyValuePair<string, Type> kvp in m_ValidComponents)
             {
-                Console.Message($"Register Comp Pool {kvp.Key}");
+                //Console.Message($"Register Comp Pool {kvp.Key}");
                 m_Injectors.Add(kvp.Value, new ComponentInjector(kvp.Value));
             }
         }
@@ -168,7 +168,7 @@ namespace Dirt.Simulation.Builder
             return BuildActor(Content.LoadContent<ActorArchetype>($"actor.{archetype}"));
         }
 
-        public void DestroyActor(GameActor actor)
+        public virtual void DestroyActor(GameActor actor)
         {
             int actorSlot = actor.InternalID;
             if (m_AvailableActor[actorSlot] == null)

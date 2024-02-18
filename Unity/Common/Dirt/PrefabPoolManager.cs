@@ -24,7 +24,7 @@ namespace Framework
             m_Root = root;
             m_BaseScale = prefab.transform.localScale;
 
-            Console.Message($"Creating pool {prefab.name} ({initialCapacity})");
+            //Console.Message($"Creating pool {prefab.name} ({initialCapacity})");
             for (int i = 0; i < initialCapacity; ++i)
             {
                 GameObject inst = Instantiate();
@@ -45,7 +45,7 @@ namespace Framework
             m_Pool = new Stack<GameObject>(capacity);
             m_HasInitializer = true;
             m_RuntimeInitializer = (obj) => initializer(obj.GetComponent<T>());
-            Console.Message($"Creating pool {m_Reference.name} ({capacity})");
+            //Console.Message($"Creating pool {m_Reference.name} ({capacity})");
             for (int i = 0; i < capacity; ++i)
             {
                 GameObject inst = Instantiate();

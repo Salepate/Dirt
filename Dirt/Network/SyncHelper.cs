@@ -4,6 +4,8 @@ using Dirt.Network.Managers;
 using Dirt.Network.Model;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
+using Dirt.Simulation.Actor;
+using Dirt.Simulation.Builder;
 using Dirt.Simulation.Exceptions;
 using System.Collections.Generic;
 
@@ -20,7 +22,7 @@ namespace Dirt.Network
         /// <param name="actor"></param>
         /// <param name="syncDesc"></param>
         /// <param name="owner">-1 is server, client id otherwise</param>
-        public static void GenerateActorSyncData(GameActor actor, ref NetInfo netInfo, SyncInfo syncDesc, int owner)
+        public static void GenerateActorSyncData(this ActorBuilder builder, GameActor actor, ref NetInfo netInfo, SyncInfo syncDesc, int owner)
         {
             if (actor.GetComponentIndex<NetInfo>() == -1)
             {
@@ -36,6 +38,7 @@ namespace Dirt.Network
             {
                 string syncComp = syncDesc.SyncedComponents[i];
                 System.Type compType = System.Type.GetType(syncComp);
+                GenericArray compPool = builder.Components.GetPool(compType);
                 int compIndex = actor.GetComponentLocalIndex(compType);
 
                 if (NetworkSerializer.TryGetSetters(compType, out ObjectFieldAccessor[] accessors))
@@ -44,6 +47,7 @@ namespace Dirt.Network
                     {
                         ComponentFieldInfo fieldSync = new ComponentFieldInfo()
                         {
+                            PoolIndex = compPool.Index,
                             Component = compIndex,
                             Accessor = j,
                             Owner = CanWrite(compType.Name, accessors[j].Name, syncDesc),
@@ -58,7 +62,7 @@ namespace Dirt.Network
                     Console.Message($"Unable to sync component {compType.Name}: Component not registered");
                 }
             }
-            netInfo.Fields = fields;
+            netInfo.Fields = fields.ToArray();
         }
 
         private static bool CanWrite(string comp, string fieldName, SyncInfo sync)

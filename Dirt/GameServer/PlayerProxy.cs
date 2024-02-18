@@ -11,12 +11,14 @@ namespace Dirt.GameServer
 
         public int Simulation { get; internal set; }
         public StreamGroup Group { get; internal set; }
+        public bool AwaitingLoad { get; internal set; }
 
         public PlayerProxy(GamePlayer player, GameClient client)
         {
             Player = player;
             Client = client;
             Simulation = -1;
+            AwaitingLoad = false;
         }
     }
 }

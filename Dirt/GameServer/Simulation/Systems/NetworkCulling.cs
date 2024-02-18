@@ -2,12 +2,12 @@
 using Dirt.Game.Content;
 using Dirt.GameServer;
 using Dirt.GameServer.Managers;
-using Dirt.GameServer.Simulation;
 using Dirt.GameServer.Simulation.Components;
 using Dirt.Network.Managers;
 using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
-using Dirt.Network.Simulation.Events;
+using Dirt.Network.Simulation.Systems;
+using Dirt.Network.Systems;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Actor.Components;
@@ -32,40 +32,44 @@ namespace Dirt.Network.Simulations.Systems
         private HashSet<Type> m_SkippedTypes;
         private List<IComponent> m_ComponentBuffer;
         private float m_NetTickDeltaTime;
-        private float m_SyncClock;
+
+        private ActorStream m_Stream;
 
         private List<int> m_NetIDs;
         private List<int> m_LocalIDS;
 
         private byte[] m_DestroyTable;
+        private int m_Frame;
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
             m_ComponentBuffer = new List<IComponent>(10);
-            m_SyncClock = 0f;
             m_NetIDs = new List<int>(50);
             m_LocalIDS = new List<int>(50);
+            m_Stream = new ActorStream();
+            m_Stream.Initialize(sim, m_Serializer);
 
             m_DestroyTable = new byte[sim.Builder.ActorPoolSize];
 
             for (int i = 0; i < m_DestroyTable.Length; ++i)
             {
-                m_DestroyTable[i] = ActorNetCullEvent.Destroyed;
+                m_DestroyTable[i] = ActorStreaming.Destroyed;
             }
 
             sim.Builder.ActorCreateAction += OnActorCreated;
             sim.Builder.ActorDestroyAction += OnActorDestroyed;
+            m_Frame = 0;
         }
 
         private void OnActorCreated(GameActor actor)
         {
-            m_DestroyTable[actor.InternalID] = ActorNetCullEvent.Destroyed;
+            m_DestroyTable[actor.InternalID] = ActorStreaming.Destroyed;
         }
 
         private void OnActorDestroyed(GameActor actor)
         {
             Destroy destroy = m_Simulation.Filter.Get<Destroy>(actor);
-            if (destroy.Reason > 0 && destroy.Reason < ActorNetCullEvent.Culled)
+            if (destroy.Reason > 0 && destroy.Reason < ActorStreaming.Culled)
             {
                 m_DestroyTable[actor.InternalID] = (byte)destroy.Reason;
             }
@@ -92,6 +96,7 @@ namespace Dirt.Network.Simulations.Systems
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
+            ++m_Frame;
             ActorFilter filter = sim.Filter;
             var cullAreas = filter.GetActors<CullArea, Position>();
             ActorList<NetInfo, Position> syncable = default;
@@ -130,18 +135,8 @@ namespace Dirt.Network.Simulations.Systems
 
                             if (isOld)
                             {
-                                if (syncInfo.LastState != null)
-                                {
-                                    byte[] message = null;
-                                    using (MemoryStream messageStream = new MemoryStream())
-                                    {
-                                        m_Serializer.Serialize(messageStream, syncInfo.LastState);
-                                        message = messageStream.ToArray();
-                                    }
-                                    syncInfo.LastOutBuffer = message;
-                                    syncInfo.LastState = null;
-                                }
-                                if (syncInfo.LastOutBuffer != null)
+                                m_Stream.SerializeActor(syncable.GetActor(j), ref syncInfo, m_Frame);
+                                if (syncInfo.LastOutStamp == m_Frame)
                                 {
                                     List<byte> message = new List<byte>(syncInfo.LastOutBuffer.Length + 1);
                                     message.Add((byte)syncInfo.ID);
@@ -161,7 +156,7 @@ namespace Dirt.Network.Simulations.Systems
                         byte netID = (byte) cull.ProximityActors[j];
                         if (!m_NetIDs.Contains(netID))
                         {
-                            byte reason = ActorNetCullEvent.Culled;
+                            byte reason = ActorStreaming.Culled;
                             if ( !filter.TryGetActor(cull.LocalIDs[j], out _))
                             {
                                 reason = m_DestroyTable[GameActor.GetInternalID(cull.LocalIDs[j])];
@@ -180,10 +175,8 @@ namespace Dirt.Network.Simulations.Systems
             for(int i = 0; cullAreas.Count > 0 && i < syncable.Count; ++i)
             {
                 ref NetInfo netinfo = ref syncable.GetC1(i);
-
-                if ( netinfo.LastOutBuffer != null )
+                if (netinfo.LastOutStamp == m_Frame)
                 {
-                    netinfo.LastOutBuffer = null;
                     netinfo.SyncClock = m_NetTickDeltaTime;
                 }
                 else if ( netinfo.SyncClock > 0f )

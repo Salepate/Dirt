@@ -84,7 +84,7 @@
     <Compile Include="Simulation\Components\GlobalSyncInfo.cs" />
     <Compile Include="Simulation\Events\SimulationPausedEvent.cs" />
     <Compile Include="Simulation\Helpers\PlayerActors.cs" />
-    <Compile Include="Simulation\Systems\ActorCulling.cs" />
+    <Compile Include="Simulation\Systems\NetworkCulling.cs" />
     <Compile Include="Simulation\Systems\GlobalActorSynchronization.cs" />
     <Compile Include="Simulation\Systems\ServerActorStreaming.cs" />
     <Compile Include="Simulation\Systems\TimedServerControl.cs" />

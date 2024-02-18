@@ -1,6 +1,5 @@
 {
     "Shared": [
-        "ActorReceiver"
     ],
     "Client": [
         "ClientActorSynchronization",

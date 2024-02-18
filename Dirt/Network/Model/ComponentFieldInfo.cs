@@ -8,6 +8,7 @@ namespace Dirt.Network.Model
     [Serializable]
     public struct ComponentFieldInfo
     {
+        public int PoolIndex; 
         public int Component; // local index
         public int Accessor; 
         public bool Owner; // grants owner permission to write

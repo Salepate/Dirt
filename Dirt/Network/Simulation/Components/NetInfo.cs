@@ -8,17 +8,22 @@ namespace Dirt.Network.Simulation.Components
     [Serializable]
     public struct NetInfo : IComponent, IComponentAssign
     {
+        public const int MaxID = 255; // used for commonly updated entities
+
         public int ID;
         public int Owner;
         public bool ServerControl;
         [DisableSync]
         public float SyncClock;
         [DisableSync]
-        public List<ComponentFieldInfo> Fields;
+        public ComponentFieldInfo[] Fields;
         [NonSerialized]
         public MessageHeader LastInBuffer;
         [NonSerialized]
         public byte[] LastOutBuffer;
+        [NonSerialized]
+        public int LastOutStamp;
+
         [NonSerialized]
         public MessageHeader LastState;
         [NonSerialized]
@@ -30,7 +35,7 @@ namespace Dirt.Network.Simulation.Components
         {
             ID = -1;
             Owned = true;
-            Fields = new List<ComponentFieldInfo>();
+            Fields = new ComponentFieldInfo[0];
             ServerControlTime = 0;
         }
     }

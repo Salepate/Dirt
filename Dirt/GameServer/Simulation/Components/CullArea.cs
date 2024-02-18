@@ -1,9 +1,11 @@
-﻿using Dirt.Simulation;
+﻿using Dirt.Network.Simulation;
+using Dirt.Simulation;
 using System.Collections.Generic;
 
 namespace Dirt.GameServer.Simulation.Components
 {
     [System.Serializable]
+    [DisableSync]
     public struct CullArea : IComponent, IComponentAssign
     {
         public int Client;

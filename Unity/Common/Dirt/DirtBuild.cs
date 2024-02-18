@@ -15,7 +15,7 @@ namespace Dirt
         public Version GetVersion()
         {
             Version appVersion = Version.Parse(Application.version);
-            return new Version(appVersion.Major, appVersion.Minor, BuildNumber);
+            return new Version(appVersion.Major, appVersion.Minor, appVersion.Build, BuildNumber);
         }
 
         public static DirtBuild LoadBuildInformation()

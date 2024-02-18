@@ -45,6 +45,9 @@ namespace Dirt.Systems
             Dictionary<string, System.Type> compMap = AssemblyReflection.BuildTypeMap<IComponent>(m_Simulation.ValidAssemblies.Assemblies);
 
             GameObject root = new GameObject("Views");
+
+            int poolCount = 0;
+            int objectCount = 0;
             for (int i = 0; i < ViewDefinitions.Length; ++i)
             {
                 ViewDefinition def = ViewDefinitions[i];
@@ -62,6 +65,8 @@ namespace Dirt.Systems
                     if (def.InitialPoolSize > 0)
                     {
                         PoolManager.InitializePool(pfb, root.transform, def.InitialPoolSize);
+                        ++poolCount;
+                        objectCount += def.InitialPoolSize;
 
                     }
                     else
@@ -70,6 +75,7 @@ namespace Dirt.Systems
                     }
                 }
             }
+            Console.Message($"Created {poolCount} ({objectCount} objects)");
 
             QueueRequests = false;
         }
