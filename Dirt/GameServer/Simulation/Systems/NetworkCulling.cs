@@ -43,7 +43,7 @@ namespace Dirt.Network.Simulations.Systems
             m_NetIDs = new List<int>(50);
             m_LocalIDS = new List<int>(50);
             m_Stream = new ActorStream();
-            m_Stream.Initialize(sim);
+            m_Stream.Initialize(sim, false);
 
             m_DestroyTable = new byte[sim.Builder.ActorPoolSize];
 
@@ -134,10 +134,7 @@ namespace Dirt.Network.Simulations.Systems
                                 m_Stream.SerializeActor(syncable.GetActor(j), ref syncInfo, m_Frame);
                                 if (syncInfo.LastOutStamp == m_Frame)
                                 {
-                                    List<byte> message = new List<byte>(syncInfo.LastOutBuffer.Length + 1);
-                                    message.Add((byte)syncInfo.ID);
-                                    message.AddRange(syncInfo.LastOutBuffer);
-                                    player.Client.Send(MudMessage.Create((int)NetworkOperation.ActorSync, message.ToArray()));
+                                    player.Client.SendRaw(syncInfo.LastOutBuffer, syncInfo.BufferSize);
                                 }
                             }
                             else
