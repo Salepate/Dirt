@@ -95,18 +95,30 @@ namespace Mud.DirtSystems
                     }
                     ActorBuilder builder = m_Simulation.Simulation.Builder;
                     GameActor newActor = builder.CreateActor();
-                    for(int i = 0; i < state.Components.Length; ++i)
+                    byte[] serializedBuffer = null;
+                    byte[] serializedState = null;
+
+
+                    for (int i = 0; i < state.Components.Length; ++i)
                     {
                         System.Type compType = state.Components[i].GetType();
                         int compIdx = builder.AddComponent(newActor, compType);
+                        if (compType == typeof(NetInfo))
+                        {
+                            ref NetInfo netBhv = ref builder.Components.GetPool<NetInfo>().Components[compIdx];
+                            serializedBuffer = netBhv.LastOutBuffer;
+                            serializedState = netBhv.LastSerializedState;
+                        }
                         builder.Components.GetPool(compType).Set(compIdx, state.Components[i]);
                     }
-                    if ( newActor.GetComponentIndex<NetInfo>() != -1 )
+                    if (newActor.GetComponentIndex<NetInfo>() != -1)
                     {
                         ref NetInfo netBhv = ref m_Simulation.Simulation.Filter.Get<NetInfo>(newActor);
                         m_Simulation.Simulation.Builder.SetComponentPoolIndex(ref netBhv);
                         m_TranslationTable[netBhv.ID] = newActor.ID;
                         netBhv.Owned = netBhv.Owner == m_Proxy.LocalPlayer;
+                        netBhv.LastOutBuffer = serializedBuffer;
+                        netBhv.LastSerializedState = serializedState;
                     }
                     break;
                 case NetworkOperation.ActorSync:

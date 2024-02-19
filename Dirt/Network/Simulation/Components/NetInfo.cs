@@ -8,6 +8,7 @@ namespace Dirt.Network.Simulation.Components
     [Serializable]
     public struct NetInfo : IComponent, IComponentAssign, INetComponent
     {
+        public const int MaximumStateSize = 2048;
         public const int MaxID = 255; // used for commonly updated entities
 
         public int ID;
@@ -25,7 +26,9 @@ namespace Dirt.Network.Simulation.Components
         [NonSerialized]
         public byte[] LastInBuffer;
         [NonSerialized]
-        public byte[] LastOutBuffer;
+        public byte[] LastSerializedState; // contain all serializable data
+        [NonSerialized]
+        public byte[] LastOutBuffer; // contain changed data only
         [NonSerialized]
         public int BufferSize;
         [NonSerialized]
@@ -43,7 +46,10 @@ namespace Dirt.Network.Simulation.Components
         {
             ID = -1;
             Owned = true;
-            Fields = new ComponentFieldInfo[0];
+            Serializers = new ComponentSerializer[0];
+            LastSerializedState = new byte[MaximumStateSize];
+            LastOutBuffer = new byte[MaximumStateSize];
+            Synced = new string[0];
             ServerControlTime = 0;
         }
 

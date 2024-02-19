@@ -17,6 +17,7 @@ using System.Linq;
 
 namespace Dirt.Network.Simulations.Systems
 {
+    // TODO: rewrite this system to use new actor stream
     public class GlobalActorSynchronization : ISimulationSystem, IManagerAccess
     {
         private bool m_StaticListChanged;

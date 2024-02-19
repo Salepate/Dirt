@@ -3,11 +3,16 @@ using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
 using Dirt.Simulation.Components;
-using Mud;
 using System.ComponentModel;
+using System.Diagnostics.SymbolStore;
 
 namespace Dirt.Network.Simulation
 {
+    /// <summary>
+    /// Handle Actor synchronization (not state)
+    /// Transform an actor set of components into a byte array suited for network transport.
+    /// Detects changed components and reduce sent data to the minimum.
+    /// </summary>
     public class ActorStream
     {
         private bool m_Client;
@@ -18,12 +23,20 @@ namespace Dirt.Network.Simulation
         {
         }
 
+        /// <summary>
+        /// Setup the stream
+        /// </summary>
         public void Initialize(GameSimulation simulation, bool client)
         {
             m_Simulation = simulation;
             m_Client = client;
         }
 
+        /// <summary>
+        /// Deserialize an actor using NetInfo.LastInBuffer
+        /// </summary>
+        /// <param name="actor">actor to serialize</param>
+        /// <param name="sync">target behaviour to deserialize from</param>
         public void DeserializeActor(GameActor actor, ref NetInfo sync)
         {
             if (sync.LastInBuffer == null || sync.Serializers == null || sync.Serializers.Length == 0)
@@ -76,30 +89,38 @@ namespace Dirt.Network.Simulation
                 }
             }
         }
+
+        /// <summary>
+        /// Serialize components and shove it into NetInfo.LastOutBuffer
+        /// Deserialize an actor using NetInfo.LastInBuffer
+        /// </summary>
+        /// <param name="actor">actor to serialize</param>
+        /// <param name="sync">target behaviour to serialize into</param>
         public void SerializeActor(GameActor actor, ref NetInfo sync, int frame)
         {
             if (sync.Serializers.Length < 1 || sync.LastOutStamp == frame)
                 return;
 
-            NetworkStream stream = new NetworkStream();
-            stream.Allocate(128); // random for now
+            
+            NetworkStream stream = new NetworkStream(sync.LastOutBuffer);
             stream.Write((byte)NetworkOperation.ActorSync);
             stream.Write((byte)sync.ID);
 
-            bool change = false;
+            int delta = stream.Position; // ignore delta to emit change
+            bool writeAll = sync.Serializers[0].LastIndexInBuffer == 0;
 
             SimulationPool pool = m_Simulation.Builder.Components;
             for(int i = 0; i < sync.Serializers.Length; ++i)
             {
                 ref ComponentSerializer serial = ref sync.Serializers[i];
-
                 if (m_Client && (!serial.AuthoredByOwner || !sync.Owned))
+                {
+                    serial.LastIndexInBuffer = -1; // hijack to 
                     continue;
+                }
 
-
+                int bufferIndex = stream.Position;
                 stream.Write((byte)i);
-                int prevPos = serial.LastIndexInBuffer;
-                serial.LastIndexInBuffer = stream.Position;
 
                 if (serial.UseNetSerializer)
                 {
@@ -113,27 +134,45 @@ namespace Dirt.Network.Simulation
                     stream.Write(pos.Origin);
                 }
 
-                change |= prevPos != serial.LastIndexInBuffer;
-                int size = stream.Position - prevPos;
-                for(int j = prevPos; !change && j < prevPos + size; ++j)
+                if (writeAll)
                 {
-                    if (sync.LastOutBuffer == null || sync.LastOutBuffer.Length <= j || sync.LastOutBuffer[j] != stream.Buffer[j])
+                    serial.LastIndexInBuffer = bufferIndex;
+                }
+                else
+                {
+                    bool diff = CheckDiff(sync.LastSerializedState, serial.LastIndexInBuffer, stream.Buffer, bufferIndex, stream.Position - bufferIndex);
+                    if (!diff) 
                     {
-                        change = true;
+                        // rewind in out buffer
+                        stream.Position = bufferIndex;
+                    }
+                    else
+                    {
+                        System.Buffer.BlockCopy(stream.Buffer, bufferIndex, sync.LastSerializedState, serial.LastIndexInBuffer, stream.Position - bufferIndex);
                     }
                 }
             }
 
-            if (stream.Position > 0)
+            if (writeAll)
             {
-                sync.LastOutBuffer = stream.Buffer;
-                sync.BufferSize = stream.Position;
+                System.Buffer.BlockCopy(stream.Buffer, 0, sync.LastSerializedState, 0, stream.Position);
             }
 
-            if (change)
+            if (stream.Position - delta > 0)
             {
+                sync.BufferSize = stream.Position;
                 sync.LastOutStamp = frame;
             }
+        }
+
+        private bool CheckDiff(byte[] src, int srcStart, byte[] dst, int dstStart, int length)
+        {
+            for(int i = length - 1; i >= 0; --i)
+            {
+                if (src[srcStart + i] != dst[dstStart + i])
+                    return true;
+            }
+            return false;
         }
     }
 }

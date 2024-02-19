@@ -51,6 +51,18 @@ namespace Dirt.Simulation.Actor
             throw new ComponentNotFoundException(typeof(C));
         }
 
+        public ref C UnsafeGet<C>(GameActor actor) where C : struct
+        {
+            int compIdx = actor.GetComponentIndex<C>();
+            ComponentArray<C> pool = Components.GetPool<C>();
+            if (compIdx != -1)
+            {
+                return ref pool.Components[compIdx];
+            }
+
+            return ref pool.Fallback;
+        }
+
         public bool TryGetActor(int actorID, out GameActor actor) => (actor = m_Builder.GetActorByID(actorID)) != null;
 
         public List<ActorTuple<C1>> GetAll<C1>() where C1 : struct

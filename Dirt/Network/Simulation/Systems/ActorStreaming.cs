@@ -32,22 +32,16 @@ namespace Dirt.Network.Systems
         private ActorFilter Filter => m_Simulation.Filter;
         private GameSimulation m_Simulation;
         private Stopwatch m_Watch;
-        private int m_Frame;
-
         protected virtual void DoRecord(string id, int value) { }
-
         protected virtual bool ShouldSerializeActor(ref NetInfo info) => false;
-        protected virtual bool ShouldSerializeField(bool isOwner) => true;
         protected virtual bool ShouldDeserialize(bool serverAuthor, bool isOwner) => isOwner;
         protected virtual bool ShouldDeserialize(ref NetInfo info) => !info.ServerControl && info.Owner != -1;
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            m_Frame++;
             m_Watch.Restart();
             ActorList<NetInfo> netActors = Filter.GetActors<NetInfo>();
             long ticks = m_Watch.Elapsed.Ticks;
-            long serialTicks = 0;
             long deserialTicks = 0;
             DoRecord("ActorStreaming.Filter", (int) (ticks * SystemContainer.TICK_TO_MICRO));
             for (int i = 0; i < netActors.Count; ++i)
@@ -60,23 +54,14 @@ namespace Dirt.Network.Systems
                 }
                 deserialTicks += m_Watch.Elapsed.Ticks - ticks;
                 ticks = m_Watch.Elapsed.Ticks;
-
-                if (ShouldSerializeActor(ref netBhv))
-                {
-                    m_Stream.SerializeActor(actor, ref netBhv, m_Frame);
-                }
-                serialTicks += m_Watch.Elapsed.Ticks - ticks;
-                ticks = m_Watch.Elapsed.Ticks;
             }
             DoRecord("ActorStreaming.DeserializeAll", (int) (deserialTicks * SystemContainer.TICK_TO_MICRO));
-            DoRecord("ActorStreaming.SerializeAll", (int) (serialTicks * SystemContainer.TICK_TO_MICRO));
             DoRecord("ActorStreaming.Actors", netActors.Count);
         }
 
         public virtual void Initialize(GameSimulation sim)
         {
             m_Watch = new Stopwatch();
-            m_Frame = 0;
             m_Simulation = sim;
             m_Stream = new ActorStream();
             m_Stream.Initialize(m_Simulation, ClientStream);

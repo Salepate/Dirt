@@ -33,6 +33,7 @@ namespace Dirt.Simulation
 
 #if GAME_METRICS
         private MetricsManager m_Metrics;
+        private string m_TotalMetric;
 #endif
         public int Frame { get; private set; }
 
@@ -107,6 +108,7 @@ namespace Dirt.Simulation
 
             m_FrameLabel = $"sim.{simulation.ID}.frame";
             m_FrameSec = $"sim.{simulation.ID}.fps";
+            m_TotalMetric = $"sim.{simulation.ID}.total";
             m_Ticks = DateTime.Now.Ticks;
             Frame = 0;
             m_LastSecondFrames = 0;
@@ -140,7 +142,7 @@ namespace Dirt.Simulation
             }
 
 #if GAME_METRICS
-            m_Metrics.Record($"sim.{simulation.ID}.total", (int) (accTicks * TICK_TO_SECOND * 1000000));
+            m_Metrics.Record(m_TotalMetric, (int) (accTicks * TICK_TO_SECOND * 1000000));
 #endif
 
             DispatchQueuedEvents(simulation);

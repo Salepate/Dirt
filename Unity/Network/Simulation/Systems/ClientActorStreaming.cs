@@ -11,15 +11,6 @@ namespace Dirt.Network.Simulations.Systems
             ClientStream = true;
             base.Initialize(sim);
         }
-        protected override bool ShouldSerializeField(bool isOwner)
-        {
-            return isOwner;
-        }
-
-        protected override bool ShouldSerializeActor(ref NetInfo info)
-        {
-            return info.Owned;
-        }
 
         protected override bool ShouldDeserialize(bool serverAuthor, bool isOwner)
         {

@@ -92,6 +92,7 @@ namespace Dirt.Network.Managers
             }
             // Raw
             ComponentSerializer serializer = new ComponentSerializer();
+            serializer.Name = compType.Name;
             if (typeof(INetComponent).IsAssignableFrom(compType))
             {
                 serializer.UseNetSerializer = true;

@@ -75,10 +75,9 @@ namespace Dirt.Network.Simulation.Systems
                 if (sync.Owned)
                 {
                     m_Stream.SerializeActor(netActors.GetActor(i), ref sync, m_Frame);
-                    if (sync.LastOutBuffer != null)
+                    if (sync.LastOutStamp == m_Frame)
                     {
                         m_Server.SendRaw(sync.LastOutBuffer, sync.BufferSize);
-                        sync.LastOutBuffer = null;
                     }
                 }
             }

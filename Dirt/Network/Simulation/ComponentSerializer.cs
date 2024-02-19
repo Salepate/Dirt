@@ -10,5 +10,6 @@
         public int ComponentIndex { get; set; }
 
         public int LastIndexInBuffer { get; set; }
+        public string Name { get; internal set; } // debug
     }
 }
