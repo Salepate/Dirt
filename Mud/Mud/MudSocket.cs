@@ -33,6 +33,18 @@ namespace Mud
             }
         }
 
+        public void Send(byte[] buffer, int bufferSize, bool reliable = false)
+        {
+            if ( !reliable )
+            {
+                SendNetworkMessage(buffer, bufferSize);
+            }
+            else
+            {
+                SendNetworkMessageReliable(buffer, bufferSize);
+            }
+        }
+
         protected abstract void SendNetworkMessage(byte[] message, int messageLength);
 
         protected virtual void SendNetworkMessageReliable(byte[] message, int messageLength) { SendNetworkMessage(message, messageLength);  }

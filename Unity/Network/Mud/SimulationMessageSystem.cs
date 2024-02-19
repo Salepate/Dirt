@@ -104,16 +104,9 @@ namespace Mud.DirtSystems
                     if ( newActor.GetComponentIndex<NetInfo>() != -1 )
                     {
                         ref NetInfo netBhv = ref m_Simulation.Simulation.Filter.Get<NetInfo>(newActor);
+                        m_Simulation.Simulation.Builder.SetComponentPoolIndex(ref netBhv);
                         m_TranslationTable[netBhv.ID] = newActor.ID;
-
-                        bool isOwner = netBhv.Owner == m_Proxy.LocalPlayer;
-                        netBhv.Owned = isOwner;
-                        for (int i = 0; i < netBhv.Fields.Length; ++i)
-                        {
-                            ComponentFieldInfo field = netBhv.Fields[i];
-                            field.Owner = field.Owner && isOwner;
-                            netBhv.Fields[i] = field;
-                        }
+                        netBhv.Owned = netBhv.Owner == m_Proxy.LocalPlayer;
                     }
                     break;
                 case NetworkOperation.ActorSync:
@@ -161,12 +154,7 @@ namespace Mud.DirtSystems
             if (actorID > 0)
             {
                 ref NetInfo netInfo = ref m_Simulation.Simulation.Filter.Get<NetInfo>(actorID);
-                using (MemoryStream ms = new MemoryStream(syncBuffer))
-                {
-                    ms.Position = 1; // skip the net id
-                    MessageHeader state = (MessageHeader)m_Serializer.Deserialize(ms);
-                    netInfo.LastMessageBuffer = state;
-                }
+                netInfo.LastInBuffer = syncBuffer;
             }
         }
     }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Dirt.Network.Simulation.Components
 {
     [Serializable]
-    public struct NetInfo : IComponent, IComponentAssign
+    public struct NetInfo : IComponent, IComponentAssign, INetComponent
     {
         public const int MaxID = 255; // used for commonly updated entities
 
@@ -17,8 +17,8 @@ namespace Dirt.Network.Simulation.Components
         public float SyncClock;
         [DisableSync]
         public ComponentFieldInfo[] Fields;
-        [DisableSync]
-        internal ComponentSerializer[] Serializers;
+        public ComponentSerializer[] Serializers;
+        public string[] Synced; // list of synced components
 
         [NonSerialized]
         public MessageHeader LastMessageBuffer;
@@ -38,12 +38,29 @@ namespace Dirt.Network.Simulation.Components
         [NonSerialized]
         public int ServerControlTime;
 
+
         public void Assign()
         {
             ID = -1;
             Owned = true;
             Fields = new ComponentFieldInfo[0];
             ServerControlTime = 0;
+        }
+
+        public void Serialize(NetworkStream stream, bool client)
+        {
+            if (!client)
+            {
+                stream.Write(ServerControl);
+            }
+        }
+
+        public void Deserialize(NetworkStream stream, bool client, bool author)
+        {
+            if (client)
+            {
+                ServerControl = stream.ReadBool();
+            }
         }
     }
 }

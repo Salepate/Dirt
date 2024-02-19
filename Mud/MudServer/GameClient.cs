@@ -40,6 +40,8 @@ namespace Mud.Server
         /// <param name="message">mud message</param>
         public void Send(MudMessage message) => Send(message, false);
 
+        public void SendRaw(byte[] buffer, int bufferSize) => m_Socket.Send(buffer, bufferSize, false);
+
         /// <summary>
         /// Send a message to client (only support byte array)
         /// </summary>

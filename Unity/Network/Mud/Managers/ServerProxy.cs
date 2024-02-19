@@ -41,5 +41,10 @@ namespace Mud.Managers
             m_Connector.Socket.Send(message);
             m_PingClock = 0f;
         }
+
+        public void SendRaw(byte[] buffer, int bufferSize)
+        {
+            m_Connector.Socket.Send(buffer, bufferSize, false);
+        }
     }
 }

@@ -11,9 +11,11 @@ namespace Dirt.Network.Model
         public string[] SyncedComponents;
         public Dictionary<string, FieldSettings> Fields;
 
+        public Dictionary<string, bool> OwnerAuthority;
         public SyncInfo()
         {
             Fields = new Dictionary<string, FieldSettings>();
+            OwnerAuthority = new Dictionary<string, bool>();
             SyncedComponents = new string[0];
         }
     }

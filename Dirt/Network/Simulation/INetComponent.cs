@@ -8,9 +8,9 @@
         /// <summary>
         /// Called when the component is getting serialized.
         /// </summary>
-        /// <param name="destination"></param>
-        /// <param name="offset">current offset</param>
-        void Serialize(NetworkStream stream);
-        void Deserialize(NetworkStream stream);
+        /// <param name="stream">stream to read and write data</param>
+        /// <param name="client">which side the serialization is happening on</param>
+        void Serialize(NetworkStream stream, bool client);
+        void Deserialize(NetworkStream stream, bool client, bool authority);
     }
 }

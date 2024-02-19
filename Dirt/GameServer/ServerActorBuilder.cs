@@ -59,12 +59,14 @@ namespace Dirt.GameServer
                     ref NetInfo netInfo = ref AddComponent<NetInfo>(builtActor);
                     this.GenerateActorSyncData(builtActor, ref netInfo, syncInfo, owner);
                     netInfo.ID = m_AvailableIDs.Pop();
+                    netInfo.Synced = syncInfo.SyncedComponents;
                 }
                 else
                 {
                     ref NetInfo netInfo = ref Components.GetPool<NetInfo>().Components[netInfoIdx];
                     this.GenerateActorSyncData(builtActor, ref netInfo, syncInfo, owner);
                     netInfo.ID = m_AvailableIDs.Pop();
+                    netInfo.Synced = syncInfo.SyncedComponents;
                 }
 
             }

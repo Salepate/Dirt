@@ -27,6 +27,7 @@ namespace Dirt.Network.Systems
         public const int Destroyed = 0;
         public const int Culled = 255;
 
+        protected bool ClientStream;
         private ActorStream m_Stream;
         private ActorFilter Filter => m_Simulation.Filter;
         private GameSimulation m_Simulation;
@@ -78,7 +79,7 @@ namespace Dirt.Network.Systems
             m_Frame = 0;
             m_Simulation = sim;
             m_Stream = new ActorStream();
-            m_Stream.Initialize(m_Simulation);
+            m_Stream.Initialize(m_Simulation, ClientStream);
         }
     }
 }

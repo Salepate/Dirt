@@ -37,6 +37,11 @@ namespace Dirt.Network
             System.Buffer.BlockCopy(buffer, 0, Buffer, Position, buffer.Length);
         }
 
+        public void Write(byte value)
+        {
+            Buffer[Position] = value;
+            Position++;
+        }
         // do the same for int, float, float3, float2
         // using bitwise operators instead of BitConverter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -68,6 +73,12 @@ namespace Dirt.Network
         }
 
         // read
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int ReadByte()
+        {
+            Position += 1;
+            return Buffer[Position - 1];
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadInt()

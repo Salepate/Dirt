@@ -1,10 +1,16 @@
 ﻿using Dirt.Network.Simulation.Components;
 using Dirt.Network.Systems;
+using Dirt.Simulation;
 
 namespace Dirt.Network.Simulations.Systems
 {
     public class ClientActorStreaming : ActorStreaming
     {
+        public override void Initialize(GameSimulation sim)
+        {
+            ClientStream = true;
+            base.Initialize(sim);
+        }
         protected override bool ShouldSerializeField(bool isOwner)
         {
             return isOwner;

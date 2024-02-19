@@ -4,13 +4,13 @@ using Dirt.Network.Simulation.Events;
 using Dirt.Simulation;
 using Dirt.Simulation.Action;
 using Dirt.Simulation.Actor;
-using Dirt.Simulation.Actor.Components;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.SystemHelper;
 using Mud;
 using Mud.Managers;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.NetworkInformation;
 
 namespace Dirt.Network.Simulation.Systems
 {
@@ -24,8 +24,9 @@ namespace Dirt.Network.Simulation.Systems
         private MemoryStream m_BufferStream;
         private BinaryWriter m_BufferWriter;
         private GameSimulation m_Simulation;
-        private SimulationContext m_Context;
         private ActorFilter Filter => m_Simulation.Filter;
+        private ActorStream m_Stream;
+        private int m_Frame;
 
         public ClientActorSynchronization()
         {
@@ -58,24 +59,26 @@ namespace Dirt.Network.Simulation.Systems
         public void Initialize(GameSimulation sim)
         {
             m_Simulation = sim;
+            m_Stream = new ActorStream();
+            m_Stream.Initialize(sim, true);
+
         }
 
         public void UpdateActors(GameSimulation sim, float deltaTime)
         {
-            foreach(var t in sim.Filter.GetAll<NetInfo>())
+            m_Frame++;
+
+            var netActors = sim.Filter.GetActors<NetInfo>();
+            for(int i = 0; i < netActors.Count; ++i)
             {
-                ref NetInfo netBhv = ref t.Get();
-                if (netBhv.Owner == m_Server.LocalPlayer) // has some ownership
+                ref NetInfo sync = ref netActors.GetC1(i);
+                if (sync.Owned)
                 {
-                    if (netBhv.LastOutBuffer != null && netBhv.LastOutBuffer.Length > 0)
+                    m_Stream.SerializeActor(netActors.GetActor(i), ref sync, m_Frame);
+                    if (sync.LastOutBuffer != null)
                     {
-                        using (MemoryStream st = new MemoryStream())
-                        {
-                            st.WriteByte((byte)netBhv.ID);
-                            st.Write(netBhv.LastOutBuffer, 0, netBhv.LastOutBuffer.Length);
-                            m_Server.Send(MudMessage.Create((byte)NetworkOperation.ActorSync, st.ToArray()));
-                        }
-                        netBhv.LastOutBuffer = null;
+                        m_Server.SendRaw(sync.LastOutBuffer, sync.BufferSize);
+                        sync.LastOutBuffer = null;
                     }
                 }
             }
@@ -88,7 +91,6 @@ namespace Dirt.Network.Simulation.Systems
 
         public void SetContext(SimulationContext context)
         {
-            m_Context = context;
             m_ActionContext = context.GetContext<ActorActionContext>();
         }
     }
