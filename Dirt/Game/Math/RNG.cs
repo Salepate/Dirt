@@ -40,7 +40,7 @@
         /// 
         /// </summary>
         /// <param name="min">min value</param>
-        /// <param name="max">max value</param>
+        /// <param name="max">max value (inclusive)</param>
         /// <returns></returns>
         public int Range(int min, int max)
         {
