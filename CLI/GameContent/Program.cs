@@ -10,7 +10,7 @@ namespace GameContent
         {
             if ( args.Length < 2 )
             {
-                System.Console.WriteLine($"Usage: <input directory> <output filename>");
+                System.Console.WriteLine($"Usage: <input directory> <output filename> [<additionalDirA> <additionalDirB>]");
                 return;
             }
 
@@ -19,30 +19,27 @@ namespace GameContent
             bool prettify = GetOption(args, "p");
 
             DirectoryInfo inputDir = new DirectoryInfo(input);
-
             FileInfo outputFile = new FileInfo(output);
 
             string outputFilename = outputFile.Name;
 
             Dictionary<string, string> filemap = new Dictionary<string, string>();
 
-            var jsons = inputDir.GetFiles("*.*");
-            for(int i = 0; i < jsons.Length; ++i)
+            AddFolder(inputDir, filemap, string.Empty);
+            int addDirs = 2;
+            string addDir = GetRequiredArg(args, addDirs);
+            while(!string.IsNullOrEmpty(addDir))
             {
-                string ext = jsons[i].Extension;
-                string name = jsons[i].Name.Substring(0, jsons[i].Name.Length - ext.Length);
-                if (jsons[i].Name == outputFilename)
-                    continue;
-                try
-                { 
-                    filemap.Add(name, jsons[i].Name);
-                }
-                catch(System.Exception e)
+                string path = string.Empty;
+                if (addDir.StartsWith(input))
                 {
-                    System.Console.WriteLine($"Error adding {jsons[i].Name}");
-                    System.Console.WriteLine(e.Message);
+                    path = addDir.Substring(input.Length + 1) + "/";
                 }
+
+                AddFolder(new DirectoryInfo(addDir), filemap, path);
+                addDir = GetRequiredArg(args, ++addDirs);
             }
+            
 
             var gamecontent = new Dirt.Game.Content.GameContent()
             {
@@ -51,6 +48,26 @@ namespace GameContent
 
             var outputStr =  JsonConvert.SerializeObject(gamecontent, prettify ? Formatting.Indented : Formatting.None);
             File.WriteAllText(output, outputStr);
+        }
+
+        private static void AddFolder(DirectoryInfo dir, Dictionary<string, string> filemap, string path = "")
+        {
+            var assets = dir.GetFiles("*.*");
+            for(int i = 0; i < assets.Length; ++i)
+            {
+                string ext = assets[i].Extension;
+                string name = assets[i].Name.Substring(0, assets[i].Name.Length - ext.Length);
+
+                if (filemap.ContainsKey(name))
+                {
+                    System.Console.WriteLine($"<Error> - Duplicate file {name} found in {dir.FullName}");
+                    continue;
+                }
+                else
+                {
+                    filemap.Add(name, $"{path}{assets[i].Name}");
+                }
+            }
         }
 
         private static string GetRequiredArg(string[] args, int argNumber)
