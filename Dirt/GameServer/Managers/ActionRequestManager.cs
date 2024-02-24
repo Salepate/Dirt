@@ -106,7 +106,10 @@ namespace Dirt.GameServer.Managers
                     SimulationProxy simProxy = m_Sims.GetSimulationProxy(player.Simulation);
                     GameSimulation sim = simProxy.Simulation;
                     GameActor sourceActor = sim.Filter.GetSingle<NetInfo>(n => n.ID == netID && n.Owner == client.Number);
-                    RequestRemoteAction(sourceActor, sim, actionIndex, m_NetRequestParameterBuffer.ToArray());
+                    if (sourceActor != null)
+                    {
+                        RequestRemoteAction(sourceActor, sim, actionIndex, m_NetRequestParameterBuffer.ToArray());
+                    }
                     break;
             }
         }
