@@ -7,7 +7,7 @@ namespace Dirt.Network
 {
     public static class ClientCommandProcessor
     {
-        public const int RequestTimeout = 2 * 1000; // in ms
+        public const int RequestTimeout = 5 * 1000; // in ms
         public const int MaxParameters = 4;
         public const string CommandNameParameter = "commandName";
         public const string SessionIDParameter = "sessid";
