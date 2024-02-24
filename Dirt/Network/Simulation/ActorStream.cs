@@ -58,7 +58,7 @@ namespace Dirt.Network.Simulation
                     if (m_Client) 
                     {
                         // Always deserialize all data, but use authority to ignore some data
-                        authority = serial.AuthoredByOwner && sync.Owned;
+                        authority = serial.AuthoredByOwner && sync.Owned && !sync.ServerControl;
                         ignore = false;
                     }
                     else
