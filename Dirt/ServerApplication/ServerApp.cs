@@ -69,9 +69,8 @@ namespace Dirt.ServerApplication
                 Console.Error($"Unable to load {pluginLib}");
                 Console.Error(e.Message);
             }
-
-            m_Game = new GameInstance(m_Server.StreamGroups, contentPath, contentVersion, plugin);
-            m_Game.RegisterManager(new RealTimeServerManager(m_Server, netTickrate));
+            
+            m_Game = new GameInstance(m_Server.StreamGroups, new RealTimeServerManager(m_Server, netTickrate), contentPath, contentVersion, plugin);
             m_Game.InitializePlugin();
             Metrics = m_Game.GetManager<MetricsManager>();
 

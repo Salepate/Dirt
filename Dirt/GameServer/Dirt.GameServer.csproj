@@ -68,6 +68,7 @@
     <Compile Include="PlayerProxy.cs" />
     <Compile Include="PlayerStore\Helpers\PlayerName.cs" />
     <Compile Include="PlayerStore\Model\PlayerCredential.cs" />
+    <Compile Include="PlayerStore\Model\RegistrationCodeTable.cs" />
     <Compile Include="PlayerStore\Model\SimpleID.cs" />
     <Compile Include="PlayerStore\OnlinePlayerTable.cs" />
     <Compile Include="PlayerStore\PersistentStore.cs" />

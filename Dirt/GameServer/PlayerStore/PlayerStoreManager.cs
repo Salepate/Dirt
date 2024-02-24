@@ -7,6 +7,8 @@ using Dirt.Log;
 using Dirt.Network;
 using Mud;
 using Mud.Server;
+using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -15,6 +17,7 @@ namespace Dirt.GameServer.PlayerStore
     using BitConverter = System.BitConverter;
     public class PlayerStoreManager : IGameManager
     {
+        public const string RegistrationCode = "code";
         public const string DataSep = "data";
         public const string SimpleIDFile = "_id";
         private const int GenerationAttempts = 20;
@@ -25,6 +28,10 @@ namespace Dirt.GameServer.PlayerStore
         private GameInstance m_Game;
         private RealTimeServerManager m_RTServer;
 
+        private Dictionary<string, RegistrationCodeTable> m_CodeTable;
+        private HashSet<string> m_LoadedCodeTables;
+
+        public bool UseRegistrationCode { get; set; }
         public bool AllowPlayerReconnect { get; set; }
         public PersistentStore Store { get; private set; }
         public OnlinePlayerTable Table { get; private set; }
@@ -36,11 +43,14 @@ namespace Dirt.GameServer.PlayerStore
             Store = new PersistentStore();
             m_HashAlgorithm = SHA256.Create();
             m_RTServer = game.GetManager<RealTimeServerManager>();
+            m_CodeTable = new Dictionary<string, RegistrationCodeTable>();
+            m_LoadedCodeTables = new HashSet<string>();
+
             if ( !Store.Exists(SimpleIDFile) || !Store.TryRead(SimpleIDFile, out m_UniqueID))
             {
                 m_UniqueID = new SimpleID();
             }
-            
+            BufferAdditionalCodes();
         }
         public void Update(float deltaTime)
         {
@@ -133,6 +143,63 @@ namespace Dirt.GameServer.PlayerStore
                 }   
             }
             return renamed;
+        }
+
+        public bool VerifyCode(string code)
+        {
+            BufferAdditionalCodes();
+            return m_CodeTable.ContainsKey(code);
+        }
+
+        public void ConsumeCode(string code)
+        {
+            if (m_CodeTable.TryGetValue(code, out RegistrationCodeTable table))
+            {
+                table.Codes.Remove(code);
+                m_CodeTable.Remove(code);
+                if (table.Codes.Count > 0)
+                {
+                    Store.Write(table.FileName, table, true);
+                }
+                else
+                {
+                    m_LoadedCodeTables.Remove(table.FileName);
+                    Store.Delete(table.FileName);
+                }
+            }
+        }
+
+        private void BufferAdditionalCodes()
+        {
+            int totalAdded = 0;
+            string[] codeFiles = Store.List(RegistrationCode, "json");
+            for(int i = 0; i < codeFiles.Length; ++i)
+            {
+                string file = codeFiles[i];
+                if (!m_LoadedCodeTables.Contains(file) && Store.TryRead(file, out RegistrationCodeTable table))
+                {
+                    int added = 0;
+                    table.FileName = file;
+                    
+                    for(int j = 0; j < table.Codes.Count; ++j)
+                    {
+                        if (!m_CodeTable.ContainsKey(table.Codes[j]))
+                        {
+                            m_CodeTable.Add(table.Codes[j], table);
+                            ++added;
+                        }
+                    }
+                    if (added > 0)
+                    {
+                        m_LoadedCodeTables.Add(file);
+                        totalAdded += added;
+                    }
+                }   
+            }
+            if (totalAdded > 0)
+            {
+                Console.Message($"Added {totalAdded} registration codes");
+            }
         }
 
         /// <summary>

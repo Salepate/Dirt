@@ -29,18 +29,22 @@ namespace Dirt.GameServer.PlayerStore
             return 0;
         }
 
-        [GameCommand("RegisterPlayer", 2, true)]
+        [GameCommand("RegisterPlayer", 3, true)]
         public static bool RegisterPlayer(CommandContext ctx, CommandParameters parameters)
         {
             PlayerStoreManager storeMgr = ctx.Instance.GetManager<PlayerStoreManager>();
             string userName = parameters.PopString();
             string userPass = parameters.PopString();
+            string userCode = parameters.PopString();
+
             uint id;
-            if (storeMgr.TryGetFreeID(userName, out id))
+            if (storeMgr.TryGetFreeID(userName, out id) && (!storeMgr.UseRegistrationCode || storeMgr.VerifyCode(userCode)))
             {
                 bool valid = storeMgr.RegisterUser(userName, storeMgr.GetHash(userPass), id);
-                if ( valid )
+                if (valid)
                 {
+                    if (storeMgr.UseRegistrationCode)
+                        storeMgr.ConsumeCode(userCode);
                     string playerTag = $"{userName}#{id}";
                     return storeMgr.AttemptUserAuth(ctx.PlayerNumber, playerTag, storeMgr.GetHash(userPass));
                 }

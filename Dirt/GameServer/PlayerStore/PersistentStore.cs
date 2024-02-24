@@ -24,6 +24,17 @@ namespace Dirt.GameServer.PlayerStore
             return f.Exists;
         }
 
+        public string[] List(string prefix, string extension)
+        {
+            FileInfo[] files = m_PersistentDirectory.GetFiles($"{prefix}*.{extension}");
+            string[] keys = new string[files.Length];
+            for(int i = 0; i < files.Length; ++i)
+            {
+                keys[i] = files[i].Name.Replace($".{extension}", string.Empty);
+            }
+            return keys;
+        }
+
         public bool Write(string key, object data, bool overwrite = false)
         {
             if (!overwrite && Exists(key))
@@ -37,7 +48,7 @@ namespace Dirt.GameServer.PlayerStore
         public bool TryRead<T>(string key, out T data)
         {
             data = default;
-            if ( Exists(key))
+            if (Exists(key))
             {
                 string fileName = $"{key}.json";
                 string filePath = Path.Combine(m_PersistentDirectory.FullName, fileName);
@@ -45,6 +56,16 @@ namespace Dirt.GameServer.PlayerStore
                 return true;
             }
             return false;
+        }
+
+        internal void Delete(string key)
+        {
+            if (Exists(key))
+            {
+                string fileName = $"{key}.json";
+                string filePath = Path.Combine(m_PersistentDirectory.FullName, fileName);
+                File.Delete(filePath);
+            }
         }
     }
 }

@@ -41,6 +41,7 @@ namespace Dirt.GameServer
         // Dirt
         private Dictionary<int, StreamGroup> m_Groups;
         private Dictionary<Type, IGameManager> m_Managers;
+        public PluginInstance Plugin => m_Plugin;
         public SimulationManager Simulations { get; private set; }
         private StreamGroupManager m_GroupManager;
         private NetworkSerializer m_Serializer;
@@ -53,7 +54,7 @@ namespace Dirt.GameServer
         private PluginInstance m_Plugin;
 
         public Action<GameClient, MudMessage> CustomMessage;
-        public GameInstance(StreamGroupManager groupManager, string contentPath, string contentManifest, PluginInstance plugin)
+        public GameInstance(StreamGroupManager groupManager, RealTimeServerManager realTimeManager, string contentPath, string contentManifest, PluginInstance plugin)
         {
             Console.Assert(plugin != null, "No plugin specified");
             int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
@@ -84,17 +85,23 @@ namespace Dirt.GameServer
             RegisterManager(m_Players);
             RegisterManager(Simulations);
             RegisterManager(new ActionRequestManager(this));
-
             RegisterManager(new WebService("127.0.0.1", webServicePort));
+            RegisterManager(realTimeManager);
+            PlayerStoreManager playerStore = new PlayerStoreManager(this);
+            if (bool.TryParse(ConfigurationManager.AppSettings["UseRegistrationCode"], out bool useRegistrationCode))
+            {
+                playerStore.UseRegistrationCode = useRegistrationCode;
+            }
+
+            RegisterManager(playerStore);
+            RegisterManager(new CommandProcessor(this));
+            GetManager<CommandProcessor>().RegisterClassCommands<SessionCommands>();
             GetManager<WebService>().Start();
             Console.Message($"{m_Plugin.PluginName} Started");
         }
 
         public void InitializePlugin()
         {
-            RegisterManager(new PlayerStoreManager(this));
-            RegisterManager(new CommandProcessor(this));
-            GetManager<CommandProcessor>().RegisterClassCommands<SessionCommands>();
             m_Plugin.Initialize(m_SharedContexts, this);
         }
 
