@@ -1,5 +1,6 @@
 ﻿using Dirt;
 using Dirt.Events;
+using Dirt.Game.Math;
 using Dirt.Log;
 using Dirt.Network;
 using Dirt.Network.Managers;
@@ -15,6 +16,7 @@ using Dirt.Simulation.Builder;
 using Dirt.Systems;
 using Mud.Framework;
 using Mud.Managers;
+using System;
 using System.IO;
 
 namespace Mud.DirtSystems
@@ -69,7 +71,7 @@ namespace Mud.DirtSystems
             {
                 case NetworkOperation.LoadSimulation:
                     string sim = System.Text.Encoding.ASCII.GetString(message);
-                    Console.Message($"Load simulation {sim}");
+                    Dirt.Log.Console.Message($"Load simulation {sim}");
                     m_Simulation.ChangeSimulation(sim);
                     m_Proxy.Send(MudMessage.Create((byte)NetworkOperation.ClientReady, null));
                     ResetTranslationTable();
@@ -97,6 +99,7 @@ namespace Mud.DirtSystems
                     GameActor newActor = builder.CreateActor();
                     byte[] serializedBuffer = null;
                     byte[] serializedState = null;
+                    byte[] lastInBuffer = null;
 
 
                     for (int i = 0; i < state.Components.Length; ++i)
@@ -108,6 +111,7 @@ namespace Mud.DirtSystems
                             ref NetInfo netBhv = ref builder.Components.GetPool<NetInfo>().Components[compIdx];
                             serializedBuffer = netBhv.LastOutBuffer;
                             serializedState = netBhv.LastSerializedState;
+                            lastInBuffer = netBhv.LastInBuffer;
                         }
                         builder.Components.GetPool(compType).Set(compIdx, state.Components[i]);
                     }
@@ -119,6 +123,7 @@ namespace Mud.DirtSystems
                         netBhv.Owned = netBhv.Owner == m_Proxy.LocalPlayer;
                         netBhv.LastOutBuffer = serializedBuffer;
                         netBhv.LastSerializedState = serializedState;
+                        netBhv.LastInBuffer = lastInBuffer;
                     }
                     break;
                 case NetworkOperation.ActorSync:
@@ -140,7 +145,7 @@ namespace Mud.DirtSystems
                     }
                     else
                     {
-                        Console.Warning($"Actor (NetID {netID}) not found");
+                        Dirt.Log.Console.Warning($"Actor (NetID {netID}) not found");
                     }
                     break;
                 default:
@@ -159,14 +164,24 @@ namespace Mud.DirtSystems
             }
         }
 
-        private void SyncActor(int netID, byte[] syncBuffer)
+        private void SyncActor(int netID, byte[] buffer)
         {
             //actorID = m_TranslationTable[message[0]];
             int actorID = m_TranslationTable[netID];
             if (actorID > 0)
             {
                 ref NetInfo netInfo = ref m_Simulation.Simulation.Filter.Get<NetInfo>(actorID);
-                netInfo.LastInBuffer = syncBuffer;
+                netInfo.LastInBuffer[0] = buffer[0]; // netid
+                netInfo.LastInBufferSize = mathop.max(1, netInfo.LastInBufferSize);
+                if (netInfo.LastInBufferSize + buffer.Length - 1 < netInfo.LastInBuffer.Length)
+                {
+                    Buffer.BlockCopy(buffer, 1, netInfo.LastInBuffer, netInfo.LastInBufferSize, buffer.Length - 1);
+                    netInfo.LastInBufferSize += buffer.Length - 1;
+                }
+                else
+                {
+                    Dirt.Log.Console.Error($"Buffer overflow for Net Actor {netID}");
+                }
             }
         }
     }

@@ -40,7 +40,8 @@ namespace Dirt.Network.Simulation.Components
         public bool Owned;
         [NonSerialized]
         public int ServerControlTime;
-
+        [NonSerialized]
+        public int LastInBufferSize;
 
         public void Assign()
         {
@@ -49,6 +50,7 @@ namespace Dirt.Network.Simulation.Components
             Serializers = new ComponentSerializer[0];
             LastSerializedState = new byte[MaximumStateSize];
             LastOutBuffer = new byte[MaximumStateSize];
+            LastInBuffer = new byte[MaximumStateSize];
             Synced = new string[0];
             ServerControlTime = 0;
         }

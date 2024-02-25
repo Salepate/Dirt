@@ -1,6 +1,7 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
 using Dirt.Game.Managers;
+using Dirt.Game.Math;
 using Dirt.Game.Model;
 using Dirt.GameServer.GameCommand;
 using Dirt.GameServer.Managers;
@@ -281,7 +282,17 @@ namespace Dirt.GameServer
             if (targetActor != null)
             {
                 ref NetInfo netInfo = ref sim.Filter.Get<NetInfo>(targetActor);
-                netInfo.LastInBuffer = buffer;
+                netInfo.LastInBuffer[0] = buffer[0]; // netid
+                netInfo.LastInBufferSize = mathop.max(1, netInfo.LastInBufferSize);
+                if (netInfo.LastInBufferSize + buffer.Length - 1 < netInfo.LastInBuffer.Length)
+                {
+                    System.Buffer.BlockCopy(buffer, 1, netInfo.LastInBuffer, netInfo.LastInBufferSize, buffer.Length - 1);
+                    netInfo.LastInBufferSize += buffer.Length - 1;
+                }
+                else
+                {
+                    Console.Error($"Buffer overflow for Net Actor {netID} in simulation {sim.ID}");
+                }
             }
         }
 

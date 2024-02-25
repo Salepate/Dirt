@@ -16,7 +16,6 @@ namespace Dirt.Network.Simulation
     public class ActorStream
     {
         private bool m_Client;
-        public bool SerializeOwnedFieldOnly {get; set;}
         private GameSimulation m_Simulation;
 
         public ActorStream()
@@ -39,14 +38,13 @@ namespace Dirt.Network.Simulation
         /// <param name="sync">target behaviour to deserialize from</param>
         public void DeserializeActor(GameActor actor, ref NetInfo sync)
         {
-            if (sync.LastInBuffer == null || sync.Serializers == null || sync.Serializers.Length == 0)
+            if (sync.LastInBufferSize <= 1 || sync.Serializers == null || sync.Serializers.Length == 0)
                 return;
 
             NetworkStream stream = new NetworkStream(sync.LastInBuffer);
-            sync.LastInBuffer = null;
             stream.Position += 1; // skip id
 
-            while(stream.Position < stream.Buffer.Length)
+            while(stream.Position < sync.LastInBufferSize)
             {
                 int compIndex = stream.ReadByte();
                 if (compIndex <= sync.Serializers.Length)
@@ -88,6 +86,7 @@ namespace Dirt.Network.Simulation
                     }
                 }
             }
+            sync.LastInBufferSize = 0;
         }
 
         /// <summary>
