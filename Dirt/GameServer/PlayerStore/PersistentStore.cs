@@ -8,9 +8,19 @@ namespace Dirt.GameServer.PlayerStore
     public class PersistentStore
     {
         private DirectoryInfo m_PersistentDirectory;
+        private Formatting m_JsonFormatting;
         public PersistentStore()
         {
             string persistentFolder = ConfigurationManager.AppSettings["PersistentRoot"];
+            if (ConfigurationManager.AppSettings["PersistentFormat"] == "true")
+            {
+                m_JsonFormatting = Formatting.Indented;
+            }
+            else
+            {
+                m_JsonFormatting = Formatting.None;
+            }
+
             m_PersistentDirectory = new DirectoryInfo(persistentFolder);
             if ( !m_PersistentDirectory.Exists )
             {
@@ -41,7 +51,7 @@ namespace Dirt.GameServer.PlayerStore
                 return false;
             string fileName = $"{key}.json";
             string filePath = Path.Combine(m_PersistentDirectory.FullName, fileName);
-            File.WriteAllText(filePath, JsonConvert.SerializeObject(data));
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(data, m_JsonFormatting));
             return true;
         }
 
@@ -58,7 +68,7 @@ namespace Dirt.GameServer.PlayerStore
             return false;
         }
 
-        internal void Delete(string key)
+        public void Delete(string key)
         {
             if (Exists(key))
             {
