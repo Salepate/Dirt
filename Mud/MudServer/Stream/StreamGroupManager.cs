@@ -5,9 +5,6 @@ namespace Mud.Server.Stream
 {
     public class StreamGroupManager
     {
-        public System.Action<StreamGroup, GameClient> ClientJoined;
-        public System.Action<StreamGroup, GameClient> ClientLeft;
-
         public List<StreamGroup> ActiveGroups { get; private set; }
 
         public StreamGroupManager()
@@ -22,7 +19,7 @@ namespace Mud.Server.Stream
 
         public StreamGroup CreateGroup()
         {
-            StreamGroup grp = new StreamGroup(this);
+            StreamGroup grp = new StreamGroup();
             ActiveGroups.Add(grp);
             return grp;
         }

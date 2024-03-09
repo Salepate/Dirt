@@ -1,5 +1,6 @@
 ﻿using Mud.Server;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Mud.Server.Stream
 {
@@ -7,12 +8,9 @@ namespace Mud.Server.Stream
     {
         public List<GameClient> Clients { get; private set; }
 
-        private StreamGroupManager m_GroupManager;
-
-        internal StreamGroup(StreamGroupManager groupManager)
+        public StreamGroup()
         {
             Clients = new List<GameClient>();
-            m_GroupManager = groupManager;
         }
 
         public bool RegisterClient(GameClient client)
@@ -20,7 +18,6 @@ namespace Mud.Server.Stream
             if ( !Clients.Contains(client) )
             {
                 Clients.Add(client);
-                m_GroupManager.ClientJoined?.Invoke(this, client);
                 return true;
             }
             return false;
@@ -32,7 +29,6 @@ namespace Mud.Server.Stream
             if (clientIdx != -1)
             {
                 Clients.RemoveAt(clientIdx);
-                m_GroupManager.ClientLeft?.Invoke(this, client);
                 return true;
             }
             return false;
