@@ -25,7 +25,12 @@ namespace Dirt.Simulation.Context
             if (typeof(IContextItem).IsAssignableFrom(contextType))
             {
                 object contextObj = contextContent.ToObject(contextType);
-                m_Context.Add(contextType, contextObj);
+
+                while(contextType != typeof(object))
+                {
+                    m_Context.Add(contextType, contextObj);
+                    contextType = contextType.BaseType;
+                }
             }
             else
             {

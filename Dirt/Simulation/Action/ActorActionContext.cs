@@ -25,7 +25,7 @@ namespace Dirt.Simulation.Action
             m_Actions = new ActorAction[0];
         }
 
-        public void CreateActionMap(GameSimulation sim, SimulationContext simContext, IManagerProvider managers, IContentProvider content)
+        public virtual void CreateActionMap(GameSimulation sim, SimulationContext simContext, IManagerProvider managers, IContentProvider content)
         {
             Dictionary<string, System.Type> typeMap = AssemblyReflection.BuildTypeMap<ActorAction>(m_Assemblies.Assemblies);
 
