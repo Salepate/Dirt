@@ -25,7 +25,6 @@ using Mud.Server.Stream;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 
 namespace Dirt.GameServer
@@ -39,13 +38,16 @@ namespace Dirt.GameServer
         private const string DefaultSimulationName = "lobby";
         private const string SettingsContentName = "settings.netserial";
 
+        /// <summary>
+        /// This should only be accessed from the main thread
+        /// </summary>
+        public static NetworkSerializer Serializer;
         // Dirt
         private Dictionary<int, StreamGroup> m_Groups;
         private Dictionary<Type, IGameManager> m_Managers;
         public PluginInstance Plugin => m_Plugin;
         public SimulationManager Simulations { get; private set; }
         private StreamGroupManager m_GroupManager;
-        private NetworkSerializer m_Serializer;
         public ContentProvider Content { get; private set; }
         private SimulationBuilder m_SimBuilder;
 
@@ -74,15 +76,15 @@ namespace Dirt.GameServer
             NetworkTypes netAsses = Content.LoadContent<NetworkTypes>(SettingsContentName);
             //@hack: Load missing assemblies before serializer 
             AssemblyReflection.BuildTypeMap<ISimulationSystem>(ValidAssemblies.Assemblies);
-            m_Serializer = new NetworkSerializer(netAsses);
-            m_Players = new PlayerManager(m_Serializer);
+            Serializer = new NetworkSerializer(netAsses);
+            m_Players = new PlayerManager(Serializer);
 
             m_SimBuilder.LoadAssemblies(ValidAssemblies);
             m_Plugin = plugin;
 
             RegisterManager<IContentProvider>(Content);
             RegisterManager(new MetricsManager());
-            RegisterManager(m_Serializer);
+            RegisterManager(Serializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
             RegisterManager(new ActionRequestManager(this));
