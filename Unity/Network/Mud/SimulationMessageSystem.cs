@@ -48,6 +48,17 @@ namespace Mud.DirtSystems
 
         }
 
+        public bool TryTranslate(int netID, out int actorID)
+        {
+            if (netID > 0 && netID < m_TranslationTable.Length && m_Simulation.Simulation.Filter.TryGetActor(m_TranslationTable[netID], out GameActor actor))
+            {
+                actorID = actor.ID;
+                return true;
+            }
+            actorID = 0;
+            return false;
+        }
+
         private void ResetTranslationTable()
         {
             for(int i = 0; i < m_TranslationTable.Length; ++i)

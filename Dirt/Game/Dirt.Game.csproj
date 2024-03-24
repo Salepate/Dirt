@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Container\SwapTable.cs" />
     <Compile Include="Content\GameContent.cs" />
     <Compile Include="Content\IContentProvider.cs" />
     <Compile Include="IGameManager.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Math\mathop.cs" />
     <Compile Include="Math\MersenneTwister.cs" />
     <Compile Include="Math\RNG.cs" />
+    <Compile Include="Math\RNGLite.cs" />
     <Compile Include="Math\TrajectorySolver.cs" />
     <Compile Include="Math\float3.cs" />
     <Compile Include="Metrics\MetricObject.cs" />

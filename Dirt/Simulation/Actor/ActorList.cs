@@ -140,10 +140,4 @@ namespace Dirt.Simulation.Actor
             return ref C3Components.Components[C3Query.Indices[index]];
         }
     }
-
-    public struct OpaqueTable
-    {
-        public int[] Actors;
-        public int Count;
-    }
 }

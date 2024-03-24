@@ -59,6 +59,18 @@ namespace Framework
             return m_Pools[prefab];
         }
 
+        public PrefabPoolManager InitializePool<T>(GameObject prefab, Transform instanceRoot, System.Action<PrefabPoolManager, T> initializer, int capacity) where T: Component
+        {
+            if (!m_Pools.ContainsKey(prefab))
+            {
+                PrefabPoolManager pool = new PrefabPoolManager(prefab, instanceRoot);
+                System.Action<T> lambda = (T obj) => initializer(pool, obj);
+                pool.InitializePool(capacity, lambda);
+                m_Pools.Add(prefab, pool);
+            }
+
+            return m_Pools[prefab];
+        }
         public PrefabPoolManager InitializePool<T>(GameObject prefab, Transform instanceRoot, System.Action<T> initializer, int initialCapacity) where T : Component
         {
             if (!m_Pools.ContainsKey(prefab))
