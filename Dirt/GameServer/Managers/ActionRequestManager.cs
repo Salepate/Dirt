@@ -1,4 +1,5 @@
 ﻿using Dirt.Game;
+using Dirt.GameServer.Simulation.Actions;
 using Dirt.GameServer.Simulation.Components;
 using Dirt.Log;
 using Dirt.Network;
@@ -24,6 +25,9 @@ namespace Dirt.GameServer.Managers
         private List<ActionParameter> m_ParameterBuffer;
         private List<ActionParameter> m_NetRequestParameterBuffer;
 
+        private PlayerActionStamps[] m_PlayerStamps;
+        private ulong m_Stamp;
+
         public ActionRequestManager(GameInstance game)
         {
             m_Game = game;
@@ -34,9 +38,17 @@ namespace Dirt.GameServer.Managers
             m_NetRequestParameterBuffer = new List<ActionParameter>();
             m_MemoryStream = new MemoryStream();
             m_BufferWriter = new BinaryWriter(m_MemoryStream);
+            m_PlayerStamps = new PlayerActionStamps[game.GetManager<RealTimeServerManager>().Server.MaximumClients+1];
+            m_Stamp = 0;
+            for (int i = 0; i < m_PlayerStamps.Length; ++i)
+            {
+                //TODO: Expose?
+                m_PlayerStamps[i] = new PlayerActionStamps(255);
+            }
         }
         public void Update(float deltaTime)
         {
+            m_Stamp++;
         }
 
         /// <summary>
@@ -82,10 +94,11 @@ namespace Dirt.GameServer.Managers
                 for (int i = 0; i < cullAreas.Count; ++i)
                 {
                     ref CullArea cullArea = ref cullAreas.GetC1(i);
+                    PlayerProxy playerProxy = m_Players.FindPlayer(cullArea.Client);
                     bool isOwner = cullArea.Client == playerNumber;
-                    if (cullArea.ProximityActors.Contains(netID) && (replicateOwner && isOwner || replicateOthers && !isOwner))
+                    if (playerProxy != null && cullArea.ProximityActors.Contains(netID) && (replicateOwner && isOwner || replicateOthers && !isOwner))
                     {
-                        m_Players.FindPlayer(cullArea.Client).Client.Send(actionMessage, true);
+                        playerProxy.Client.Send(actionMessage, true);
                     }
                 }
                 sim.Events.Enqueue(new ActorActionEvent(sourceActor.ID, actionIndex, execData.Parameters));
@@ -97,11 +110,19 @@ namespace Dirt.GameServer.Managers
             switch ((NetworkOperation)mudMessage.opCode)
             {
                 case NetworkOperation.ActionRequest:
+
+                    ref PlayerActionStamps stamps = ref m_PlayerStamps[client.Number];
                     if (mudMessage.buffer.Length < 5) //TODO: explicit check
                         return;
 
                     m_NetRequestParameterBuffer.Clear();
                     NetworkActionHelper.ExtractAction(mudMessage.buffer, out int netID, out int actionIndex, m_NetRequestParameterBuffer);
+                    if (stamps.HasStamp(actionIndex, m_Stamp))
+                    {
+                        Console.Message("Stamp Protected");
+                        return;
+                    }
+                    stamps.Stamp(actionIndex, m_Stamp);
                     PlayerProxy player = m_Players.FindPlayer(client.Number);
                     SimulationProxy simProxy = m_Sims.GetSimulationProxy(player.Simulation);
                     GameSimulation sim = simProxy.Simulation;

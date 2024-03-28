@@ -83,13 +83,13 @@ namespace Dirt.GameServer
             m_Plugin = plugin;
 
             RegisterManager<IContentProvider>(Content);
+            RegisterManager(realTimeManager);
             RegisterManager(new MetricsManager());
             RegisterManager(Serializer);
             RegisterManager(m_Players);
             RegisterManager(Simulations);
             RegisterManager(new ActionRequestManager(this));
             RegisterManager(new WebService("127.0.0.1", webServicePort));
-            RegisterManager(realTimeManager);
             PlayerStoreManager playerStore = new PlayerStoreManager(this);
             if (bool.TryParse(ConfigurationManager.AppSettings["UseRegistrationCode"], out bool useRegistrationCode))
             {

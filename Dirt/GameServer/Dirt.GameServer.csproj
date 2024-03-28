@@ -81,6 +81,7 @@
     <Compile Include="ServerActorBuilder.cs" />
     <Compile Include="SimulationProxy.cs" />
     <Compile Include="SimulationSpan.cs" />
+    <Compile Include="Simulation\Actions\PlayerActionStamps.cs" />
     <Compile Include="Simulation\Components\CullArea.cs" />
     <Compile Include="Simulation\Components\GlobalSyncInfo.cs" />
     <Compile Include="Simulation\Events\SimulationPausedEvent.cs" />
