@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Dirt\Log\Log.csproj" />
+    <ProjectReference Include="..\Mud\Mud.csproj" />
+  </ItemGroup>
+
 </Project>

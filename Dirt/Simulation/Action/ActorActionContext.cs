@@ -1,6 +1,5 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
-using Dirt.Log;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.Utility;
@@ -8,6 +7,7 @@ using System.Collections.Generic;
 
 namespace Dirt.Simulation.Action
 {
+    using Dirt.Log;
     [System.Serializable]
     public class ActorActionContext : IContextItem
     {

@@ -108,7 +108,9 @@ namespace Dirt.Simulation
 
             m_FrameLabel = $"sim.{simulation.ID}.frame";
             m_FrameSec = $"sim.{simulation.ID}.fps";
+#if GAME_METRICS
             m_TotalMetric = $"sim.{simulation.ID}.total";
+#endif
             m_Ticks = DateTime.Now.Ticks;
             Frame = 0;
             m_LastSecondFrames = 0;

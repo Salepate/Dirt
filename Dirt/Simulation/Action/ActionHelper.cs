@@ -1,9 +1,10 @@
 ﻿
-using Dirt.Log;
 using System.Collections.Generic;
 
 namespace Dirt.Simulation.Action
 {
+    using Dirt.Log;
+    //using Console = Dirt.Log.Console;
     public static partial class ActionHelper
     {
         public static void RequestAction(this GameSimulation simulation, GameActor sourceActor, int actionIndex)

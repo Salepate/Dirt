@@ -14,15 +14,10 @@ namespace Dirt.Network.Simulation.Components
         public int ID;
         public int Owner;
         public bool ServerControl;
-        [DisableSync]
         public float SyncClock;
-        [DisableSync]
-        public ComponentFieldInfo[] Fields;
         public ComponentSerializer[] Serializers;
         public string[] Synced; // list of synced components
 
-        [NonSerialized]
-        public MessageHeader LastMessageBuffer;
         [NonSerialized]
         public byte[] LastInBuffer;
         [NonSerialized]
@@ -33,9 +28,6 @@ namespace Dirt.Network.Simulation.Components
         public int BufferSize;
         [NonSerialized]
         public int LastOutStamp;
-
-        [NonSerialized]
-        public MessageHeader LastState;
         [NonSerialized]
         public bool Owned;
         [NonSerialized]

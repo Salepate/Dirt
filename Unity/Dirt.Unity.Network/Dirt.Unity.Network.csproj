@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Dirt\Log\Log.csproj" />
+    <ProjectReference Include="..\..\Dirt\Network\Network.csproj" />
+    <ProjectReference Include="..\Dirt.Unity\Dirt.Unity.csproj" />
+  </ItemGroup>
+
+</Project>

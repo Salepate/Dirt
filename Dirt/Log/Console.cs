@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using FileStream = System.IO.FileStream;
 using Random = System.Random;
 using UTF8Encoding = System.Text.UTF8Encoding;
@@ -51,20 +52,24 @@ namespace Dirt.Log
             }
         }
 
-        public static void Message(string message) { InternalLog(LogLevel.Info, message); }
+        public static void Message(string message, [CallerMemberName] string memberName = "") { InternalLog(LogLevel.Info, message, memberName); }
         public static void Message(string message, params object[] args) { InternalLog(LogLevel.Info, string.Format(message, args)); }
-        public static void Warning(string message) { InternalLog(LogLevel.Warning, message); }
+        public static void Warning(string message, [CallerMemberName] string memberName = "") { InternalLog(LogLevel.Warning, message, memberName); }
         public static void Warning(string message, params object[] args) { InternalLog(LogLevel.Warning, string.Format(message, args)); }
         public static void Error(string message) { InternalLog(LogLevel.Error, message); }
         public static void Error(string message, params object[] args) { InternalLog(LogLevel.Error, string.Format(message, args)); }
 
         #region internal
-        private static void InternalLog(LogLevel logLevel, string message)
+        private static void InternalLog(LogLevel logLevel, string message, string memberName = "", string file = "")
         {
             if (Logger == null)
                 throw new System.Exception("No Dirt.IConsoleLogger set");
 
-            string tag = Logger.GetTag();
+            string tag = string.IsNullOrEmpty(memberName) ? Logger.GetTag() : memberName;
+            if (!string.IsNullOrEmpty(file))
+            {
+                tag = string.Format("{0}:{1}", file, tag);
+            }
             string color = GetColor(tag);
 
 
