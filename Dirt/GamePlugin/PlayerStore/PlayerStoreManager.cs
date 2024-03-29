@@ -12,6 +12,7 @@ using System.Text;
 namespace Dirt.GameServer.PlayerStore
 {
     using Dirt.Log;
+    using System.Collections.Generic;
     using BitConverter = System.BitConverter;
     public class PlayerStoreManager : IGameManager
     {

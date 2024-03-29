@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Dirt.Systems
 {
     using Dirt.Log;
+    using System.Collections.Generic;
 
     //TODO add pool destroy
     public class GameObjectService : DirtSystem

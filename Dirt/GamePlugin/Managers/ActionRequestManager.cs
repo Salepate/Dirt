@@ -12,6 +12,9 @@ using Mud.Server;
 namespace Dirt.GameServer.Managers
 {
     using Dirt.Log;
+    using System.Collections.Generic;
+    using System.IO;
+
     public class ActionRequestManager : IGameManager
     {
         private GameInstance m_Game;

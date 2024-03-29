@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 namespace Dirt
 {
     using Dirt.Log;
+    using System.Collections.Generic;
+
     public abstract class DirtMode
     {
         // states

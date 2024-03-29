@@ -4,6 +4,7 @@ using System.Configuration;
 namespace Dirt.GameServer.PlayerStore
 {
     using Dirt.Log;
+    using System.IO;
 
     public class PersistentStore
     {

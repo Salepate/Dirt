@@ -7,6 +7,7 @@ using static Dirt.DirtSystem;
 namespace Dirt.States
 {
     using Dirt.Log;
+    using System.Collections.Generic;
 
     public class LoadState : State<DirtMode>
     {

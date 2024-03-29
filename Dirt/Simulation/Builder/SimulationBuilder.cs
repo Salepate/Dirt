@@ -6,6 +6,8 @@ using Dirt.Simulation.Utility;
 namespace Dirt.Simulation.Builder
 {
     using Dirt.Log;
+    using System.Collections.Generic;
+
     public class SimulationBuilder
     {
         private Dictionary<string, System.Type> m_ValidSystems;

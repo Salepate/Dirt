@@ -7,6 +7,7 @@ using Dirt.Simulation.Builder;
 namespace Dirt.GameServer
 {
     using Dirt.Log;
+    using System.Collections.Generic;
 
     public class ServerActorBuilder : ActorBuilder
     {

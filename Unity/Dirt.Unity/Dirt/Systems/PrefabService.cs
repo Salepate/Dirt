@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Dirt.Systems
 {
     using Dirt.Log;
+    using System.Collections.Generic;
 
     public class PrefabService : DirtSystem, IContentSystem
     {

@@ -1,5 +1,6 @@
 ﻿namespace Framework
 {
+    using System.Collections.Generic;
     using UnityEngine;
     public class PrefabPoolManager
     {

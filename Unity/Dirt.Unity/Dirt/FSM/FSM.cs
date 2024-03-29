@@ -1,6 +1,7 @@
 namespace Framework
 {
     using Dirt.Log;
+    using System.Collections.Generic;
 
     public class FSM<T> where T: class
 	{

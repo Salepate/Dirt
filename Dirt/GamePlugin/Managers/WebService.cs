@@ -6,6 +6,8 @@ using System.Text;
 namespace Dirt.GameServer.Managers
 {
     using Dirt.Log;
+    using System.Collections.Generic;
+    using System.Linq;
     using ResponseDelegate = System.Func<HttpListenerRequest, string>;
     using ResponseDelegateInt = System.Func<HttpListenerRequest, int, string>;
 

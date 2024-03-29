@@ -4,6 +4,9 @@ using System.Net.Sockets;
 namespace Mud
 {
     using Dirt.Log;
+    using System.Collections.Generic;
+    using System.IO;
+
     public class ClientSocket : MudSocket
     {
         private UdpClient m_Socket;
