@@ -1,6 +1,7 @@
 ﻿using Mud.Server.Stream;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -22,6 +23,8 @@ namespace Mud.Server
         public const int SIO_UDP_CONNRESET = -1744830452;
 
         private const float PING_CYCLE = 120f;
+        public int ServerPort { get; private set; }
+
         public int MaximumClients => m_Server.MaxClients;
 
         public Queue<GameClientOperation> ClientOperations;
@@ -33,12 +36,14 @@ namespace Mud.Server
         private UdpClient m_Socket;
         private Thread m_ReceiveThread;
         private IClientConsumer m_ClientConsumer;
-        private int m_ServerPort;
+
+
         private object m_QueueLock = new object();
         private float m_Clock;
         private int m_ClientTimeout;
         private byte m_PacketRotationSize;
         private readonly float m_ClientMinRTT;
+
 
         public void SetClientConsumer(IClientConsumer clientConsumer)
         {
@@ -57,7 +62,7 @@ namespace Mud.Server
             {
                 m_ClientMinRTT = 80f / 1000f; // 80ms if nothing specified
             }
-            m_ServerPort = config.GetInt(CONF_UDP_PORT);
+            ServerPort = config.GetInt(CONF_UDP_PORT);
             m_PacketRotationSize = (byte)config.GetInt(CONF_ACK_ROTATION);
             m_MessageQueue = new Queue<NetworkMessage>();
             m_ClientConsumer = null;
@@ -76,13 +81,19 @@ namespace Mud.Server
 
         public void Run()
         {
-            Console.Message($"Mud Server starting on port {m_ServerPort}");
-            m_Socket = new UdpClient(m_ServerPort);
-            m_Socket.Client.IOControl(SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null); // handle icmp
+            Console.Message($"Mud Server starting on port {ServerPort}");
+            m_Socket = new UdpClient(ServerPort);
+            HandleWindowsControls();
             // Start Receive Thread
             m_ReceiveThread = new Thread(new ThreadStart(ReceiveThread));
             m_ReceiveThread.IsBackground = true;
             m_ReceiveThread.Start();
+        }
+
+        [Conditional("USE_WINDOWS")]
+        private void HandleWindowsControls()
+        {
+            m_Socket.Client.IOControl(SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null); // handle icmp
         }
 
         public void Stop()
