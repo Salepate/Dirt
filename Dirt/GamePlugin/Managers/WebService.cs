@@ -30,13 +30,14 @@ namespace Dirt.GameServer.Managers
         public void AddPrefix(string prefix)
         {
             m_Listener.Prefixes.Add(prefix);
+            Console.Message($"Web Service: Register host {prefix}");
         }
 
         public WebService(string host, int port)
         {
             m_Handlers = new List<IWebRouteHandler>();
             m_Listener = new HttpListener();
-            m_Listener.Prefixes.Add($"http://{host}:{port}/");
+            AddPrefix($"http://{host}:{port}/");
             m_Routes = new Dictionary<string, ResponseDelegate>();
             m_IncomingRequests = new Queue<UserRequest>();
         }

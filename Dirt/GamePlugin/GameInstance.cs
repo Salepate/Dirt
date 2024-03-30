@@ -61,6 +61,11 @@ namespace Dirt.GameServer
         {
             Console.Assert(plugin != null, "No plugin specified");
             int webServicePort = int.Parse(ConfigurationManager.AppSettings["WebServerPort"]);
+            string webServerHost = ConfigurationManager.AppSettings["WebServerHost"];
+            if (string.IsNullOrEmpty(webServerHost))
+            {
+                webServerHost = "localhost";
+            }
             // Dirt
             Content = new ContentProvider(contentPath);
             Content.LoadGameContent(contentManifest);
@@ -89,7 +94,7 @@ namespace Dirt.GameServer
             RegisterManager(m_Players);
             RegisterManager(Simulations);
             RegisterManager(new ActionRequestManager(this));
-            RegisterManager(new WebService("127.0.0.1", webServicePort));
+            RegisterManager(new WebService(webServerHost, webServicePort));
             PlayerStoreManager playerStore = new PlayerStoreManager(this);
             if (bool.TryParse(ConfigurationManager.AppSettings["UseRegistrationCode"], out bool useRegistrationCode))
             {
