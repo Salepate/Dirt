@@ -2,6 +2,7 @@
 
 namespace Dirt.ServerApplication.Clock
 {
+    using Dirt.Log;
     public class GameClock
     {
         private delegate int TimeGetter();
@@ -11,10 +12,16 @@ namespace Dirt.ServerApplication.Clock
 
         public GameClock()
         {
-            //Console.WriteLine($"Timer precision: {(HighResolutionClock.IsAvailable ? "High" : "Low")}");
-
-            if (!HighResolutionClock.IsAvailable)
+            bool hasHighClock = false;
+            try
             {
+                hasHighClock = HighResolutionClock.IsAvailable;
+            }
+            catch (System.Exception _) { }
+
+            if (!hasHighClock)
+            {
+                Console.Message($"Using Stopwatch Clock");
                 m_StartTimeSetter = SetLowPrecisionStartTime;
                 m_TimeGetter = GetLowPrecisionTime;
             }
