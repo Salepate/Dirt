@@ -89,6 +89,16 @@ namespace Dirt.GameServer.PlayerStore
             }
             return false;
         }
+
+        /// <summary>
+        /// Returns whether a not a player was authed by any means
+        /// </summary>
+        /// <param name="playerNumber"></param>
+        /// <returns>true if authed</returns>
+        public bool IsAuthed(int playerNumber)
+        {
+            return Table.TryGetCredentials(playerNumber, out PlayerCredential _);
+        }
         /// <summary>
         /// Attempt to generate a random Number that isnt currently used by any one
         /// May fail
@@ -276,7 +286,7 @@ namespace Dirt.GameServer.PlayerStore
             return false;
         }
 
-        internal bool TryGetUniqueID(string playerTag, out uint uid)
+        public bool TryGetUniqueID(string playerTag, out uint uid)
         {
             uid = 0;
 
@@ -292,7 +302,7 @@ namespace Dirt.GameServer.PlayerStore
             return false;
         }
 
-        private bool TryGetUserCredentialFile(string playerTag, out string credentialName)
+        public bool TryGetUserCredentialFile(string playerTag, out string credentialName)
         {
             if (PlayerName.FromTag(playerTag, out string name, out uint id))
             {
@@ -321,7 +331,13 @@ namespace Dirt.GameServer.PlayerStore
             Table.RemoveCredentials(proxy.Client.Number);
         }
 
-        private bool AuthUser(int playerNumber, PlayerCredential credential)
+        /// <summary>
+        /// Force User Authing regardless of password validity
+        /// </summary>
+        /// <param name="playerNumber"></param>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        public bool AuthUser(int playerNumber, PlayerCredential credential)
         {
             GameClient client = m_RTServer.Server.GetClient(playerNumber);
             if (!Table.HasCredentials(credential.ID) || AllowPlayerReconnect)
@@ -379,5 +395,7 @@ namespace Dirt.GameServer.PlayerStore
         {
             return $"{DataSep}.{credential.ID}.{key}";
         }
+
+
     }
 }
