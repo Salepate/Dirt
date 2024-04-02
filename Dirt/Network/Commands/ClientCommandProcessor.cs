@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Dirt.Log;
+using System.IO;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -56,7 +57,16 @@ namespace Dirt.Network
                 streamReader.Close();
                 dataStream.Close();
                 resp.Close();
-                return content.CompareTo("1") == 0;
+                bool result = content.CompareTo("1") == 0;
+                if (!result)
+                {
+                    Console.Error($"Failed to perform command {commandName}, method returned false");
+                }
+                return result;
+            }
+            else
+            {
+                Console.Error($"Failed to perform command {commandName} with status code {resp.StatusCode}");
             }
             resp.Close();
             return false;
