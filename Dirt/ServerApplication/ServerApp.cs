@@ -27,31 +27,35 @@ namespace Dirt.ServerApplication
         {
             Console.Logger = logger ?? new BasicLogger();
             ServerConfig config = new ServerConfig();
+            PluginInstance plugin = null;
 
             m_Server = new RealTimeServer(config);
             int netTickrate = config.GetInt("NetTickRate");
-            if ( netTickrate <= 0 )
-            {
-                netTickrate = config.GetInt("TickRate");
-                Console.Warning($"Net tickrate not specified, defaulting to regular tickrate ({netTickrate}/s)");
-            }
-            else
-            {
-                Console.Message($"Net Tickrate set to {netTickrate}/s");
-            }
-
+            int gameTickrate = config.GetInt("TickRate");
             string contentPath = config.GetString("ContentRoot");
             string contentVersion = config.GetString("ContentVersion");
-
             string pluginLib = config.GetString("PluginFile");
             string pluginClass = config.GetString("PluginClass");
-            m_TickPeriod = new TimeSpan(10000 * 1000 / config.GetInt("TickRate"));
+            bool allowReconnect = config.GetBool("AllowPlayerReconnect");
 
-            PluginInstance plugin = null;
+            if (gameTickrate <= 0)
+            {
+                Console.Error("Tickrate cannot be less than 1");
+                return;
+            }
+
+            if (netTickrate <= 0)
+            {
+                Console.Warning("Net tickrate not specified, defaulting to regular tickrate");
+                netTickrate = gameTickrate;
+            }
+
+            Console.Message("Server Tickrate / Net Tickrate: {0} / {1}", gameTickrate, netTickrate);
+            m_TickPeriod = new TimeSpan(10000 * 1000 / gameTickrate);
 
             try
             {
-                var pluginAssembly = System.AppDomain.CurrentDomain.Load(pluginLib);
+                var pluginAssembly = AppDomain.CurrentDomain.Load(pluginLib);
                 Type pluginType = pluginAssembly.GetTypes().Where(t => t.FullName == pluginClass).FirstOrDefault();
                 if ( pluginType != null )
                 {
@@ -74,7 +78,7 @@ namespace Dirt.ServerApplication
             m_Game.InitializePlugin();
             Metrics = m_Game.GetManager<MetricsManager>();
 
-            m_Game.GetManager<PlayerStoreManager>().AllowPlayerReconnect = config.GetBool("AllowPlayerReconnect");
+            m_Game.GetManager<PlayerStoreManager>().AllowPlayerReconnect = allowReconnect;
             m_Clock = new GameClock();
         }
 
