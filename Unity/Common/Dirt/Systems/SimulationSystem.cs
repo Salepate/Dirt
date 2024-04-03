@@ -25,6 +25,8 @@ namespace Dirt.Systems
         private SimulationBuilder m_SimBuilder;
         public AssemblyCollection ValidAssemblies { get; private set; }
 
+        public int Frame { get; private set; }
+
         public IContextItem[] SharedContext => m_SharedContext.ToArray();
 
         private List<IContextItem> m_SharedContext;
@@ -118,8 +120,8 @@ namespace Dirt.Systems
                 m_Systems.AddSystem(systems[i]);
             }
 
+            Frame = 0;
             m_Systems.InitializeSystems(Simulation);
-
             DispatchEvent(new LocalSimulationEvent(archetypeName, LocalSimulationEvent.SimulationLoaded));
         }
 
@@ -133,6 +135,7 @@ namespace Dirt.Systems
         public override void FixedUpdate()
         {
             m_Systems.UpdateSystems(Simulation, Time.fixedDeltaTime);
+            Frame++;
         }
 
         public void RegisterManager<T>(T manager) where T : IGameManager
