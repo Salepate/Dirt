@@ -6,7 +6,6 @@ using Dirt.Log;
 using Dirt.ServerApplication.Clock;
 using Mud.Server;
 using System;
-using System.Configuration;
 using System.Linq;
 using Console = Dirt.Log.Console;
 
@@ -14,6 +13,9 @@ namespace Dirt.ServerApplication
 {
     public class ServerApp
     {
+        public const int MinimumSleep = 2;
+        private readonly int m_OneSecondTicks = (int) new TimeSpan(0, 0, 1).Ticks;
+        private readonly int m_MinimumSleepTime;
         public MetricsManager Metrics { get; private set; }
         public WebService WebService { get; private set; }
 
@@ -21,33 +23,47 @@ namespace Dirt.ServerApplication
         private RealTimeServer m_Server;
         private GameInstance m_Game;
 
-        private TimeSpan m_TickPeriod;
-        private int m_LastTick;
+        private int m_PeriodTicks;
+        private int m_LastTickStamp;
+        private int m_Tickrate; // how many ticks per second
+        private float m_FixedDelta;
         public ServerApp(IConsoleLogger logger = null)
         {
             Console.Logger = logger ?? new BasicLogger();
             ServerConfig config = new ServerConfig();
 
             m_Server = new RealTimeServer(config);
+            m_Tickrate = config.GetInt("TickRate");
+            m_MinimumSleepTime = config.GetInt("MinSleep");
             int netTickrate = config.GetInt("NetTickRate");
-            if ( netTickrate <= 0 )
-            {
-                netTickrate = config.GetInt("TickRate");
-                Console.Warning($"Net tickrate not specified, defaulting to regular tickrate ({netTickrate}/s)");
-            }
-            else
-            {
-                Console.Message($"Net Tickrate set to {netTickrate}/s");
-            }
-
             string contentPath = config.GetString("ContentRoot");
             string contentVersion = config.GetString("ContentVersion");
-
             string pluginLib = config.GetString("PluginFile");
             string pluginClass = config.GetString("PluginClass");
             m_TickPeriod = new TimeSpan(10000 * 1000 / config.GetInt("TickRate"));
-
             PluginInstance plugin = null;
+
+            if (m_MinimumSleepTime > 0 && m_MinimumSleepTime < MinimumSleep)
+            {
+                Console.Warning($"Minimum Thread sleep cannot be less than {MinimumSleep}");
+                m_MinimumSleepTime = MinimumSleep;
+            }
+
+            if (m_Tickrate <= 0)
+            {
+                Console.Error("Tickrate cannot be less than 1");
+                return;
+            }
+
+            if (netTickrate <= 0)
+            {
+                Console.Warning("Net tickrate not specified, defaulting to regular tickrate");
+                netTickrate = m_Tickrate;
+            }
+
+            Console.Message("Server Tickrate / Net Tickrate: {0} / {1}", m_Tickrate, netTickrate);
+            m_PeriodTicks = (int) new TimeSpan(10000 * 1000 / m_Tickrate).Ticks;
+            m_FixedDelta = 1f / m_Tickrate;
 
             try
             {
@@ -83,19 +99,34 @@ namespace Dirt.ServerApplication
             bool terminate = false;
 
             m_Clock.Reset();
-            int lastTick = m_Clock.GetTick();
-
             m_Server.SetClientConsumer(m_Game);
             m_Server.Run();
+
+            // dbg
+            int cycleFrame = 0;
+            int cycleStamp = m_Clock.GetTick();
 
             while (!terminate)
             {
                 int now = m_Clock.GetTick();
-                TimeSpan diff = new TimeSpan(now - lastTick);
-                if (diff >= m_TickPeriod)
+                int diff100ns = now - m_LastTickStamp;
+                bool procUpdate = diff100ns >= m_PeriodTicks && cycleFrame < m_Tickrate;
+                bool procCycle = cycleFrame >= m_Tickrate - 1 && now - cycleStamp >= m_OneSecondTicks;
+
+                if (procUpdate)
                 {
-                    Update((float)diff.TotalMilliseconds);
-                    lastTick += (int)diff.Ticks;
+                    Update(m_FixedDelta);
+                    int toNextGameTickMS = (m_PeriodTicks - (m_Clock.GetTick() - now)) / 10000;
+                    if (m_MinimumSleepTime > 0 && toNextGameTickMS > m_MinimumSleepTime)
+                        System.Threading.Thread.Sleep(toNextGameTickMS - m_MinimumSleepTime);
+
+                    ++cycleFrame;
+                    m_LastTickStamp = now;
+                }
+                if (procCycle)
+                {
+                    cycleFrame = 0;
+                    cycleStamp = m_Clock.GetTick(); // fetch tick directly to catch up with the executing frame
                 }
             }
 
@@ -107,17 +138,18 @@ namespace Dirt.ServerApplication
             m_Clock.Reset();
             m_Server.SetClientConsumer(m_Game);
             m_Server.Run();
-            m_LastTick = m_Clock.GetTick();
+            m_LastTickStamp = m_Clock.GetTick();
         }
 
         public void ManualStep()
         {
             int now = m_Clock.GetTick();
-            TimeSpan diff = new TimeSpan(now - m_LastTick);
-            if (diff >= m_TickPeriod)
+            int diff100ns = now - m_LastTickStamp;
+            int diffMS = diff100ns / 10000;
+            if (diffMS >= m_PeriodTicks)
             {
-                Update((float)m_TickPeriod.TotalMilliseconds);
-                m_LastTick += (int)m_TickPeriod.Ticks;
+                Update(diffMS / 1000f);
+                m_LastTickStamp = now;
             }
         }
 
@@ -128,9 +160,8 @@ namespace Dirt.ServerApplication
 
         public void Update(float delta)
         {
-            float deltaInSeconds = delta / 1000f;
-            m_Server.ProcessMessages(deltaInSeconds);
-            m_Game.UpdateInstance(deltaInSeconds);
+            m_Server.ProcessMessages(delta);
+            m_Game.UpdateInstance(delta);
         }
     }
 }
