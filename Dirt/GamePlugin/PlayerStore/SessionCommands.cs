@@ -37,6 +37,9 @@ namespace Dirt.GameServer.PlayerStore
             string userPass = parameters.PopString();
             string userCode = parameters.PopString();
 
+            if (storeMgr.DisableRegistration) // may use steam or something else
+                return false;
+
             uint id;
             if (storeMgr.TryGetFreeID(userName, out id) && (!storeMgr.UseRegistrationCode || storeMgr.VerifyCode(userCode)))
             {

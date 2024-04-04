@@ -30,6 +30,7 @@ namespace Dirt.GameServer.PlayerStore
         private Dictionary<string, RegistrationCodeTable> m_CodeTable;
         private HashSet<string> m_LoadedCodeTables;
 
+        public bool DisableRegistration { get; set; }
         public bool UseRegistrationCode { get; set; }
         public bool AllowPlayerReconnect { get; set; }
         public PersistentStore Store { get; private set; }
@@ -44,6 +45,7 @@ namespace Dirt.GameServer.PlayerStore
             m_RTServer = game.GetManager<RealTimeServerManager>();
             m_CodeTable = new Dictionary<string, RegistrationCodeTable>();
             m_LoadedCodeTables = new HashSet<string>();
+            DisableRegistration = false;
 
             if ( !Store.Exists(SimpleIDFile) || !Store.TryRead(SimpleIDFile, out m_UniqueID))
             {
