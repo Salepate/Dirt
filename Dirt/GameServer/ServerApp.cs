@@ -40,7 +40,6 @@ namespace Dirt.ServerApplication
             string contentVersion = config.GetString("ContentVersion");
             string pluginLib = config.GetString("PluginFile");
             string pluginClass = config.GetString("PluginClass");
-            m_TickPeriod = new TimeSpan(10000 * 1000 / config.GetInt("TickRate"));
             PluginInstance plugin = null;
 
             if (m_MinimumSleepTime > 0 && m_MinimumSleepTime < MinimumSleep)
