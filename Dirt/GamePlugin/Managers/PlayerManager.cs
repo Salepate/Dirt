@@ -1,6 +1,8 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Model;
+using Dirt.GameServer.PlayerStore.Helpers;
 using Dirt.Network;
+using Dirt.Network.Events;
 using Dirt.Network.Managers;
 using Mud;
 using Mud.Server;
@@ -122,6 +124,26 @@ namespace Dirt.GameServer.Managers
         public PlayerProxy FindPlayer(string playerID)
         {
             return m_PlayerMap.Where(v => v.Value.Player.Name == playerID).Select(v => v.Value).FirstOrDefault();
+        }
+
+        public void Rename(int playerNumber, string newName)
+        {
+            PlayerProxy proxy = FindPlayer(playerNumber);
+            if (string.IsNullOrEmpty(newName) || newName.Length < 3)
+            {
+                Console.Error($"Invalid Name {newName}");
+                return;
+            }
+
+            if (proxy == null)
+            {
+                Console.Error($"Player not found {playerNumber}");
+                return;
+            }
+
+            proxy.Client.ChangeClientName(newName);
+            proxy.Player.Name = newName;
+            SendEvent(new PlayerRenameEvent(playerNumber, newName));
         }
 
         public void RemoveClient(GameClient client)

@@ -240,6 +240,31 @@ namespace Dirt.GameServer.PlayerStore
         }
 
         /// <summary>
+        /// Register a player account
+        /// </summary>
+        /// <param name="userCred">User credential name</param>
+        /// <param name="userName">User Name (precedes the #)</param>
+        /// <param name="passwordHash">SHA256 hash</param>
+        /// <param name="number">(supercedes the #)</param>
+        /// <returns></returns>
+        public bool RegisterUser(string userCred, string userName, string passwordHash, uint number)
+        {
+            PlayerCredential cred = new PlayerCredential()
+            {
+                ID = m_UniqueID.GetUnique(),
+                PasswordHash = passwordHash,
+                UserName = userName,
+                UserNumber = number
+            };
+            if (Store.Write(userCred, cred, false))
+            {
+                Store.Write(SimpleIDFile, m_UniqueID, true);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Attempt to authenticate an user
         /// </summary>
         /// <param name="playerNumber">Player Number (see PlayerManager) that will be authed</param>
