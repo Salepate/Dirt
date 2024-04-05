@@ -2,20 +2,16 @@
 
 # Description
 
-Dirt is a collection of game-oriented libraries. Compatible with Unity 2019.3
-
-# Application
-
-## Dirt Server
-
-Standalone implementation of Dirt.GameServer, handle platform-level logic (such as game clock)
+Dirt is a collection of game-oriented libraries written in .Net Standard 2.1
+- Compatible with Unity 2021.3.x
+- Compatible with .Net 8 projects
 
 # Dirt Collection
 
 ## Game
 _Client/Server library_
 
-Contains content logic and some mathematics tools.
+Contains content logic, math operations/structures and global flow structures.
 
 ## Simulation
 _Client/Server library_
@@ -23,36 +19,42 @@ _Client/Server library_
 ECS Framework (use structure components array)
 
 ## Network
+_Client/Server library_
 
-Shared library. Additional Network Layer (Based on Mud) to allow simulation to be partially (or completely) synchronized through network. Ownership of entities is always decided by the server.
-Ownership can also be partial. Supports realtime gameplay.
+UDP+TCP/HTTP message & event operations and built on top of Simulation. Synchronize Actors, send events, control over replicated actions.
 
 ## GameServer
+_Server library_
 
-Server library. Half Monolith that acts as the connector between game and network.
+Real time server boilerplate. (will probably be merged with GamePlugin)
 
+## GamePlugin
+
+* Game Server architecture
 * Runs multiple simulations (with customizable lifespan) in parallel
 * Route Players to simulations
-* Define custom player commands 
+* Define custom player commands, and actor actions
 * Runs a webservice and provide a Rest API (undocumented yet) 
 
 # Unity Collection
 
 ## Dirt.Unity
 
-Main framework for game prototyping. Also provide Unity oriented helpers to integrate custom ecs.
+* Essentials for global game flow (legacy Dirt.Framework)
+* Simulation View binding: pool game objects and attach Actor on spawns
+* Unity Log override
+This is probably the oldest bit of code in Dirt, I started working on that piece around 2017/2018, without really knowing where I was going back then.
+This may disappear at some point or simplified.
 
 ## Dirt.Unity.Network
 
-Network layer for Unity. Provides a Mud connection utility and ECS systems for actor synchronization.
+* Mud Socket wrapper to connect to game server
+* Complementary systems for replicated simulation
 
-## Dirt.Unity.Logger
-
-Unity implementation for the logger
-
-_Hard reference to UnityEngine.dll in .csproj (will be fixed someday)_
 
 # Mud Collection
+
+Mud is a really rough wrapper for UDP networking.
 
 ## Mud (Common)
 _Client/Server Library_
