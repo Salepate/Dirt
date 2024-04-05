@@ -17,3 +17,10 @@ Dirt/Tests/*/obj
 # CLI
 CLI/*/bin
 CLI/*/obj
+
+# Sample Project
+/Sample/obj/
+/Sample/bin/
+
+# Game
+/Game/
