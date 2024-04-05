@@ -45,7 +45,7 @@ Real time server boilerplate. (will probably be merged with GamePlugin)
 * Unity Log override
 
 This is probably the oldest bit of code in Dirt, I started working on that piece around 2017/2018, without really knowing where I was going back then.
-This may disappear at some point or simplified.
+This may disappear at some point or get simplified.
 
 ## Dirt.Unity.Network
 
