@@ -1,6 +1,5 @@
 ﻿using Dirt.Game;
 using Dirt.Game.Content;
-using Dirt.Log;
 using Dirt.Simulation.Action;
 using Dirt.Simulation.Context;
 using Dirt.Simulation.Model;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 
 namespace Dirt.Simulation.Systems
 {
+    using Dirt.Log;
     public class ActorActionInterpreter : ISimulationSystem, IContextReader, IEventReader, IManagerAccess
     {
         private GameSimulation m_Simulation;

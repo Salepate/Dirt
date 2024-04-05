@@ -1,12 +1,13 @@
 ﻿using Dirt.Game.Content;
-using Dirt.Log;
 using Dirt.Simulation.Model;
 using Dirt.Simulation.SystemHelper;
 using Dirt.Simulation.Utility;
-using System.Collections.Generic;
 
 namespace Dirt.Simulation.Builder
 {
+    using Dirt.Log;
+    using System.Collections.Generic;
+
     public class SimulationBuilder
     {
         private Dictionary<string, System.Type> m_ValidSystems;

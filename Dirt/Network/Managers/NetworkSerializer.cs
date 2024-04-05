@@ -1,10 +1,7 @@
 using Dirt.Game;
-using Dirt.Log;
-using Dirt.Network.Internal;
 using Dirt.Network.Model;
 using Dirt.Network.Simulation;
 using Dirt.Simulation;
-using Dirt.Simulation.Actor;
 using Dirt.Simulation.Components;
 using System;
 using System.Collections.Generic;
@@ -18,13 +15,9 @@ namespace Dirt.Network.Managers
     public class NetworkSerializer : IGameManager
     {
         private NetSerializer.Serializer m_Serializer;
-        private static MethodInfo s_CreateComponentMethodInfo;
-        private static Dictionary<Type, ObjectFieldAccessor[]> s_ComponentSetters;
         private static Dictionary<Type, ComponentSerializer> s_Serializers;
         static NetworkSerializer()
         {
-            s_CreateComponentMethodInfo = typeof(NetworkSerializer).GetMethod("CreateComponentMeta", BindingFlags.NonPublic | BindingFlags.Instance);
-            s_ComponentSetters = new Dictionary<Type, ObjectFieldAccessor[]>();
             s_Serializers = new Dictionary<Type, ComponentSerializer>();
         }
 
@@ -49,7 +42,7 @@ namespace Dirt.Network.Managers
                 return gameTypes.Concat(eventTypes).Concat(compTypes);
             });
 
-            serializableTypes = serializableTypes.Concat(new Type[] { typeof(MessageHeader), typeof(ActorState) }.Where(t => t != null));
+            serializableTypes = serializableTypes.Concat(new Type[] { typeof(ActorState) }.Where(t => t != null));
             var validTypes = serializableTypes.OrderBy(t => t.FullName).ToList();
             m_Serializer = new NetSerializer.Serializer(validTypes);
         }

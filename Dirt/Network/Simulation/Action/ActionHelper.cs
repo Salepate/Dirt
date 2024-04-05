@@ -1,12 +1,13 @@
-﻿using Dirt.Log;
-using Dirt.Network;
+﻿using Dirt.Network;
 using Dirt.Network.Simulation.Events;
 using Mud;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Dirt.Simulation.Action
 {
+    using Dirt.Log;
+    using System.Collections.Generic;
+    using System.IO;
+
     public static class NetworkActionHelper
     {
         public static void RequestRemoteAction(this GameSimulation simulation, GameActor sourceActor, int actionIndex)

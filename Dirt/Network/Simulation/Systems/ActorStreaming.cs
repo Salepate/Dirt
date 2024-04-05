@@ -1,24 +1,12 @@
-﻿using Dirt.Game;
-using Dirt.Network.Internal;
-using Dirt.Network.Managers;
-using Dirt.Network.Model;
-using Dirt.Network.Simulation;
+﻿using Dirt.Network.Simulation;
 using Dirt.Network.Simulation.Components;
 using Dirt.Simulation;
 using Dirt.Simulation.Actor;
-using Dirt.Simulation.Components;
 using Dirt.Simulation.SystemHelper;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace Dirt.Network.Systems
 {
-    using Console = Dirt.Log.Console;
-
     /// <summary>
     /// Transform actors into memory streams suited for network transmission.
     /// </summary>

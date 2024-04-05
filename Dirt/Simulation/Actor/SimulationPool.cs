@@ -1,8 +1,8 @@
-﻿using Dirt.Log;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Dirt.Simulation.Actor
 {
+    using Dirt.Log;
     using Type = System.Type;
 
     public class SimulationPool

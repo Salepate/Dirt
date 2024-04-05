@@ -1,11 +1,11 @@
-using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System;
 
 namespace Dirt.Simulation.Utility
 {
+    using Type = System.Type;
     public static class AssemblyReflection
     { 
         public static Dictionary<string, Type> BuildTypeMap<I>(string[] assemblies, Func<Type, bool> filter = null)

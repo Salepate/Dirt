@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <PackageId>Dirt.$(AssemblyName)</PackageId>
+    <Product>Dirt.$(AssemblyName)</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Externals\NetSerializer\NetSerializer.csproj" />
+    <ProjectReference Include="..\..\Mud\Mud\Mud.csproj" />
+    <ProjectReference Include="..\Game\Game.csproj" />
+    <ProjectReference Include="..\Simulation\Simulation.csproj" />
+  </ItemGroup>
+
+</Project>

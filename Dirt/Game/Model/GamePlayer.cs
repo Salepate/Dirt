@@ -5,5 +5,10 @@
     {
         public int Number;
         public string Name;
+
+        public GamePlayer()
+        {
+            Name = string.Empty;
+        }
     }
 }
