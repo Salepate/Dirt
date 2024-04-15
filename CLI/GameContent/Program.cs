@@ -1,22 +1,25 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.IO;
+﻿using Dirt.CLI;
+using Newtonsoft.Json;
 
 namespace GameContent
 {
     public class Program
     {
+        public static bool Prettify;
         static void Main(string[] args)
         {
-            if ( args.Length < 2 )
+            ProgramParser parser = new ProgramParser();
+            Prettify = false;
+
+            parser.HandleOption("p", "prettify", () => Prettify = true, "Prettiy the output JSON");
+
+            if (!parser.Parse(args, 2, "Input", "Output"))
             {
-                System.Console.WriteLine($"Usage: <input directory> <output filename> [<additionalDirA> <additionalDirB>]");
                 return;
             }
 
-            string input = GetRequiredArg(args, 0);
-            string output = GetRequiredArg(args, 1);
-            bool prettify = GetOption(args, "p");
+            string input = parser.Inputs[0];
+            string output = parser.Inputs[1];
 
             DirectoryInfo inputDir = new DirectoryInfo(input);
             FileInfo outputFile = new FileInfo(output);
@@ -26,10 +29,10 @@ namespace GameContent
             Dictionary<string, string> filemap = new Dictionary<string, string>();
 
             AddFolder(inputDir, filemap, string.Empty);
-            int addDirs = 2;
-            string addDir = GetRequiredArg(args, addDirs);
-            while(!string.IsNullOrEmpty(addDir))
+
+            for(int i = 2; i < parser.Inputs.Count; ++i)
             {
+                string addDir = parser.Inputs[i];
                 string path = string.Empty;
                 if (addDir.StartsWith(input))
                 {
@@ -37,23 +40,22 @@ namespace GameContent
                 }
 
                 AddFolder(new DirectoryInfo(addDir), filemap, path);
-                addDir = GetRequiredArg(args, ++addDirs);
             }
-            
+
 
             var gamecontent = new Dirt.Game.Content.GameContent()
             {
                 FileMap = filemap
             };
 
-            var outputStr =  JsonConvert.SerializeObject(gamecontent, prettify ? Formatting.Indented : Formatting.None);
+            var outputStr = JsonConvert.SerializeObject(gamecontent, Prettify ? Formatting.Indented : Formatting.None);
             File.WriteAllText(output, outputStr);
         }
 
         private static void AddFolder(DirectoryInfo dir, Dictionary<string, string> filemap, string path = "")
         {
             var assets = dir.GetFiles("*.*");
-            for(int i = 0; i < assets.Length; ++i)
+            for (int i = 0; i < assets.Length; ++i)
             {
                 string ext = assets[i].Extension;
                 string name = assets[i].Name.Substring(0, assets[i].Name.Length - ext.Length);
