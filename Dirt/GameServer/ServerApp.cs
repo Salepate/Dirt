@@ -41,7 +41,7 @@ namespace Dirt.ServerApplication
             string contentVersion = config.GetString("ContentVersion");
             string pluginLib = config.GetString("PluginFile");
             string pluginClass = config.GetString("PluginClass");
-            PluginInstance plugin = null;
+            bool allowReconnect = config.GetBool("AllowPlayerReconnect");
 
             if (m_MinimumSleepTime > 0 && m_MinimumSleepTime < MinimumSleep)
             {
