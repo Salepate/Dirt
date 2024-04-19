@@ -25,7 +25,7 @@ namespace Mud.DirtSystems
         private Queue<MudMessage> m_Messages;
         private MudLargeMessage m_LargeMessage;
         private List<IMessageConsumer> m_Consumers;
-        private bool m_Authed;
+        private bool m_Started;
 
         private CircularBuffer<byte> m_ReliableBuffer;
 
@@ -50,20 +50,24 @@ namespace Mud.DirtSystems
 
         public void StartSocket(string address, int port = DefaultPort, string userName = null)
         {
-            if (!m_Authed)
+            if (!m_Started)
             {
                 Socket = new ServerSocket(address, port);
                 PlayerName = userName;
                 Socket.Send(MudMessage.Create(MudOperation.ClientAuth, null));
-                m_Authed = true;
+                m_Started = true;
             }
         }
-        private void TerminateSocket()
+        public void TerminateSocket()
         {
-            Connected = false;
-            m_Authed = false;
-            Socket = null;
-            DisconnectAction?.Invoke();
+            if (m_Started)
+            {
+                Connected = false;
+                m_Started = false;
+                Socket.Close();
+                Socket = null;
+                DisconnectAction?.Invoke();
+            }
         }
 
         public override void Unload()
@@ -76,10 +80,10 @@ namespace Mud.DirtSystems
 
         public override void Update()
         {
-            if ( m_Authed )
+            if ( m_Started )
             {
                 ReceiveMessages();
-                if ( !m_Authed )
+                if ( !m_Started )
                 {
                     DisconnectAction?.Invoke();
                 }
@@ -138,7 +142,7 @@ namespace Mud.DirtSystems
                     AuthAction?.Invoke(true);
                     break;
                 case MudOperation.Disconnect:
-                    m_Authed = false;
+                    m_Started = false;
                     Connected = false;
                     TerminateSocket();
                     break;
@@ -157,9 +161,9 @@ namespace Mud.DirtSystems
                     }
                     break;
                 case MudOperation.Error:
-                    if (m_Authed)
+                    if (m_Started)
                     {
-                        m_Authed = false;
+                        m_Started = false;
                         DisconnectAction?.Invoke();
                     }
                     Console.Error(Encoding.ASCII.GetString(buffer));
@@ -190,7 +194,7 @@ namespace Mud.DirtSystems
                 Console.Warning($"Unable to reach host");
                 Console.Warning(socket.Message);
                 m_Messages.Clear();
-                m_Authed = false;
+                m_Started = false;
             }
         }
     }

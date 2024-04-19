@@ -35,5 +35,10 @@ namespace Mud.Framework
             m_ConfirmPacket[1] = reliableId;
             m_Socket.Send(m_ConfirmPacket, 2);
         }
+
+        public void Close()
+        {
+            m_Socket.Close();
+        }
     }
 }
