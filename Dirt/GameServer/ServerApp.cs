@@ -27,6 +27,9 @@ namespace Dirt.ServerApplication
         private int m_LastTickStamp;
         private int m_Tickrate; // how many ticks per second
         private float m_FixedDelta;
+
+        private int m_StampManual;
+        private int m_CycleManual;
         public ServerApp(IConsoleLogger logger = null)
         {
             Console.Logger = logger ?? new BasicLogger();
@@ -139,17 +142,32 @@ namespace Dirt.ServerApplication
             m_Server.SetClientConsumer(m_Game);
             m_Server.Run();
             m_LastTickStamp = m_Clock.GetTick();
+            m_CycleManual = 0;
+            m_StampManual = m_LastTickStamp;
+
         }
 
         public void ManualStep()
         {
             int now = m_Clock.GetTick();
             int diff100ns = now - m_LastTickStamp;
-            int diffMS = diff100ns / 10000;
-            if (diffMS >= m_PeriodTicks)
+            bool procUpdate = diff100ns >= m_PeriodTicks && m_CycleManual < m_Tickrate;
+            bool procCycle = m_CycleManual >= m_Tickrate - 1 && now - m_StampManual >= m_OneSecondTicks;
+
+            if (procUpdate)
             {
-                Update(diffMS / 1000f);
+                Update(m_FixedDelta);
+                int toNextGameTickMS = (m_PeriodTicks - (m_Clock.GetTick() - now)) / 10000;
+                if (m_MinimumSleepTime > 0 && toNextGameTickMS > m_MinimumSleepTime)
+                    System.Threading.Thread.Sleep(toNextGameTickMS - m_MinimumSleepTime);
+
+                ++m_CycleManual;
                 m_LastTickStamp = now;
+            }
+            if (procCycle)
+            {
+                m_CycleManual = 0;
+                m_StampManual = m_Clock.GetTick(); // fetch tick directly to catch up with the executing frame
             }
         }
 
