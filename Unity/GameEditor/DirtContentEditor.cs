@@ -1,4 +1,5 @@
-﻿using Dirt.Game.Content;
+﻿using Dirt.Game;
+using Dirt.Game.Content;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
@@ -11,19 +12,28 @@ namespace Dirt.GameEditor
 
     public class DirtContentEditor : EditorWindow
     {
-        private const string ManifestName = "gamecontent.json";
-        private const string ContentPathKey = "dirtcontent_path";
+        public const string ContentPathKey = "dirtcontent_path";
+        public const string ManifestName = "gamecontent_client";
+        public const string ManifestNameRaw = "gamecontent_client.json";
         private string m_ContentPath;
         private DirectoryInfo m_ContentDir;
         private Vector2 m_ListScroll;
 
         private Dictionary<string, bool> m_ContentFiles;
 
+        public static string ContentPath => EditorPrefs.GetString(ContentPathKey, "");
+
         [MenuItem("Dirt/Content")]
         private static void ShowEditor()
         {
             DirtContentEditor ed = EditorWindow.GetWindow<DirtContentEditor>("Content Editor");
             ed.Show();
+        }
+
+        [MenuItem("Dirt/Persistent Path")]
+        private static void ShowPersistentPath()
+        {
+            EditorUtility.RevealInFinder(Application.persistentDataPath);
         }
 
 
@@ -42,7 +52,6 @@ namespace Dirt.GameEditor
                 DrawContentEditor();
         }
 
-
         private void DrawContentEditor()
         {
             GUILayout.BeginHorizontal();
@@ -59,7 +68,7 @@ namespace Dirt.GameEditor
             for(int i = 0; i < contentFiles.Length; ++i)
             {
                 string contentFile = contentFiles[i].Name;
-                if ( string.Compare(contentFile, ManifestName) != 0 )
+                if ( string.Compare(contentFile, ManifestNameRaw) != 0 )
                 {
                     
                     GUILayout.BeginHorizontal(GUI.skin.box);
@@ -98,7 +107,7 @@ namespace Dirt.GameEditor
                 FileMap = m_ContentFiles.Where(kvp => kvp.Value).OrderBy(k => k.Key).ToDictionary(p => p.Key.Replace(".json", ""), p => p.Key)
             };
 
-            File.WriteAllText(Path.Combine(m_ContentPath, ManifestName),
+            File.WriteAllText(Path.Combine(m_ContentPath, ManifestNameRaw),
                 JsonConvert.SerializeObject(newContent, Formatting.Indented));
         }
 
@@ -136,8 +145,7 @@ namespace Dirt.GameEditor
                 m_ContentPath = path;
                 m_ContentDir = dir;
                 EditorPrefs.SetString(ContentPathKey, path);
-
-                string manifestPath = Path.Combine(path, ManifestName);
+                string manifestPath = Path.Combine(path, ManifestNameRaw);
                 GameContent content = JsonConvert.DeserializeObject<GameContent>(File.ReadAllText(manifestPath));
                 ParseFromContent(content);
             }
