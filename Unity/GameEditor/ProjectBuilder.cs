@@ -97,11 +97,18 @@ namespace Dirt.GameEditor
 
                 if (buildReport.summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded)
                 {
-                    if ( createArchive)
+                    DirectoryInfo projectContent = new DirectoryInfo(Settings.ContentPath);
+                    string targetDir = Path.Combine("Builds/", $"{Settings.BinaryName}_Data", "Content");
+                    string[] excludedFolders = new string[] { "server" };
+                    CopyDirectory(projectContent, targetDir, true, excludedFolders);
+                    if (createArchive)
                     {
-                        DirectoryInfo projectContent = new DirectoryInfo(Settings.ContentPath);
-                        string targetDir = Path.Combine("Builds/", $"{Settings.BinaryName}_Data", "Content");
-                        CopyDirectory(projectContent, targetDir, true);
+                        var fileToDel = buildDir.GetDirectories("*DoNotShip*");
+                        for (int i = 0; i < fileToDel.Length; ++i)
+                        {
+                            fileToDel[i].Delete(true);
+                        }
+
                         ZipFile.CreateFromDirectory(buildDir.FullName, $"{GetBuildName((options & BuildOptions.Development) != 0)}.zip");
                     }
                     settings.BuildNumber++;
@@ -126,7 +133,7 @@ namespace Dirt.GameEditor
             return new SerializedObject(Settings);
         }
 
-        private static void CopyDirectory(DirectoryInfo dir, string path, bool recursive)
+        private static void CopyDirectory(DirectoryInfo dir, string path, bool recursive, string[] excludeKeywords = null)
         {
             DirectoryInfo targetDir = new DirectoryInfo(path);
 
@@ -139,16 +146,31 @@ namespace Dirt.GameEditor
 
             for (int i = 0; i < rootFiles.Length; ++i)
             {
-                string tmp = Path.Combine(path, rootFiles[i].Name);
-                rootFiles[i].CopyTo(tmp);
+                bool skip = false;
+                for(int j = 0; !skip && excludeKeywords != null && j < excludeKeywords.Length; ++j)
+                {
+                    if (rootFiles[i].Name.Contains(excludeKeywords[j]) )
+                    {
+                        skip = true;
+                    }
+                }
+
+                if (!skip)
+                {
+                    string tmp = Path.Combine(path, rootFiles[i].Name);
+                    rootFiles[i].CopyTo(tmp);
+                }
             }
 
             if (recursive)
             {
                 foreach (DirectoryInfo subDir in dir.GetDirectories())
                 {
-                    string subPath = Path.Combine(path, subDir.Name);
-                    CopyDirectory(subDir, subPath, true);
+                    if (excludeKeywords == null || System.Array.IndexOf(excludeKeywords, subDir.Name) == -1)
+                    {
+                        string subPath = Path.Combine(path, subDir.Name);
+                        CopyDirectory(subDir, subPath, true);
+                    }
                 }
             }
         }
