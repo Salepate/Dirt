@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Dirt.GameEditor
 {
-    [CustomEditor(typeof(DirtStarter))]
+    [CustomEditor(typeof(DirtStarter), true)]
     public class DirtStarterInspector : Editor
     {
         private System.Type[] m_Modes;
@@ -58,7 +58,6 @@ namespace Dirt.GameEditor
 
             starter.DebugGame = EditorGUILayout.Toggle("Debug", starter.DebugGame);
             starter.InjectDependencies = EditorGUILayout.Toggle("Inject Dependencies", starter.InjectDependencies);
-
             if (EditorGUI.EndChangeCheck())
             {
                 string modeName = string.Empty;
