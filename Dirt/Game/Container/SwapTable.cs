@@ -9,8 +9,6 @@
             m_Table = new T[size];
             Count = 0;
         }
-
-        // overload the [] operator
         public ref T this[int index]
         {
             get
@@ -28,6 +26,14 @@
                 m_Table[Count] = value;
                 ++Count;
             }
+        }
+
+        /// <summary>
+        /// Resets the counter to 0
+        /// </summary>
+        public void Reset()
+        {
+            Count = 0;
         }
 
         public void RemoveAt(int index)
