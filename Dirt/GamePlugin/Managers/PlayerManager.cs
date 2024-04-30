@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Console = Dirt.Log.Console;
 
 namespace Dirt.GameServer.Managers
@@ -83,9 +84,9 @@ namespace Dirt.GameServer.Managers
             group.Broadcast(message, true);
         }
 
-        public void SendEventTo<T>(T gameEvent, GamePlayer player) where T : NetworkEvent
+        public void SendEventTo<T>(T gameEvent, int playerNumber) where T : NetworkEvent
         {
-            if (m_PlayerMap.TryGetValue(player.Number, out PlayerProxy proxy))
+            if (m_PlayerMap.TryGetValue(playerNumber, out PlayerProxy proxy))
             {
                 GameClient client = proxy.Client;
                 byte[] eventBuffer;
@@ -98,6 +99,8 @@ namespace Dirt.GameServer.Managers
                 client.Send(message, true);
             }
         }
+
+        public void SendEventTo<T>(T gameEvent, GamePlayer player) where T : NetworkEvent => SendEventTo(gameEvent, player.Number);
 
         public void SendEventTo<T>(T gameEvent, GameClient client) where T : NetworkEvent
         {
