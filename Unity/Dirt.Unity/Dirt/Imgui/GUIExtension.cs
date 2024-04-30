@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Dirt.GameEditor.Imgui
+namespace Dirt.Imgui
 {
-    public static partial class DirtGUI
+    public static partial class GUIExtension
     {
         public static int QuickVariable(int currentOption, IList choices, params GUILayoutOption[] options)
         {
