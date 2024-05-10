@@ -87,11 +87,22 @@ namespace Dirt.GameServer.GameCommand
                 {
                     m_CallArgs[0] = CommandContext.Create(m_Game, playerProxy);
                     m_CallArgs[1] = cmdParams;
-                    object res = method.Invoke(null, m_CallArgs);
+
+                    object result;
+                    try
+                    {
+                        result = method.Invoke(null, m_CallArgs);
+                    }
+                    catch(System.Exception e)
+                    {
+                        Console.Error($"Command {cmdName} failed with exception {e.Message}");
+                        result = false;
+                    }
+
                     if (cmdData.Attribute.IsPost)
-                        return ((bool)res == false ? 0 : 1).ToString();
+                        return ((bool)result == false ? 0 : 1).ToString();
                     else
-                        return JsonConvert.SerializeObject(res);
+                        return JsonConvert.SerializeObject(result);
                 }
             }
             else
