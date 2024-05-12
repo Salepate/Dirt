@@ -20,7 +20,7 @@ namespace Dirt.Systems
         public override void Initialize(DirtMode mode)
         {
             m_ContentProvider = new ContentProvider(ContentPath);
-            m_ContentProvider.LoadGameContent(ContentName);
+            m_ContentProvider.LoadManifest(ContentName);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Dirt.Game.Content;
-using Dirt.Log;
-using Newtonsoft.Json;
+using Game.Content.Serializer;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -9,24 +8,28 @@ using System.IO;
 
 namespace Dirt.Game
 {
-    using Console = Log.Console;
+    using Dirt.Log;
+
     public class ContentProvider : IContentProvider
     {
         public string LoadedManifestName { get; private set; }
+        public Dictionary<string, string> ContentMap => m_RawMap.FileMap;
+
+        // Content Data
         private GameContent m_RawMap;
         private Dictionary<string, object> m_ContentBufferMap;
         private Dictionary<string, string> m_ContentMap;
-        private JsonSerializerSettings m_Settings;
-
         private DirectoryInfo m_ContentDirectory;
+        // Serialization data
+        private DefaultDeserializer m_JsonDeserializer;
+        private Dictionary<string, IContentDeserializer> m_AddDeserializers;
         public ContentProvider(string contentPath)
         {
             LoadedManifestName = string.Empty;
 
-            m_Settings = new JsonSerializerSettings()
-            {
-                Culture = System.Globalization.CultureInfo.InvariantCulture
-            };
+            m_RawMap = new GameContent();
+            m_JsonDeserializer = new DefaultDeserializer();
+            m_AddDeserializers = new Dictionary<string, IContentDeserializer>();
 
             m_ContentDirectory = new DirectoryInfo(contentPath);
             m_ContentMap = new Dictionary<string, string>();
@@ -34,7 +37,63 @@ namespace Dirt.Game
 
             if (!m_ContentDirectory.Exists)
             {
-                Log.Console.Message($"Invalid Content Directory {m_ContentDirectory.FullName}");
+                Console.Message($"Invalid Content Directory {m_ContentDirectory.FullName}");
+            }
+        }
+
+        /// <summary>
+        /// Main initialization routine. Loads up a manifest and makes its content ready for load ops
+        /// </summary>
+        /// <param name="contentManifest"></param>
+        public void LoadManifest(string contentManifest)
+        {
+            LoadedManifestName = contentManifest;
+            string manifestPath = Path.Combine(m_ContentDirectory.FullName, $"{contentManifest}.json");
+
+            try
+            {
+                GameContent content = m_JsonDeserializer.DeserializeContent<GameContent>(File.ReadAllText(manifestPath));
+                SetGameContent(content);
+            }
+            catch (Exception e)
+            {
+                Console.Error($"Failed to load content manifest {contentManifest}\n{e.ToString()}");
+            }
+        }
+
+        /// <summary>
+        /// Legacy method to get the raw content map
+        /// </summary>
+        /// <returns></returns>
+        public GameContent GetContentMap() => m_RawMap;
+
+        /// <summary>
+        /// Get content directory absolute path
+        /// </summary>
+        /// <returns></returns>
+        public string GetContentDirectory() => m_ContentDirectory.FullName;
+
+
+        /// <summary>
+        /// Provide a custom deserializer for a specific extension
+        /// </summary>
+        /// <param name="extension"></param>
+        /// <param name="deserializer"></param>
+        public void AddDeserializer(string extension, IContentDeserializer deserializer)
+        {
+            m_AddDeserializers.Add(extension, deserializer);
+        }
+
+        /// <summary>
+        /// Provide a single deserializer for multiple extensions
+        /// </summary>
+        /// <param name="extensions"></param>
+        /// <param name="deserializer"></param>
+        public void AddDeserializer(string[] extensions, IContentDeserializer deserializer)
+        {
+            for(int i = 0; i < extensions.Length; ++i)
+            {
+                m_AddDeserializers.Add(extensions[i], deserializer);
             }
         }
 
@@ -46,55 +105,36 @@ namespace Dirt.Game
             m_ContentBufferMap.Clear();
         }
 
+        /// <summary>
+        /// Check if a content is present based on the loaded manifest
+        /// </summary>
+        /// <param name="contentName"></param>
+        /// <returns></returns>
         public bool HasContent(string contentName)
         {
             return m_ContentMap.ContainsKey(contentName);
         }
 
-        public JObject LoadContent(string contentName)
-        {
-            JObject res = null;
-
-            if (!m_ContentBufferMap.TryGetValue(contentName, out object bufferValue))
-            {
-                if (m_ContentMap.TryGetValue(contentName, out string assetPath))
-                {
-                    res = DeserializeContent(Path.Combine(m_ContentDirectory.FullName, assetPath));
-                    if (res != null)
-                    {
-                        m_ContentBufferMap.Add(contentName, res);
-                    }
-                }
-                else
-                {
-                    Log.Console.Message($"Unknown asset {contentName}");
-                }
-            }
-            else
-            {
-                res = (JObject)bufferValue;
-            }
-
-
-            return res;
-        }
-
-        public void LoadGameContent(string contentManifest)
-        {
-            LoadedManifestName = contentManifest;
-            string manifestPath = Path.Combine(m_ContentDirectory.FullName, $"{contentManifest}.json");
-            SetContent(DeserializeContent<GameContent>(manifestPath));
-        }
-
         public object LoadContent(string contentName, Type contentType)
         {
-            object res = default;
+            object? res = default;
 
             if (!m_ContentBufferMap.TryGetValue(contentName, out res))
             {
                 if (m_ContentMap.TryGetValue(contentName, out string assetPath))
                 {
-                    res = DeserializeContent(Path.Combine(m_ContentDirectory.FullName, assetPath), contentType);
+                    IContentDeserializer deserializer = GetDeserializerFromExtension(assetPath);
+                    string filePath = Path.Combine(m_ContentDirectory.FullName, assetPath);
+
+                    try
+                    {
+                        res = deserializer.DeserializeContent(File.ReadAllText(filePath), contentType);
+                    }
+                    catch(System.Exception e)
+                    {
+                        Console.Error($"Failed to deserialize {contentName}\n{e.ToString()}");
+                    }
+
                     if (res != null)
                     {
                         m_ContentBufferMap.Add(contentName, res);
@@ -108,7 +148,46 @@ namespace Dirt.Game
             return res;
         }
 
-        public string LoadContentAsText(string contentName)
+        public T LoadContent<T>(string contentName)
+        {
+            T res = default;
+
+            if (m_ContentBufferMap.TryGetValue(contentName, out object bufferValue))
+            {
+                res = (T)bufferValue;
+            }
+            else
+            {
+                if (m_ContentMap.TryGetValue(contentName, out string assetPath))
+                {
+                    IContentDeserializer deserializer = GetDeserializerFromExtension(assetPath);
+                    string filePath = Path.Combine(m_ContentDirectory.FullName, assetPath);
+
+                    try
+                    {
+                        res = deserializer.DeserializeContent<T>(File.ReadAllText(filePath));
+                    }
+                    catch (System.Exception e)
+                    {
+                        Console.Error($"Failed to deserialize {contentName}\n{e.ToString()}");
+                    }
+
+                    if (res != null)
+                    {
+                        m_ContentBufferMap.Add(contentName, res);
+                    }
+                }
+                else
+                {
+                    Log.Console.Warning($"Unknown asset {contentName}");
+                }
+            }
+
+
+            return res;
+        }
+
+        public string LoadAsText(string contentName)
         {
             string res = string.Empty;
             if (m_ContentBufferMap.TryGetValue(contentName, out object bufferValue))
@@ -134,19 +213,15 @@ namespace Dirt.Game
             return res;
         }
 
-        public T LoadContent<T>(string contentName)
+        public JObject LoadAsJObject(string contentName)
         {
-            T res = default;
+            JObject res = null;
 
-            if (m_ContentBufferMap.TryGetValue(contentName, out object bufferValue))
-            {
-                res = (T)bufferValue;
-            }
-            else
+            if (!m_ContentBufferMap.TryGetValue(contentName, out object bufferValue))
             {
                 if (m_ContentMap.TryGetValue(contentName, out string assetPath))
                 {
-                    res = DeserializeContent<T>(Path.Combine(m_ContentDirectory.FullName, assetPath));
+                    res = ReadJObject(Path.Combine(m_ContentDirectory.FullName, assetPath));
                     if (res != null)
                     {
                         m_ContentBufferMap.Add(contentName, res);
@@ -154,21 +229,23 @@ namespace Dirt.Game
                 }
                 else
                 {
-                    Log.Console.Warning($"Unknown asset {contentName}");
+                    Log.Console.Message($"Unknown asset {contentName}");
                 }
             }
-
+            else
+            {
+                res = (JObject)bufferValue;
+            }
 
             return res;
         }
 
-        public JObject DeserializeContent(string assetPath)
+        private JObject ReadJObject(string assetPath)
         {
             try
             {
                 JObject res = JObject.Parse(File.ReadAllText(assetPath));
                 return res;
-
             }
             catch (System.Exception e)
             {
@@ -178,38 +255,8 @@ namespace Dirt.Game
 
         }
 
-        public object DeserializeContent(string assetPath, Type contentType)
-        {
-            try
-            {
-                return JsonConvert.DeserializeObject(File.ReadAllText(assetPath), contentType, m_Settings);
 
-            }
-            catch (System.Exception e)
-            {
-                Log.Console.Error($"Unable to read {assetPath}\n{e.ToString()}");
-            }
-            return default;
-
-        }
-
-        public T DeserializeContent<T>(string assetPath)
-        {
-            try
-            {
-                T res = JsonConvert.DeserializeObject<T>(File.ReadAllText(assetPath), m_Settings);
-                return res;
-
-            }
-            catch (System.Exception e)
-            {
-                Log.Console.Error($"Unable to read {assetPath}\n{e.ToString()}");
-            }
-            return default;
-
-        }
-
-        private void SetContent(GameContent content)
+        private void SetGameContent(GameContent content)
         {
             m_ContentMap.Clear();
             m_ContentBufferMap.Clear();
@@ -230,9 +277,15 @@ namespace Dirt.Game
             }
         }
 
-        public GameContent GetContentMap()
+        private IContentDeserializer GetDeserializerFromExtension(string path)
         {
-            return m_RawMap;
+            string extension = Path.GetExtension(path);
+            if (m_AddDeserializers.TryGetValue(extension, out IContentDeserializer deserializer))
+            {
+                return deserializer;
+            }
+
+            return m_JsonDeserializer;
         }
 
         public void Update(float deltaTime)

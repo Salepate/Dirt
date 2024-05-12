@@ -68,7 +68,7 @@ namespace Dirt.GameServer
             }
             // Dirt
             Content = new ContentProvider(contentPath);
-            Content.LoadGameContent(contentManifest);
+            Content.LoadManifest(contentManifest);
             Simulations = new SimulationManager(Content);
             Simulations.NotifySimulationDestroyed += OnSimulationDestroyed;
             m_Managers = new Dictionary<Type, IGameManager>();
