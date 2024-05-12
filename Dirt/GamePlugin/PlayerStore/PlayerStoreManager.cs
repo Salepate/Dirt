@@ -409,6 +409,12 @@ namespace Dirt.GameServer.PlayerStore
         /// <returns>false on failure, true otherwise</returns>
         public bool UpdatePlayerData<T>(int playerNumber, string key, T data)
         {
+            if (data == null)
+            {
+                Log.Console.Error($"Cannot write null data for player {playerNumber} (key {key})");
+                return false;
+            }
+
             if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
             {
                 Store.Write(GetDataPath(key, credential), data, true);
