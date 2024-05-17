@@ -109,9 +109,17 @@ namespace Dirt.GameServer.Managers
                 string serverResponse = userreq.respDelegate(userreq.context.Request);
                 byte[] encoded = Encoding.UTF8.GetBytes(serverResponse);
                 HttpListenerResponse resp = userreq.context.Response;
-                resp.ContentLength64 = encoded.Length;
-                resp.OutputStream.Write(encoded, 0, encoded.Length);
-                resp.OutputStream.Close();
+
+                try
+                {
+                    resp.ContentLength64 = encoded.Length;
+                    resp.OutputStream.Write(encoded, 0, encoded.Length);
+                    resp.OutputStream.Close();
+                }
+                catch(System.Exception e)
+                {
+                    Console.Error($"Could not treat request: {e.Message}");
+                }
             }
         }
 
