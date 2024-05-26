@@ -10,6 +10,7 @@ using System.Reflection;
 
 namespace Dirt.GameServer.GameCommand
 {
+    using Dirt.GameServer.PlayerStore.Model;
     using Dirt.Log;
     public class CommandProcessor : IGameManager
     {
@@ -42,12 +43,18 @@ namespace Dirt.GameServer.GameCommand
             PlayerProxy playerProxy;
             int sessID;
             int playerNumber;
+            bool isAdmin = false;
 
             if (string.IsNullOrEmpty(sessIDStr) || 
                 !int.TryParse(sessIDStr, out sessID) || 
                 !m_Store.Table.TryGetPlayerNumber(sessID, out playerNumber))
             {
                 return StoreResponse.RespondWithError(PlayerStoreError.InvalidSession, "Invalid session number");
+            }
+
+            if (m_Store.Table.TryGetCredentials(playerNumber, out PlayerCredential creds))
+            {
+                isAdmin = creds.Admin;
             }
 
             if ((playerProxy = m_Players.FindPlayer(playerNumber)) == null)
@@ -60,7 +67,7 @@ namespace Dirt.GameServer.GameCommand
                 return StoreResponse.RespondWithError(PlayerStoreError.InvalidParameters, "Missing command parameter");
             }
 
-            if ( m_Commands.TryGetValue(cmdName, out CommandData cmdData))
+            if (m_Commands.TryGetValue(cmdName, out CommandData cmdData) && (!cmdData.Attribute.IsAdmin || isAdmin))
             {
                 CommandParameters cmdParams = new CommandParameters();
 
