@@ -25,6 +25,8 @@ namespace Dirt.Systems
         /// </summary>
         public bool QueueRequests { get; set; }
 
+        public Transform SpawnRoot { get; private set; }
+
         protected PoolManager PoolManager;
         protected abstract ViewDefinition[] ViewDefinitions { get; }
         private PrefabService m_Prefabs;
@@ -33,6 +35,8 @@ namespace Dirt.Systems
         private SimulationSystem m_Simulation;
         private DirtMode m_Mode;
         private List<ViewBinding> m_QueuedActors;
+
+
         public override void Initialize(DirtMode mode)
         {
             PoolManager = new PoolManager(IsDebug);
@@ -45,7 +49,7 @@ namespace Dirt.Systems
             m_Simulation = mode.FindSystem<SimulationSystem>();
             Dictionary<string, System.Type> compMap = AssemblyReflection.BuildTypeMap<IComponent>(m_Simulation.ValidAssemblies.Assemblies);
 
-            GameObject root = new GameObject("Views");
+            SpawnRoot = new GameObject("Views").transform;
 
             int poolCount = 0;
             int objectCount = 0;
@@ -65,7 +69,7 @@ namespace Dirt.Systems
                     
                     if (def.InitialPoolSize > 0)
                     {
-                        PoolManager.InitializePool(pfb, root.transform, def.InitialPoolSize);
+                        PoolManager.InitializePool(pfb, SpawnRoot, def.InitialPoolSize);
                         ++poolCount;
                         objectCount += def.InitialPoolSize;
 
