@@ -183,7 +183,8 @@ namespace Dirt
                     FieldInfo field = flds[i];
                     if (typeof(DirtSystem).IsAssignableFrom(field.FieldType))
                     {
-                        DirtSystem sysRef = FindSystem(field.FieldType);
+                        bool optional = field.GetCustomAttribute<OptionalDependencyAttribute>() != null;
+                        DirtSystem sysRef = FindSystem(field.FieldType, optional: optional);
                         field.SetValue(system, sysRef);
                         ++depCount;
                     }
