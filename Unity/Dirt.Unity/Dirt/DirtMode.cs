@@ -114,6 +114,25 @@ namespace Dirt
             OnInitialize();
         }
 
+        /// <summary>
+        /// Retrieve handle on a loaded scene to prevent it from being unloaded after mode exit.
+        /// Unloading must be self handled
+        /// </summary>
+        /// <param name="sceneName"></param>
+        public Scene? HandleScene(string sceneName)
+        {
+            Scene? scene = null;
+            for(int i = 0; i < LoadedScenes.Count; ++i)
+            {
+                if (LoadedScenes[i].name == sceneName)
+                {
+                    scene = LoadedScenes[i];
+                    LoadedScenes.RemoveAt(i);
+                    break;
+                }
+            }
+            return scene;
+        }
         internal void SetSystemsReady()
         {
             if ( IsService )
@@ -129,6 +148,7 @@ namespace Dirt
             DirtStarter.OnModeStart?.Invoke(this);
             OnModeReady();
         }
+
 
         public void Update()
         {

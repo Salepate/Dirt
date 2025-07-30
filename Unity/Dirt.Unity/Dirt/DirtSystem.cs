@@ -1,9 +1,5 @@
-﻿using Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Array = System.Array;
 
 namespace Dirt
 {
@@ -44,7 +40,7 @@ namespace Dirt
         {
             protected GameObject[] RootObjects { get; private set; }
 
-            internal SceneContent(GameObject[] rootObjects)
+            public SceneContent(GameObject[] rootObjects)
             {
                 RootObjects = rootObjects;
             }
