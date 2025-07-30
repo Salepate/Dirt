@@ -51,10 +51,15 @@
             }
         }
 
-        public void Free(GameObject obj)
+        public void Free(GameObject obj, bool reparent = false)
         {
             obj.SetActive(false);
             //obj.transform.localScale = Vector3.zero;
+
+            if (reparent)
+            {
+                obj.transform.SetParent(m_Root);
+            }
 
 #if UNITY_EDITOR
             obj.transform.SetParent(m_Root);

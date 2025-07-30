@@ -111,9 +111,9 @@ namespace Framework
             return g.GetComponent<T>();
         }
 
-        public void Free(GameObject inst)
+        public void Free(GameObject inst, bool reparent = false)
         {
-            m_Pools[m_Instances[inst]].Free(inst);
+            m_Pools[m_Instances[inst]].Free(inst, reparent);
         }
     }
 }

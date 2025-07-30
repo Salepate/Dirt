@@ -47,9 +47,9 @@ namespace Dirt.Systems
             return actor;
         }
 
-        public void FreeActor(GameObject obj)
+        public void FreeActor(GameObject obj, bool reparent = false)
         {
-            m_PoolManager.Free(obj);
+            m_PoolManager.Free(obj, reparent);
         }
     }
 }
