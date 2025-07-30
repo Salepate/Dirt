@@ -12,6 +12,7 @@ namespace Dirt.GameEditor.Tools
         private GameBundle[] m_Bundles;
         private GUIContent[] m_BundleSelectorPopup;
         private List<Object> m_ToBundle;
+        private List<Object> m_InBundle;
         private int m_SelectedBundle;
 
         private string m_MainToken;
@@ -30,6 +31,7 @@ namespace Dirt.GameEditor.Tools
             m_Bundles = new GameBundle[guids.Length];
             m_BundleSelectorPopup = new GUIContent[guids.Length];
             m_ToBundle = new List<Object>();
+            m_InBundle = new List<Object>();
             m_SelectedBundle = 0;
 
             for (int i = 0; i < guids.Length; ++i)
@@ -97,16 +99,43 @@ namespace Dirt.GameEditor.Tools
                     }
                     GUILayout.Label($"{prevName} -> {nextName}");
                 }
+
                 if (GUIExtension.Button("Add To Bundle", DirtGUI.ColorSave))
                 {
                     AddObjects();
                 }
+
+                bool state = GUI.enabled;
+                GUI.enabled = m_InBundle.Count > 0;
+                if (GUIExtension.Button("Remove from Bundles", DirtGUI.ColorAlert))
+                {
+                    RemoveObjects();
+                }
+                GUI.enabled = state;
             }
             using (var scope = new VerticalScope(GUI.skin.box))
             {
                 m_MainToken = EditorGUILayout.TextField("Main Token", m_MainToken, GUILayout.Width(400f));
                 m_NewToken = EditorGUILayout.TextField("New Name", m_NewToken, GUILayout.Width(400f));
             }
+        }
+
+        private void RemoveObjects()
+        {
+            HashSet<GameBundle> bundles = new HashSet<GameBundle>();
+            for(int i = 0; i < m_InBundle.Count; ++i)
+            {
+                TryGetBundle(m_InBundle[i], out GameBundle bundle, out int objIndex);
+                bundle.Assets.RemoveAt(objIndex);
+                bundles.Add(bundle);
+            }
+
+            foreach(GameBundle bundle in bundles)
+            {
+                EditorUtility.SetDirty(bundle);
+            }
+
+            ComputeObjectList();
         }
 
         private void AddObjects()
@@ -176,11 +205,16 @@ namespace Dirt.GameEditor.Tools
         private void ComputeObjectList()
         {
             m_ToBundle.Clear();
+            m_InBundle.Clear();
             for (int i = 0; i < Selection.objects.Length; ++i)
             {
                 if (!TryGetBundle(Selection.objects[i], out GameBundle bundle, out _))
                 {
                     m_ToBundle.Add(Selection.objects[i]);
+                }
+                else
+                {
+                    m_InBundle.Add(Selection.objects[i]);
                 }
             }
             Repaint();

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,16 +6,6 @@ namespace Dirt.GameEditor.Imgui
 {
     public class GUIController
     {
-        private static GUISkin m_Skin;
-
-        static GUIController()
-        {
-            if (m_Skin ==null)
-            {
-                m_Skin = AssetDatabase.LoadAssetAtPath<GUISkin>("Assets/Externals/Dirt/EditorSkin.guiskin");
-            }
-        }
-
         // ctor
         public GUIController()
         {
@@ -56,7 +45,7 @@ namespace Dirt.GameEditor.Imgui
             int current = m_Tabs[content];
 
             int selected = GUILayout.Toolbar(current, content);
-            indexChanged = -1;
+            indexChanged = current;
             if (selected != current)
             {
                 m_Tabs[content] = selected;

@@ -18,7 +18,8 @@ namespace Dirt.GameEditor.Imgui
 		{
 			None		= 0,
 			Manageable	= 1,
-			Confirm		= 2
+			Confirm		= 2,
+			Multiselect = 4
 		}
 
 		internal class ListViewData
@@ -53,7 +54,7 @@ namespace Dirt.GameEditor.Imgui
 			return pressed;
 		}
 
-		public static bool ToggleButton(GUIContent content, bool state, GUIStyle buttonStyle)
+		public static bool ToggleButton(GUIContent content, bool state, GUIStyle buttonStyle = null)
 		{
 			Color old = GUI.backgroundColor;
 			GUI.backgroundColor = state ? DirtGUI.ColorCurrent : DirtGUI.ColorDefault;
@@ -94,15 +95,21 @@ namespace Dirt.GameEditor.Imgui
 
 		private static void DefaultDeleteDelegate<T>(int indx, T e) { }
 
-		public static int DrawView<T>(List<T> list, ViewDelegate<T> del, int current = -1, ListViewFlags flags = ListViewFlags.None)
+		public static int DrawView<T>(IList<T> list, ViewDelegate<T> del, int current = -1, ListViewFlags flags = ListViewFlags.None)
 		{
-			return DrawView<T>(list, del, DefaultDeleteDelegate, current, flags);			
+			return DrawView<T>(list, del, DefaultDeleteDelegate, null, current, flags);			
 		}
 
-		public static int DrawView<T>(List<T> list, ViewDelegate<T> del, ViewDelegate<T> removeDelegate, int current = -1, ListViewFlags flags = ListViewFlags.None)
+		private static List<int> s_EmptySelection = new List<int>();
+        public static int DrawView<T>(IList<T> list, ViewDelegate<T> del, ViewDelegate<T> removeDelegate, System.Func<int, bool> filterDel, int current = -1, ListViewFlags flags = ListViewFlags.None)
+		{ 
+			return DrawView<T>(list, del, removeDelegate, filterDel, s_EmptySelection, current, flags);
+		}
+
+        public static int DrawView<T>(IList<T> list, ViewDelegate<T> del, ViewDelegate<T> removeDelegate, System.Func<int, bool> filterDel, List<int> selection, int current = -1, ListViewFlags flags = ListViewFlags.None)
 		{
 			bool managed = (flags & ListViewFlags.Manageable) != ListViewFlags.None ;
-
+			bool allowMultiSelect = (flags & ListViewFlags.Multiselect) != ListViewFlags.None;
 			int listCount = list.Count;
 			int guiControl = GUIUtility.GetControlID(FocusType.Passive);
 			ListViewData data = (ListViewData)  GUIUtility.GetStateObject(typeof(ListViewData), guiControl);
@@ -120,15 +127,19 @@ namespace Dirt.GameEditor.Imgui
 			data.scrollView = EditorGUILayout.BeginScrollView(data.scrollView, GUILayout.ExpandHeight(false));
 			for(int i = 0; i < listCount; ++i)
 			{
+				if (filterDel != null && filterDel(i))
+				{
+					continue;
+				}
 				bool markForDelete = false;
 				Color old = GUI.backgroundColor;
-				if ( i == lastClicked )
+				if (i == lastClicked ||  (allowMultiSelect && selection.Contains(i)))
 				{
-					GUI.backgroundColor = new Color(0.35f, 0.35f, 1f, 1f);
+					//GUI.backgroundColor = new Color(0.35f, 0.35f, 1f, 1f);
 				}
 				GUILayout.BeginHorizontal();
-				GUI.backgroundColor = old;
 				del(i, list[i]);
+				//GUI.backgroundColor = old;
 
 				if ( managed )
 				{
@@ -148,8 +159,10 @@ namespace Dirt.GameEditor.Imgui
 							lastClicked = -1;
 						}
 
-						removeDelegate(i, list[i]);
-						list.RemoveAt(i);
+						if (removeDelegate != null)
+							removeDelegate(i, list[i]);
+						else
+							list.RemoveAt(i);
 						break;
 					}
 				}
@@ -158,21 +171,71 @@ namespace Dirt.GameEditor.Imgui
 
 				if ( Event.current.type == EventType.MouseDown )
 				{
-					if ( itemRect.Contains(Event.current.mousePosition) )
+					if (Event.current.button == 0)
 					{
-						if ( lastClicked != i )
+						if (itemRect.Contains(Event.current.mousePosition))
 						{
-							lastClicked = i;
+							if (lastClicked != i)
+							{
+                                lastClicked = i;
+								if (allowMultiSelect)
+								{
+									bool isMultiSelect = (Event.current.modifiers & EventModifiers.Shift) != 0;
+									isMultiSelect |= (Event.current.modifiers & EventModifiers.Control) != 0;
 
-							GUI.FocusControl("");
+									if ((Event.current.modifiers & EventModifiers.Shift) != 0)
+									{
+										if (selection.Contains(i))
+										{
+											selection.Remove(i);
+										}
+										else
+										{
+											// multiselect at once 
+											int startIndex = i;
+											int dir = 1;
+											if (selection.Count > 0)
+											{
+												startIndex = selection[selection.Count - 1];	
+												if (startIndex > i)
+												{
+													dir = -1;
+												}
+											}
 
-							Event.current.Use();
+											for(int j = startIndex + dir; j != i; j += dir)
+											{
+												if (!filterDel(j))
+													selection.Add(j);
+											}
+											selection.Add(i);
+										}
+									}
+									else if ((Event.current.modifiers & EventModifiers.Control) != 0)
+									{
+                                        if (selection.Contains(i))
+                                        {
+                                            selection.Remove(i);
+                                        }
+										else
+										{
+											selection.Add(i);
+										}
+                                    }
+									else
+									{
+										selection.Clear();
+										selection.Add(lastClicked);
+									}
+								}
+								GUI.FocusControl("");
+								Event.current.Use();
+							}
 						}
 					}
 				}
 			}
 			EditorGUILayout.EndScrollView();
-		//	GUILayout.EndVertical();
 			return lastClicked;
 		}
 	}

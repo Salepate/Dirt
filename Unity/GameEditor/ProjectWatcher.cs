@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Dirt.GameEditor.Imgui;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +17,6 @@ namespace Dirt.GameEditor
         public const string WatcherFilename = "dirtwatcher";
         public static readonly string[] s_WhiteList =
         {
-            "Duality.Shared.dll",
         };
 
         private static EditorWaitForSeconds m_CheckInterval = new EditorWaitForSeconds(5f);
@@ -25,7 +25,6 @@ namespace Dirt.GameEditor
         // Coroutine Cache
         private static Dictionary<string, long> s_ProjectWatcher;
         private static List<FileInfo> s_AcceptedLibs = new List<FileInfo>();
-        private static DirectoryInfo s_SourceDir = new DirectoryInfo(Path.Combine(Application.dataPath, @"..\..\Libraries"));
 
 
         [InitializeOnLoadMethod()]
@@ -53,8 +52,6 @@ namespace Dirt.GameEditor
                         AssetDatabase.Refresh();
                     }
                     yield return m_CheckInterval;
-
-
                 }
                 else
                 {
@@ -67,8 +64,8 @@ namespace Dirt.GameEditor
         {
             DirectoryInfo source = new DirectoryInfo(ProjectWatcherData.Settings.SourceFolder);
             // get files
-            var ignoredlibs = source.GetFiles("*.dll", SearchOption.TopDirectoryOnly);
-            var allLibs = source.GetFiles("*.dll", SearchOption.AllDirectories);
+            var ignoredlibs = source.GetFiles("*", SearchOption.TopDirectoryOnly);
+            var allLibs = source.GetFiles("*", SearchOption.AllDirectories);
             allLibs = allLibs.Where(lib => ProjectWatcherData.Settings.WhiteList.Any(lib.Name.Contains)).ToArray();
             s_AcceptedLibs.Clear();
             s_AcceptedLibs.AddRange(allLibs);
@@ -174,7 +171,7 @@ namespace Dirt.GameEditor
             {
                 value = newText;
             }
-            if ( GUILayout.Button("Browse", GUILayout.Width(120f))) {
+            if ( GUIExtension.Button("Browse", DirtGUI.ColorNew, GUILayout.Width(120f))) {
                 string newFolder = EditorUtility.OpenFolderPanel("Select Folder", value ?? Application.dataPath, "");
                 if (!string.IsNullOrEmpty(newFolder))
                     value = newFolder;
@@ -191,15 +188,33 @@ namespace Dirt.GameEditor
                 guiHandler = (searchContext) =>
                 {
                     var settings = ProjectWatcherData.Settings;
-                    SerializedObject obj = new SerializedObject(settings);
-                    var whitelist = obj.FindProperty("WhiteList");
 
                     EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(whitelist);
-                    if ( EditorGUI.EndChangeCheck())
+                    GUIExtension.DrawView(settings.WhiteList, (index, elem) => {
+                        GUILayout.BeginHorizontal();
+
+                        settings.WhiteList[index] = EditorGUILayout.TextField(settings.WhiteList[index]);
+                        if (GUIExtension.Button("Browse", DirtGUI.ColorNew, GUILayout.Width(120f)))
+                        {
+                            string file = EditorUtility.OpenFilePanel("Choose file", "", "dll,pdb");
+                            FileInfo fileInfo = new FileInfo(file);
+                            if (fileInfo.Exists)
+                            {
+                                settings.WhiteList[index] = fileInfo.Name;
+                            }
+                        }
+                        GUILayout.EndHorizontal();
+                    }, (index, elem) =>
                     {
-                        obj.ApplyModifiedProperties();
+                        ArrayUtility.RemoveAt(ref settings.WhiteList, index);
+                    }, (index) => false, -1, GUIExtension.ListViewFlags.Manageable);
+                    //EditorGUILayout.PropertyField(whitelist, true);
+                    if ( GUILayout.Button("Add Entry"))
+                    {
+                        ArrayUtility.Insert(ref settings.WhiteList, settings.WhiteList.Length, "MyPlugin.dll");
                     }
+
+
                     EditorGUI.BeginChangeCheck();
                     settings.IsEnabled = EditorGUILayout.Toggle("Enable", settings.IsEnabled);
                     settings.SourceFolder = FolderField("Source Folder", settings.SourceFolder);
