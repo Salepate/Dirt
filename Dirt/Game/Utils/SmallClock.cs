@@ -1,15 +1,20 @@
-namespace Framework
+﻿namespace Dirt.Game.Utils
 {
     public struct SmallClock
     {
         public float Clock { get; private set; }
         public float Length { get; private set; }
         public float Progress { get { return Clock / Length; } }
-        public bool Done {  get { return Clock >= Length; } }
+        public bool Done { get { return Clock >= Length; } }
 
         public void Reset()
         {
             Clock = 0f;
+        }
+
+        public void Sub(float dt)
+        {
+            Clock -= dt;
         }
 
         public SmallClock(float length)
@@ -24,7 +29,7 @@ namespace Framework
             {
                 Clock += dt;
 
-                if ( Clock > Length )
+                if (Clock > Length)
                 {
                     Clock = Length;
                 }
