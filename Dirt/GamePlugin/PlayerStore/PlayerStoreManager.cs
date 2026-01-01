@@ -19,6 +19,7 @@ namespace Dirt.GameServer.PlayerStore
         public const string RegistrationCode = "code";
         public const string DataSep = "data";
         public const string SimpleIDFile = "_id";
+        private const string IndexKeyFormat = "{1}.{0}"; // {1: index}, {0: key}
         private const int GenerationAttempts = 20;
         private RNG m_IDGenerator;
         private HashAlgorithm m_HashAlgorithm;
@@ -378,6 +379,28 @@ namespace Dirt.GameServer.PlayerStore
         }
 
         /// <summary>
+        /// Check if a persistent file exists
+        /// </summary>
+        /// <typeparam name="T">data type (explicit)</typeparam>
+        /// <param name="playerNumber">Player index (in server)</param>
+        /// <param name="key">unique data identifier</param>
+        /// <param name="data">output data</param>
+        /// <returns>false if does not exist, true otherwise</returns>
+        public bool HasPlayerData(int playerNumber, string key, int slot = 0)
+        {
+            if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
+            {
+                if (slot > 0)
+                {
+                    key = string.Format(IndexKeyFormat, key, slot);
+                }
+
+                return Store.Exists(GetDataPath(key, credential));
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Load a persistent data tied to a connected player
         /// </summary>
         /// <typeparam name="T">data type (explicit)</typeparam>
@@ -385,12 +408,17 @@ namespace Dirt.GameServer.PlayerStore
         /// <param name="key">unique data identifier</param>
         /// <param name="data">output data</param>
         /// <returns>false on failure, true otherwise</returns>
-        public bool TryGetPlayerData<T>(int playerNumber, string key, out T data)
+        public bool TryGetPlayerData<T>(int playerNumber, string key, out T data, int slot = 0)
         {
             data = default(T);
 
             if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
             {
+                if (slot > 0)
+                {
+                    key = string.Format(IndexKeyFormat, key, slot);
+                }
+
                 if (Store.TryRead(GetDataPath(key, credential), out data))
                 {
                     return true;
@@ -407,12 +435,17 @@ namespace Dirt.GameServer.PlayerStore
         /// <param name="key">unique data identifier</param>
         /// <param name="data">data object to serialize</param>
         /// <returns>false on failure, true otherwise</returns>
-        public bool UpdatePlayerData<T>(int playerNumber, string key, T data)
+        public bool UpdatePlayerData<T>(int playerNumber, string key, T data, int slot = 0)
         {
             if (data == null)
             {
                 Log.Console.Error($"Cannot write null data for player {playerNumber} (key {key})");
                 return false;
+            }
+
+            if (slot > 0)
+            {
+                key = string.Format(IndexKeyFormat, key, slot);
             }
 
             if (Table.TryGetCredentials(playerNumber, out PlayerCredential credential))
@@ -427,7 +460,5 @@ namespace Dirt.GameServer.PlayerStore
         {
             return $"{DataSep}.{credential.ID}.{key}";
         }
-
-
     }
 }
