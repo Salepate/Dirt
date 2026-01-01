@@ -12,6 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Dirt.Unity.Console">
+      <HintPath>..\Dirt.Unity.Console\Dirt.Unity.Console.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\Externals\Unity\UnityEngine.dll</HintPath>
       <Private>False</Private>
