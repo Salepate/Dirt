@@ -40,6 +40,21 @@ namespace Game.Container
             }
         }
 
+        public void Resize(int newSize)
+        {
+            if (newSize < Slots.Length)
+                throw new System.Exception("Cannot reduce fixed table size");
+            else if (newSize > Slots.Length)
+            {
+                var oldComps = Components;
+                var oldSlots = Slots;
+                Components = new T[newSize];
+                Slots = new bool[newSize];
+                Buffer.BlockCopy(oldSlots, 0, Slots, 0, oldSlots.Length);
+                Buffer.BlockCopy(oldComps, 0, Components, 0, oldSlots.Length);
+            }
+        }
+
         public int Allocate()
         {
             if (NextIndex >= Slots.Length)
