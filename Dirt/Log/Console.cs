@@ -53,11 +53,8 @@ namespace Dirt.Log
         }
 
         public static void Message(string message, [CallerMemberName] string memberName = "") { InternalLog(LogLevel.Info, message, memberName); }
-        public static void Message(string message, params object[] args) { InternalLog(LogLevel.Info, string.Format(message, args)); }
-        public static void Warning(string message, [CallerMemberName] string memberName = "") { InternalLog(LogLevel.Warning, message, memberName); }
-        public static void Warning(string message, params object[] args) { InternalLog(LogLevel.Warning, string.Format(message, args)); }
-        public static void Error(string message) { InternalLog(LogLevel.Error, message); }
-        public static void Error(string message, params object[] args) { InternalLog(LogLevel.Error, string.Format(message, args)); }
+        public static void Warning(string message, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "") { InternalLog(LogLevel.Warning, message, memberName, filePath); }
+        public static void Error(string message, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "") { InternalLog(LogLevel.Error, message, memberName, filePath); }
 
         #region internal
         private static void InternalLog(LogLevel logLevel, string message, string memberName = "", string file = "")
@@ -68,6 +65,12 @@ namespace Dirt.Log
             string tag = string.IsNullOrEmpty(memberName) ? Logger.GetTag() : memberName;
             if (!string.IsNullOrEmpty(file))
             {
+                int lastPart = file.LastIndexOf('\\');
+                if (lastPart != -1)
+                {
+                    file = file.Substring(lastPart + 1);
+                }
+
                 tag = string.Format("{0}:{1}", file, tag);
             }
             string color = GetColor(tag);

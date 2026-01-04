@@ -14,12 +14,18 @@ namespace Dirt.Log
 
         public void Warning(string tag, string message, string uniqueColor)
         {
+            System.ConsoleColor col = NativeConsole.ForegroundColor;
+            NativeConsole.ForegroundColor = System.ConsoleColor.Yellow;
             NativeConsole.WriteLine($"<Warning> [{tag}] {message}");
+            NativeConsole.ForegroundColor = col;
         }
 
         public void Error(string tag, string message, string uniqueColor)
         {
+            System.ConsoleColor col = NativeConsole.ForegroundColor;
+            NativeConsole.ForegroundColor = System.ConsoleColor.Red;
             NativeConsole.WriteLine($"<Error> [{tag}] {message}");
+            NativeConsole.ForegroundColor = col;
         }
 
         public string GetTag()

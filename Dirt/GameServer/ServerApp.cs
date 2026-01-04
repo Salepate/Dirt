@@ -64,8 +64,8 @@ namespace Dirt.ServerApplication
                 netTickrate = m_Tickrate;
             }
 
-            Console.Message("Server Tickrate / Net Tickrate: {0} / {1}", m_Tickrate, netTickrate);
-            m_PeriodTicks = (int) new TimeSpan(10000 * 1000 / m_Tickrate).Ticks;
+            Console.Message($"Server Tickrate / Net Tickrate: {m_Tickrate} / {netTickrate}");
+            m_PeriodTicks = (int)new TimeSpan(10000 * 1000 / m_Tickrate).Ticks;
             m_FixedDelta = 1f / m_Tickrate;
 
             try
