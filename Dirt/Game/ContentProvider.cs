@@ -170,6 +170,10 @@ namespace Dirt.Game
                     catch (System.Exception e)
                     {
                         Console.Error($"Failed to deserialize {contentName}\n{e.ToString()}");
+                        if (e.InnerException != null)
+                        {
+                            Console.Error(e.InnerException.Message);
+                        }
                     }
 
                     if (res != null)
