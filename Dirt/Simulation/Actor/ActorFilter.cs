@@ -63,7 +63,15 @@ namespace Dirt.Simulation.Actor
             return ref pool.Fallback;
         }
 
-        public bool TryGetActor(int actorID, out GameActor actor) => (actor = m_Builder.GetActorByID(actorID)) != null;
+        public bool TryGetActor(int actorID, out GameActor actor)
+        {
+            if (actorID < 0)
+            {
+                actor = null;
+                return false;
+            }
+            return (actor = m_Builder.GetActorByID(actorID)) != null;
+        }
 
         public List<ActorTuple<C1>> GetAll<C1>() where C1 : struct
         {
