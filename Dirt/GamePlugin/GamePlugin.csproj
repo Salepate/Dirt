@@ -3,8 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <PackageId>Dirt.$(AssemblyName)</PackageId>
-    <Product>Dirt.$(AssemblyName)</Product>
+    <AssemblyName>Dirt.GamePlugin</AssemblyName>
+    <PackageId>Dirt.GamePlugin</PackageId>
+    <Product>Dirt.GamePlugin</Product>
+    <Version>1.1.0</Version>
+    <Authors>Salepate</Authors>
+    <Title>Dirt GamePlugin</Title>
+    <Description>Game server plugin architecture with simulation routing</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Salepate</Copyright>
+    <PackageTags>Dirt.Framework</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

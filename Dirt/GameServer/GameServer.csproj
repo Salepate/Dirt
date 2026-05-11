@@ -3,8 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <PackageId>Dirt.$(AssemblyName)</PackageId>
-    <Product>Dirt.$(AssemblyName)</Product>
+    <AssemblyName>Dirt.GameServer</AssemblyName>
+    <PackageId>Dirt.GameServer</PackageId>
+    <Product>Dirt.GameServer</Product>
+    <Version>1.1.0</Version>
+    <Authors>Salepate</Authors>
+    <Title>Dirt GameServer</Title>
+    <Description>Real time server boilerplate</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Salepate</Copyright>
+    <PackageTags>Dirt.Framework</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
